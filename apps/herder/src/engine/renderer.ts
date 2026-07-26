@@ -32,6 +32,7 @@ export class DeviceRenderer {
   private mon: FullscreenPass;
   private mix: FullscreenPass;
   private fx: Map<string, FullscreenPass>;
+  private simFx: Map<string, FullscreenPass>;
   private cp: FullscreenPass;
   private w = 0;
   private h = 0;
@@ -42,6 +43,8 @@ export class DeviceRenderer {
     this.mon = new FullscreenPass(gl, MONITOR_FRAG);
     this.mix = new FullscreenPass(gl, MIXER_FRAG);
     this.fx = new Map(Object.entries(FX).map(([k, d]) => [k, new FullscreenPass(gl, d.frag)]));
+    this.simFx = new Map(Object.entries(FX).filter(([, d]) => d.sim)
+      .map(([k, d]) => [k, new FullscreenPass(gl, d.sim!.frag)]));
     this.cp = new FullscreenPass(gl, COPY_FRAG);
     this.fbo = gl.createFramebuffer()!;
     this.black = createTexture2D(gl, {
@@ -71,11 +74,28 @@ export class DeviceRenderer {
   }
 
   /** one simple 1-in effect step — the pass is picked by kind, the
-      params arrive as ready-made uniforms */
-  effect(kind: string, target: WebGLTexture, src: WebGLTexture, values: UniformValues): void {
+      params arrive as ready-made uniforms. Every effect is also handed
+      its own last frame; the stateless ones simply never declare it. */
+  effect(kind: string, target: WebGLTexture, src: WebGLTexture, prevSelf: WebGLTexture, values: UniformValues): void {
     const pass = this.fx.get(kind);
     if (!pass) throw new Error(`no effect pass for kind '${kind}'`);
-    this.run(pass, target, { uSrc: src, uRes: [this.w, this.h], ...values });
+    this.run(pass, target, { uSrc: src, uPrev: prevSelf, uRes: [this.w, this.h], ...values });
+  }
+
+  /** a simulating effect's tick: the sim pass steps the lattice-sized
+      state ring, then the display pass paints it up to the loop ring.
+      One uniform dict feeds both passes — unmatched keys drop. */
+  simEffect(
+    kind: string, target: WebGLTexture, src: WebGLTexture,
+    state: { next: WebGLTexture; prev: WebGLTexture; w: number; h: number },
+    values: UniformValues,
+  ): void {
+    const sim = this.simFx.get(kind);
+    const pass = this.fx.get(kind);
+    if (!sim || !pass) throw new Error(`no sim passes for kind '${kind}'`);
+    toTexture(this.g.gl, this.fbo, state.next, state.w, state.h, () =>
+      sim.draw({ uSrc: src, uPrev: state.prev, uRes: [state.w, state.h], ...values }));
+    this.run(pass, target, { uSrc: src, uState: state.next, uGrid: [state.w, state.h], ...values });
   }
 
   /** verbatim blit — the delay line's record and playback heads */

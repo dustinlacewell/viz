@@ -8,7 +8,7 @@ import type { Slot } from '@ldlework/dials';
 import { SlotRow, PanelComponentsProvider } from '@ldlework/dials/react';
 import { useStore } from '@xyflow/react';
 import { DIAL_VAL_UNI, MIXER_MODES, PARAMS, paramHints, polarityOf, rideValue, SWITCH_INS, XYPAD_X_UNI, XYPAD_Y_UNI, type NodeKind, type ParamDef } from '../../patch';
-import { dispatch, drivenPorts, holdSwitch, releaseSwitch, watchTick } from '../../runtime';
+import { dispatch, dispatchParam, drivenPorts, holdSwitch, releaseSwitch, watchTick } from '../../runtime';
 import { FX } from '../../fx';
 import { ArcGauge, XYPad } from '../controls/Knob';
 import { SlotNodeProvider, dialFaceComponents, liveOverrideFor, useNodeWriteRepaint } from '../controls/dialsBundle';
@@ -67,10 +67,14 @@ export function MonitorNode({ id, data }: DeviceProps) {
 }
 
 /* the simple 1-in effects share one shell shape: an input, a face
-   well, a knob drawer, an output. The words come off the FX def. */
+   well, a knob drawer, an output. The words come off the FX def. A def
+   carrying presets also grows the mixer's dropdown — an ACTION menu:
+   it recalls a set of knob positions and goes back to its placeholder,
+   because the knobs are yours to twiddle after. */
 function makeEffectNode(kind: NodeKind) {
   const m = FX[kind as keyof typeof FX];
   const fixed: FixedPort[] = [{ kind: 'v', id: 'v:in', label: 'In', desc: m.face.inp }];
+  const presets = m.presets;
   return function EffectNode({ id, data }: DeviceProps) {
     return (
       <Shell
@@ -78,6 +82,28 @@ function makeEffectNode(kind: NodeKind) {
         headBtns={<ResetBtn id={id} kind={kind} title={m.face.reset} />}
         face={<Face id={id} sparkable={false} />}
       >
+        {presets && (
+          <div className="moderow nodrag">
+            <select
+              className="mselect"
+              value=""
+              title="Recall a named set of knob positions"
+              onChange={e => {
+                /* through the proxy, not raw setParam: a recall must
+                   land on ports a dial rides too, and a ridden param's
+                   edit belongs to the dial */
+                const p = presets[Number(e.target.value)];
+                for (const [k, v] of Object.entries(p.values))
+                  dispatchParam(id, k, data.slots[k] as Slot<unknown>, v);
+              }}
+            >
+              <option value="" disabled>Recall…</option>
+              {presets.map((p, i) => (
+                <option key={p.label} value={i} title={p.desc}>{p.label}</option>
+              ))}
+            </select>
+          </div>
+        )}
         <VPort dir="out" id="v:out" top={95} desc={m.face.out} />
       </Shell>
     );

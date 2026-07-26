@@ -28,7 +28,7 @@ import { DELAY_MAX, RES_STEPS, type PatchNode } from '../patch';
 import { dropStoredMediaUnder, dropStoredMediaUrl } from '../persist';
 import { flushLive, mirror, notifyTick, sampleSpark, transport } from '../runtime';
 import { Blitter } from './blitter';
-import { FX, FX_KINDS } from '../fx';
+import { FX, FX_KINDS, type FxDef } from '../fx';
 import { StampBank } from './stamps';
 import { clampInt, paramValue, slotValue } from './params';
 import { DeviceRenderer, type CameraParams, type ScreenParams } from './renderer';
@@ -148,6 +148,7 @@ export class Engine {
   parkNode(id: string): void {
     const under = (k: string) => k === id || k.startsWith(id + '/');
     for (const [k, r] of [...this.rings]) if (under(k)) { r.dispose(); this.rings.delete(k); }
+    for (const [k, r] of [...this.simRings]) if (under(k)) { r.dispose(); this.simRings.delete(k); }
     for (const [k, r] of [...this.delayIns]) if (under(k)) { r.dispose(); this.delayIns.delete(k); this.delayIdle.delete(k); }
     for (const k of [...this.fxState.keys()]) if (under(k)) this.fxState.delete(k);
     for (const k of [...this.media.keys()]) if (under(k)) this.media.delete(k);   // texture is small; let GC of the map entry suffice
@@ -197,15 +198,22 @@ export class Engine {
     if (w === this.texW && h === this.texH) return;
     for (const r of this.rings.values()) r.dispose();
     this.rings.clear();
+    for (const r of this.simRings.values()) r.dispose();
+    this.simRings.clear();
     for (const r of this.delayIns.values()) r.dispose();
     this.delayIns.clear();
     this.delayIdle.clear();
+    /* scratch describes what the ring holds — the rings just went away,
+       so a simulation has to sow itself afresh rather than trust it */
+    this.fxState.clear();
     this.texW = w; this.texH = h;
     this.renderer.setSize(w, h);
   }
 
   clearAll(): void {
     for (const r of this.rings.values()) r.clearAll(this.renderer.fbo, [0, 0, 0, 0.25]);
+    for (const r of this.simRings.values()) r.clearAll(this.renderer.fbo, [0, 0, 0, 0]);
+    this.fxState.clear();   /* simulations resow into their blank lattices */
     for (const r of this.delayIns.values()) r.clearAll(this.renderer.fbo, [0, 0, 0, 1]);
   }
 
@@ -374,10 +382,49 @@ export class Engine {
   private stepEffect(n: PatchNode): void {
     const ring = this.ringFor(n.id);
     const def = FX[n.type as keyof typeof FX];
+    const sim = def.sim ? this.simRingFor(n, def.sim) : undefined;
     let st = this.fxState.get(n.id);
     if (!st) { st = {}; this.fxState.set(n.id, st); }
-    const vals = def.uniforms(k => this.pv(n, k), { simTime: this.simTime, state: st });
-    this.renderer.effect(n.type, ring.next, this.videoIn(n.id, 'v:in', 0), { uTime: this.simTime, ...vals });
+    const vals = def.uniforms(k => this.pv(n, k), { simTime: this.simTime, state: st, gl: this.g.gl });
+    const src = this.videoIn(n.id, 'v:in', 0);
+    if (sim) {
+      this.renderer.simEffect(n.type, ring.next, src,
+        { next: sim.next, prev: sim.at(0), w: sim.w, h: sim.h }, { uTime: this.simTime, ...vals });
+      sim.advance();   /* private to this node — nobody else taps it */
+    } else {
+      this.renderer.effect(n.type, ring.next, src, ring.at(0), { uTime: this.simTime, ...vals });
+    }
+  }
+
+  /* a simulating effect's lattice: single-channel state at loop-res /
+     scale, ping-pong depth 2. A scale change reallocates it and drops
+     the node's scratch — the scratch describes what the lattice holds,
+     and the lattice just went away. */
+  private simRings = new Map<string, TextureRing>();
+
+  private simRingFor(n: PatchNode, sim: NonNullable<FxDef['sim']>): TextureRing {
+    const div = Math.max(1, Math.round(sim.scale(k => this.pv(n, k))));
+    const w = Math.max(1, Math.floor(this.texW / div));
+    const h = Math.max(1, Math.floor(this.texH / div));
+    let r = this.simRings.get(n.id);
+    if (r && (r.w !== w || r.h !== h)) {
+      r.dispose();
+      this.simRings.delete(n.id);
+      this.fxState.delete(n.id);
+      r = undefined;
+    }
+    if (!r) {
+      const gl = this.g.gl;
+      const float = this.g.ifmt === gl.RGBA16F;
+      r = new TextureRing(gl, {
+        width: w, height: h, depth: 2,
+        internalFormat: float ? gl.R16F : gl.R8, format: gl.RED,
+        type: float ? gl.HALF_FLOAT : gl.UNSIGNED_BYTE,
+      });
+      r.clearAll(this.renderer.fbo, [0, 0, 0, 0]);
+      this.simRings.set(n.id, r);
+    }
+    return r;
   }
 
   /* the delay line records its input every tick into its own store,

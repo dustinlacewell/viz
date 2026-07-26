@@ -162,6 +162,13 @@ export function KindIcon({ kind }: { kind: NodeKind }) {
         <circle cx="5.5" cy="6" r="0.7" /><circle cx="8.5" cy="6" r="0.7" />
       </svg>
     );
+    case 'lenia': return (
+      <svg {...common}>
+        <circle cx="7" cy="7" r="5.5" />
+        <circle cx="7" cy="7" r="3" />
+        <circle cx="7" cy="7" r="1" />
+      </svg>
+    );
     case 'switch': return (
       <svg {...common}>
         <circle cx="2.4" cy="3" r="1.1" />

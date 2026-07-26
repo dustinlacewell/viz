@@ -60,7 +60,7 @@ import { slotsFor } from './params';
 import { FX } from '../fx';
 import type { InstVals } from './library';
 
-export type NodeKind = 'media' | 'webcam' | 'draw' | 'camera' | 'monitor' | 'mixer' | 'wobbulate' | 'kaleido' | 'polar' | 'colorize' | 'solarize' | 'contour' | 'delay' | 'timebase' | 'glow' | 'polarize' | 'convolve' | 'paint' | 'morph' | 'halftone' | 'dither' | 'mosaic' | 'droste' | 'conformal' | 'relight' | 'turbwarp' | 'noise' | 'moire' | 'julia' | 'switch' | 'dial' | 'xypad' | 'in' | 'out' | 'module';
+export type NodeKind = 'media' | 'webcam' | 'draw' | 'camera' | 'monitor' | 'mixer' | 'wobbulate' | 'kaleido' | 'polar' | 'colorize' | 'solarize' | 'contour' | 'delay' | 'timebase' | 'glow' | 'polarize' | 'convolve' | 'paint' | 'morph' | 'halftone' | 'dither' | 'mosaic' | 'droste' | 'conformal' | 'relight' | 'turbwarp' | 'noise' | 'moire' | 'julia' | 'lenia' | 'switch' | 'dial' | 'xypad' | 'in' | 'out' | 'module';
 
 /** one level of the patch tree — a module's inside is one of these */
 export interface SubPatch { nodes: PatchNode[]; edges: PatchEdge[] }

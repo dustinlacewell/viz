@@ -26,8 +26,9 @@ import { timebase } from './timebase';
 import { noise } from './noise';
 import { moire } from './moire';
 import { julia } from './julia';
+import { lenia } from './lenia';
 
-export type { FxCtx, FxDef } from './def';
+export type { FxCtx, FxDef, FxPreset } from './def';
 
 export const FX = {
   wobbulate,
@@ -52,6 +53,7 @@ export const FX = {
   noise,
   moire,
   julia,
+  lenia,
 } as const;
 
 export const FX_KINDS: ReadonlySet<string> = new Set(Object.keys(FX));

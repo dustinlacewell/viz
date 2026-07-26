@@ -37,6 +37,9 @@ export interface ParamDef {
       mundane knobs: they modulate indirectly, by exposing the param
       as an input port and wiring a modulated Dial node into it. */
   modulatable?: boolean;
+  /** kept out of the knob drawer — the device drives it from its own
+      widget (a preset dropdown), not a knob */
+  hidden?: true;
 }
 
 /* uni: the param rests at its floor (def === min), so a control signal
@@ -163,7 +166,9 @@ export const PARAMS: Record<NodeKind, Record<string, ParamDef>> = {
   ...FX_PARAMS,
 } satisfies Record<NodeKind, Record<string, ParamDef>>;
 
-/* the knobs each kind shows in its drawer (mode has its own dropdown) */
+/* the knobs each kind shows in its drawer (mode has its own dropdown;
+   an fx param marked `hidden` sits out — the device drives it from its
+   own widget) */
 /* draw's hue/size are its own sliders, not drawer knobs */
 export const DRAWER: Record<NodeKind, string[]> = {
   media: [],
@@ -180,7 +185,10 @@ export const DRAWER: Record<NodeKind, string[]> = {
   out: [],
   module: [],
   ...(Object.fromEntries(
-    Object.entries(FX).map(([k, d]) => [k, Object.keys(d.params)]),
+    Object.entries(FX).map(([k, d]) => [
+      k,
+      Object.entries(d.params).filter(([, p]) => !p.hidden).map(([pk]) => pk),
+    ]),
   ) as { [K in keyof typeof FX]: string[] }),
 };
 

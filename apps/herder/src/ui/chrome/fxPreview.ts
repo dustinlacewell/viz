@@ -65,8 +65,11 @@ export function mountFxPreview(host: HTMLElement, kind: keyof typeof FX): () => 
       const p = def.params[key];
       return p.min + (p.max - p.min) * (0.5 + 0.5 * Math.sin(t * RATE + (phase.get(key) ?? 0)));
     };
-    const vals = def.uniforms(pv, { simTime: t, state });
-    toScreen(r.gl, W, H, () => passFor(r, kind).draw({ uSrc: r.src, uRes: [W, H], uTime: t, ...vals }));
+    const vals = def.uniforms(pv, { simTime: t, state, gl: r.gl });
+    /* the card has no ring to feed back through — a stateful effect
+       sees the stained glass as its own last frame (or state) and
+       previews one step */
+    toScreen(r.gl, W, H, () => passFor(r, kind).draw({ uSrc: r.src, uPrev: r.src, uState: r.src, uGrid: [W, H], uRes: [W, H], uTime: t, ...vals }));
     raf = requestAnimationFrame(tick);
   };
   raf = requestAnimationFrame(tick);
