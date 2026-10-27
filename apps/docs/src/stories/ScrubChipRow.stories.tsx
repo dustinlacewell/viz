@@ -15,7 +15,7 @@ export const Default: StoryObj<typeof ScrubChipRow> = {
   render: () => {
     const [picked, setPicked] = useState<Note>('C')
     return (
-      <Display padding={16}>
+      <Display>
         <ScrubChipRow<Note>
           items={NOTES.map((n) => ({ key: n, lit: n === picked, content: n }))}
           onSelect={(k) => setPicked(k)}

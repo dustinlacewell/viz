@@ -1,6 +1,6 @@
 import { useReducer, useRef, useState, type CSSProperties, type MouseEvent } from 'react'
 import { Pause, Play, Shuffle, SkipBack, SkipForward } from 'lucide-react'
-import { ArcGauge, ChipToggle, EmbeddedScreen, Knob, Panel, PushButton } from '@ldlework/phosphor'
+import { ArcGauge, ChipToggle, Display, Knob, Panel, PushButton } from '@ldlework/phosphor'
 import { CrtScreen, useCrtRegion } from '@ldlework/phosphor-crt'
 import type { MeterMode } from './meter-beam'
 import { INITIAL_PLAYER, playerReducer, TRACKS } from './player'
@@ -34,7 +34,7 @@ export function WalkmanShowcase() {
   return (
     <Panel style={{ padding: 20, width: 520, display: 'flex', flexDirection: 'column', gap: 20 }}>
       <span className="chrome-emboss" style={BRAND}>PHOSPHOR · PM-1</span>
-      <EmbeddedScreen bezel padding={16}>
+      <Display raised={false}>
         <CrtScreen passes={meterCrt.passes} stage={meterCrt.stage} persistence={METER_PERSISTENCE} />
         <div className="screen-rows">
           <div className="screen-row">
@@ -61,7 +61,7 @@ export function WalkmanShowcase() {
             </div>
           </div>
         </div>
-      </EmbeddedScreen>
+      </Display>
 
       <div style={EVEN_ROW}>
         <div style={{ display: 'flex', gap: 12 }}>

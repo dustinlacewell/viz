@@ -54,7 +54,7 @@ export function KeybindReference({ open, onClose }: { open: boolean; onClose: ()
     <Modal open={open} onClose={onClose} ariaLabel="Keyboard & gesture reference" frameClassName="kb-modal">
       <Tabs tabs={TABS} active="reference" onSelect={() => {}} />
       <div style={{ height: 12 }} />
-      <Display>
+      <Display padding={0}>
         <ReferenceBody />
       </Display>
     </Modal>

@@ -18,7 +18,7 @@ export const Default: StoryObj<typeof Modal> = {
           <PushButton onClick={() => setOpen(true)}>Open dialog</PushButton>
         </Panel>
         <Modal open={open} onClose={() => setOpen(false)} ariaLabel="Example">
-          <Display padding={16}>
+          <Display>
             <div className="screen-chip-row">
               <span className="screen-chip" data-lit="true">ARE YOU SURE?</span>
             </div>

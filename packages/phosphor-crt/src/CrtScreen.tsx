@@ -12,7 +12,7 @@ export interface CrtScreenProps extends Omit<CrtSurfaceProps, 'passes' | 'classN
 
 /**
  * A CRT phosphor renderer behind a screen's HTML. Place it as a child
- * of a Display or EmbeddedScreen; it fills the glass and paints under
+ * of a Display, raised or recessed; it fills the glass and paints under
  * every sibling (see styles.css).
  *
  * When the screen has `cursor`, CrtScreen claims it while the CRT is

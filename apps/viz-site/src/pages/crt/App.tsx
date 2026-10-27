@@ -223,7 +223,7 @@ function Scanner() {
             from the screen it idles in an orbiting ring. Pick a coating with
             the tabs.
           </p>
-          <Display fill className="demo-display">
+          <Display fill padding={0} className="demo-display">
             <div
               className="demo-stage"
               ref={canvasElRef}

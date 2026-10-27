@@ -16,7 +16,7 @@ export function ScopeHero({ wordmark, tagline, children, noTuning }: ScopeHeroPr
   return (
     <section className="scope-hero">
       <div className="scope-hero-stage">
-        <Display style={{ width: '100%' }}>
+        <Display padding={0} style={{ width: '100%' }}>
           <div className="scope-hero-screen">
             <div className="scope-hero-scope" aria-hidden>
               <HeroScope noTuning={noTuning} />

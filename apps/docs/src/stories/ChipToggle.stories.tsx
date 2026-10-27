@@ -12,7 +12,7 @@ export const Default: StoryObj<typeof ChipToggle> = {
   render: () => {
     const [on, setOn] = useState(true)
     return (
-      <Display padding={16}>
+      <Display>
         <div className="screen-chip-row">
           <ChipToggle value={on} onChange={setOn} onLabel="ON" offLabel="OFF" />
         </div>
@@ -28,7 +28,7 @@ export const Unstable: StoryObj<typeof ChipToggle> = {
   render: () => {
     const [on, setOn] = useState(true)
     return (
-      <Display padding={16}>
+      <Display>
         <div className="screen-chip-row">
           <ChipToggle value={on} onChange={setOn}>{on ? 'YES' : 'NOPE'}</ChipToggle>
         </div>

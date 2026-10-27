@@ -169,6 +169,7 @@ export function CodeBlock({ code, lang, className, ...rest }: CodeBlockProps) {
 
   return (
     <Display
+      padding={0}
       {...rest}
       className={className ? `codeblock ${className}` : 'codeblock'}
     >

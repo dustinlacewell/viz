@@ -1,7 +1,8 @@
 import type { CSSProperties, ReactNode } from 'react'
-import { EmbeddedScreen, type EmbeddedScreenProps } from './EmbeddedScreen'
+import { Display, type DisplayProps } from './Display'
 
-interface SegmentedSurfaceProps extends Omit<EmbeddedScreenProps, 'padding' | 'color' | 'bezel'> {
+interface SegmentedSurfaceProps
+  extends Omit<DisplayProps, 'children' | 'raised' | 'bezel' | 'padding' | 'color' | 'fill' | 'screenStyle' | 'screenClassName'> {
   /**
    * The lit-segment content (foreground). Anything you can render in
    * React — segmented digits, weather glyphs, an inline SVG, multiple
@@ -38,9 +39,9 @@ interface SegmentedSurfaceProps extends Omit<EmbeddedScreenProps, 'padding' | 'c
 }
 
 /**
- * A two-layer EmbeddedScreen: a small piece of recessed glass with a
+ * A two-layer bare recessed Display: a small piece of glass with a
  * lit foreground and an optional ghost layer behind it. Mounted
- * directly on a Panel, not inside a Display.
+ * directly on a Panel, with no chassis or bezel of its own.
  *
  * SegmentedDisplay is a text-specialised version of this; build your
  * own specialisations (weather glyphs, multi-font readouts, mixed
@@ -58,7 +59,7 @@ export function SegmentedSurface({
       ? { transform: `translate(${ghostOffset.x ?? 0}px, ${ghostOffset.y ?? 0}px)` }
       : undefined
   return (
-    <EmbeddedScreen {...rest} className={`segdisplay ${className}`}>
+    <Display {...rest} raised={false} bezel={false} className={`segdisplay ${className}`}>
       {ghost !== undefined && (
         <div
           className="segdisplay-ghost"
@@ -69,7 +70,7 @@ export function SegmentedSurface({
         </div>
       )}
       <div className="segdisplay-lit">{lit}</div>
-    </EmbeddedScreen>
+    </Display>
   )
 }
 

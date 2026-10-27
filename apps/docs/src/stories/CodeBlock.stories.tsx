@@ -13,7 +13,7 @@ const TSX_EXAMPLE = `import { Display, ChipToggle } from '@ldlework/phosphor'
 export function PowerStrip({ on, onToggle }) {
   // The chip is width-stable so the row never resizes.
   return (
-    <Display padding={16}>
+    <Display>
       <ChipToggle
         value={on}
         onChange={onToggle}

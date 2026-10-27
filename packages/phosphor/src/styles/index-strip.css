@@ -13,7 +13,10 @@
  */
 
 .chrome-index-strip {
-  --strip-h: 22px;
+  --strip-chip-h: 16px;
+  /* The standard on-glass content margin, on all sides. */
+  --strip-inset: var(--screen-inset);
+  --strip-h: calc(var(--strip-chip-h) + 2 * var(--strip-inset));
   display: flex;
   align-items: stretch;
   gap: 4px;
@@ -27,7 +30,7 @@
   align-items: center;
   gap: 2px;
   height: var(--strip-h);
-  padding: 0 4px;
+  padding: 0 var(--strip-inset);
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
@@ -40,7 +43,7 @@
 .screen-chip.chrome-index-chip {
   padding: 0 6px;
   min-width: 18px;
-  height: calc(var(--strip-h) - 6px);
+  height: var(--strip-chip-h);
   display: inline-flex;
   align-items: center;
   justify-content: center;

@@ -1,36 +1,44 @@
 import type { CSSProperties, HTMLAttributes, ReactNode } from 'react'
 import { ScreenCursor } from './ScreenCursor'
 
-interface DisplayProps extends HTMLAttributes<HTMLDivElement> {
+type DivProps = HTMLAttributes<HTMLDivElement>
+
+interface DisplayProps extends DivProps {
   /** The content displayed on the screen. */
   children: ReactNode
   /**
-   * Optional header strip rendered on the chrome above the screen —
-   * the place to mount embedded hardware-style controls (key displays,
-   * instrument selectors, status lamps). Lives on the chrome plate
-   * (Lip), not on the OLED glass.
+   * Sit on a raised chrome chassis of its own (default true). False:
+   * recessed straight into the host chrome, e.g. a Panel, beside the
+   * controls that drive it.
    */
-  header?: ReactNode
+  raised?: boolean
   /**
-   * Optional footer strip rendered on the chrome below the screen —
-   * compact secondary controls. Mirror of `header`.
+   * Frame the glass in the black bezel ring (default true). False: the
+   * glass meets the chrome through a single chamfer — right for small
+   * readouts.
    */
-  footer?: ReactNode
+  bezel?: boolean
   /**
-   * Optional content rendered as an overlay on the OLED glass —
-   * positioned above the screen content by absolute-positioning
-   * inside the screen. For a quick floating label, wrap text in
-   * `<span className="screen-readout">…</span>`.
+   * The screen's emitted color — any CSS color expression. Drives the
+   * rim catch, body tint and spill of THIS screen (sets
+   * `--display-color`). Omitted, the screen inherits the theme.
    */
-  readout?: ReactNode
+  color?: string | undefined
   /**
-   * Padding inside the Screen, around `children`. Number is treated as
+   * Padding inside the glass, around `children`. Number is treated as
    * px; string is passed through verbatim (`'16px 24px'`, `'1rem'`).
-   * Defaults to `0` — the Screen is a pure substrate and lets the
-   * composer choose breathing room. Pass `16` for the typical
-   * "on-glass content sits a bit in from the chamfer" look.
+   * Omitted, the glass uses the standard screen margin
+   * (`--screen-inset`). Pass `0` for full-bleed content (oscilloscope,
+   * CRT canvas).
    */
   padding?: number | string
+  /**
+   * Stretch the Display to fill its parent. When `true`, the root, the
+   * bezel and the glass all claim `flex: 1` so the screen grows to
+   * whatever height the parent flexbox provides. The default (`false`)
+   * lets the Display size to its content.
+   */
+  fill?: boolean
   /**
    * Draw a lit pointer on the glass and hide the system cursor over
    * the screen. The drawn pointer copies the real mouse, so clicks
@@ -38,111 +46,139 @@ interface DisplayProps extends HTMLAttributes<HTMLDivElement> {
    */
   cursor?: boolean
   /**
-   * Stretch the Display to fill its parent. When `true`, the chassis
-   * and the inner Bezel + Screen all claim `flex: 1` so the screen
-   * grows to whatever height the parent flexbox provides. The default
-   * (`false`) lets the Display size to its content.
-   */
-  fill?: boolean
-  /**
-   * Style overrides for the inner Screen surface. Use for one-off
-   * adjustments not covered by `padding` / `fill` (e.g. flex layout
-   * of on-glass content). Doesn't affect the chrome chassis or bezel.
+   * Style overrides for the glass. Use for one-off adjustments not
+   * covered by `padding` / `fill` (e.g. flex layout of on-glass
+   * content). Doesn't affect the chassis or bezel.
    */
   screenStyle?: CSSProperties
-  /** Extra className for the inner Screen surface. */
+  /** Extra className for the glass. */
   screenClassName?: string
-  /**
-   * Style overrides for the black Bezel ring around the screen.
-   * Rarely needed; `fill` covers the common "stretch to parent" case.
-   */
-  bezelStyle?: CSSProperties
-  /** Extra className for the Bezel. */
-  bezelClassName?: string
 }
 
 /**
- * The canonical OLED display chassis: chrome Lip + black Bezel ring +
- * dark luminous Screen, with optional Header / Footer / Readout slots.
+ * A dark luminous screen. Children should be emitted-light pixels
+ * only (`.screen-row`, `.screen-chip`, `.screen-readout`, …) — nothing
+ * physical goes on the glass; controls sit on the chrome around it.
  *
- * Composition:
- *   1. Outer chrome plate (chrome-raised substrate + Lip class —
- *      the same substrate as Panel, with screen-light effects on
- *      the chrome side of the Lip↔Bezel interface)
- *   2. Optional `header` strip on the chrome, above the screen
- *   3. Black Bezel ring around the screen (paints its own inner
- *      rim-light at the bezel↔screen interface)
- *   4. The Screen — back panel + Spill (theme-tinted bloom) +
- *      Recess depth shading. Holds children + readout.
- *   5. Optional `footer` strip on the chrome, below the screen
+ * Two independent choices shape it:
+ *   - `raised`: a chrome Lip chassis of its own, or recessed straight
+ *     into the host chrome.
+ *   - `bezel`: the glass framed in a black Bezel ring (`.bezel >
+ *     .screen`), or meeting the chrome through its own chamfer
+ *     (`.screen-embedded`).
  *
- * Header / footer / readout slots let composites embed controls on
- * the chrome (header/footer) or float content over the glass
- * (readout) without breaking the visual identity. Nothing physical
- * (chrome, widget chrome) is allowed inside the screen — children
- * should be emitted-light pixels only.
- *
- * The Screen has zero default padding. Use the `padding` prop for
- * the typical "on-glass content sits a bit in from the chamfer"
- * look (e.g. `padding={16}`), or leave it 0 to bleed content to the
- * screen edge (oscilloscope, full-bleed canvas).
+ * Root props (`className`, `style`, handlers, `color`) land on the
+ * outermost element, whichever that is.
  */
 export function Display({
-  className = '',
   children,
-  header,
-  footer,
-  readout,
+  raised = true,
+  bezel = true,
+  color,
   padding,
+  fill = false,
   cursor = false,
-  fill,
   screenStyle,
-  screenClassName = '',
-  bezelStyle,
-  bezelClassName = '',
-  ...rest
+  screenClassName,
+  ...root
 }: DisplayProps) {
-  // Merge ergonomic props (padding, fill) with the screenStyle escape
-  // hatch. Explicit screenStyle entries win — it's the override slot.
-  const mergedScreenStyle: CSSProperties = {
-    ...(padding !== undefined ? { padding } : {}),
-    ...(fill ? { flex: 1 } : {}),
-    ...screenStyle,
+  const rootProps = withStyle(root, { ...colorVar(color), ...stretch(fill) })
+  const glassProps: DivProps = {
+    className: cx('display-glass', screenClassName),
+    style: { ...inset(padding), ...stretch(fill), ...screenStyle },
   }
-  const mergedBezelStyle: CSSProperties = {
-    ...(fill ? { flex: 1 } : {}),
-    ...bezelStyle,
-  }
-  // Same flex on the outer chassis when `fill`, so the Display itself
-  // claims its parent's available space before propagating down.
-  const chassisStyle: CSSProperties | undefined = fill
-    ? { flex: 1, ...rest.style }
-    : rest.style
+  const pane = (outer: DivProps) => (
+    <Pane bezel={bezel} cursor={cursor} outer={outer} glass={glassProps}>
+      {children}
+    </Pane>
+  )
+  return raised ? <Lip {...rootProps}>{pane({ style: stretch(fill) })}</Lip> : pane(rootProps)
+}
+
+/** The raised chrome chassis: Lip class on the chrome-raised substrate. */
+function Lip({ className, children, ...rest }: DivProps) {
   return (
-    <div
-      {...rest}
-      style={chassisStyle}
-      className={`display lip chrome-raised ${className}`}
-    >
+    <div {...rest} className={cx('display lip chrome-raised', className)}>
       <span className="chrome-raised-shadow" aria-hidden="true" />
       <span className="chrome-raised-edge" aria-hidden="true" />
       <span className="chrome-raised-front" aria-hidden="true" />
-      {header && <div className="display-header">{header}</div>}
-      <div
-        className={`bezel ${bezelClassName}`}
-        style={mergedBezelStyle}
-      >
-        <div
-          className={`screen ${screenClassName}`}
-          style={mergedScreenStyle}
-        >
-          <ScreenCursor enabled={cursor}>
-            {readout}
-            {children}
-          </ScreenCursor>
-        </div>
-      </div>
-      {footer && <div className="display-footer">{footer}</div>}
+      {children}
     </div>
   )
 }
+
+interface PaneProps {
+  bezel: boolean
+  cursor: boolean
+  /** Props for the pane's outermost element: the bezel, or the bare glass. */
+  outer: DivProps
+  glass: DivProps
+  children: ReactNode
+}
+
+/** The glass, framed in a Bezel ring or bare with its own chamfer. */
+function Pane({ bezel, cursor, outer, glass, children }: PaneProps) {
+  if (!bezel) {
+    return (
+      <Glass kind="screen-embedded" cursor={cursor} {...merge(glass, outer)}>
+        {children}
+      </Glass>
+    )
+  }
+  return (
+    <div {...outer} className={cx('bezel', outer.className)}>
+      <Glass kind="screen" cursor={cursor} {...glass}>
+        {children}
+      </Glass>
+    </div>
+  )
+}
+
+interface GlassProps extends DivProps {
+  kind: 'screen' | 'screen-embedded'
+  cursor: boolean
+}
+
+/** The glass surface itself, with the cursor plumbing as its content. */
+function Glass({ kind, cursor, className, children, ...rest }: GlassProps) {
+  return (
+    <div {...rest} className={cx(kind, className)}>
+      <ScreenCursor enabled={cursor}>{children}</ScreenCursor>
+    </div>
+  )
+}
+
+const FILL: CSSProperties = { flex: 1 }
+
+function stretch(fill: boolean): CSSProperties | undefined {
+  return fill ? FILL : undefined
+}
+
+function inset(padding: number | string | undefined): CSSProperties | undefined {
+  return padding !== undefined ? { padding } : undefined
+}
+
+function colorVar(color: string | undefined): CSSProperties | undefined {
+  return color !== undefined ? { ['--display-color' as string]: color } : undefined
+}
+
+/** `props` with `base` styles under its own `style`. */
+function withStyle(props: DivProps, base: CSSProperties): DivProps {
+  return { ...props, style: { ...base, ...props.style } }
+}
+
+/** Two prop sets on one element: classes join, `over` wins on style and handlers. */
+function merge(under: DivProps, over: DivProps): DivProps {
+  return {
+    ...under,
+    ...over,
+    className: cx(under.className, over.className),
+    style: { ...under.style, ...over.style },
+  }
+}
+
+function cx(...names: (string | undefined)[]): string {
+  return names.filter(Boolean).join(' ')
+}
+
+export type { DisplayProps }

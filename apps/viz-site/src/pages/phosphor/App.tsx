@@ -46,9 +46,9 @@ function useSharedHue() {
   return [hue, set] as const
 }
 
-/* Inset between the glass edge and on-glass content. Display's screen
-   padding defaults to 0 (full-bleed is the library default), so every
-   example Display with content on the glass opts in to the same inset. */
+/* Inset between the glass edge and on-glass content, for a full-bleed
+   (`padding={0}`) Display that pads its own controls. Matches the
+   standard screen margin. */
 const SCREEN_INSET = 16
 
 /* Glass laid out as a flex column, so on-glass content can claim the
@@ -318,6 +318,7 @@ function DisplayDemo() {
   return (
     <Display
       style={FILL_CELL}
+      padding={0}
       /* `fill` stretches the bezel + glass to the chassis height the
          grid cell gives it; without it the glass stays content-height
          and the chrome below it grows with the row.
@@ -407,7 +408,7 @@ function ModalDemo() {
         <PushButton onClick={() => setOpen(true)}>Open dialog</PushButton>
       </Panel>
       <Modal open={open} onClose={() => setOpen(false)} ariaLabel="Confirm">
-        <Display padding={SCREEN_INSET}>
+        <Display>
           {/* Title on glass — lit-pixel typography, no chip pretense. */}
           <div className="site-modal-title">Confirm action</div>
           <p className="site-modal-body">
@@ -476,7 +477,7 @@ function LeverSwitchDemo() {
  * Each piece is something a consumer would build in their own app
  * with nothing but the published primitives. The SegmentedSurface
  * primitive is what makes the weather pictograms possible — it's
- * the bare two-layer EmbeddedScreen cutout with arbitrary content.
+ * a bare recessed two-layer Display cutout with arbitrary content.
  * ============================================================ */
 
 const GHOST_OFFSET = { x: 1, y: 1 } as const
@@ -632,7 +633,7 @@ const CENTER_ON_GLASS = {
 function ScrubChipDemo() {
   const [picked, setPicked] = useState<Note>('C')
   return (
-    <Display fill padding={SCREEN_INSET} style={FILL_CELL} screenStyle={CENTER_ON_GLASS}>
+    <Display fill style={FILL_CELL} screenStyle={CENTER_ON_GLASS}>
       <ScrubChipRow<Note>
         items={NOTES.map((n) => ({ key: n, lit: n === picked, content: n }))}
         onSelect={(k) => setPicked(k)}
@@ -644,7 +645,7 @@ function ScrubChipDemo() {
 function ChipToggleDemo() {
   const [on, setOn] = useState(true)
   return (
-    <Display fill padding={SCREEN_INSET} style={FILL_CELL} screenStyle={CENTER_ON_GLASS}>
+    <Display fill style={FILL_CELL} screenStyle={CENTER_ON_GLASS}>
       <div
         className="screen-chip-row"
         style={{ justifyContent: 'center' }}
@@ -692,7 +693,7 @@ function HueStripDemo() {
    any plausible composition works. */
 const CODEBLOCK_DEMO_SOURCE = `export function PowerStrip({ on, onToggle }) {
   return (
-    <Display padding={16}>
+    <Display>
       <ChipToggle
         value={on}
         onChange={onToggle}
@@ -740,7 +741,7 @@ import { Display, PushButton } from '@ldlework/phosphor'
 
 export function Example() {
   return (
-    <Display padding={16}>
+    <Display>
       <span className="screen-chip" data-lit="true">
         ON AIR
       </span>

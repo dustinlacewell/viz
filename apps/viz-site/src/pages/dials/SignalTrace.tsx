@@ -48,7 +48,7 @@ export function SignalTrace({ sample }: { sample: (t: number) => number }) {
   )
 
   return (
-    <Display style={{ width: '100%' }}>
+    <Display padding={0} style={{ width: '100%' }}>
       <div className="signal-trace">
         <CrtSurface {...PRESET} passes={passes} stage={stage} />
       </div>

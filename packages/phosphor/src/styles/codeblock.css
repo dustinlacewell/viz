@@ -41,7 +41,7 @@
 
 /* The <pre> (fallback) or <div data-shiki> (highlighted) wrapper
    holding the syntax-highlighted spans. Sits directly on the OLED
-   Screen (which has zero default padding). Small inner padding is
+   Screen (CodeBlock sets the Display's padding to 0). Small inner padding is
    breathing room so the code doesn't touch the chamfer; the Bezel
    ring provides the main visual frame around the code. */
 .codeblock-pre {

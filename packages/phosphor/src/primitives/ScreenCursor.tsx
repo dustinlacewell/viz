@@ -21,8 +21,7 @@ interface ScreenCursorProps {
 
 /**
  * The cursor plumbing of a screen surface. Mount it as the direct
- * content of the screen; Display and EmbeddedScreen do this for their
- * `cursor` prop.
+ * content of the screen; Display does this for its `cursor` prop.
  *
  * When enabled, it follows the mouse over the screen, shares the
  * position with `children` through `useScreenPointer`, and draws a lit

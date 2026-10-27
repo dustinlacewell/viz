@@ -30,7 +30,7 @@ function Chips() {
  */
 export const WithCursor: StoryObj<typeof CrtScreen> = {
   render: () => (
-    <Display padding={16} cursor style={{ width: 420 }}>
+    <Display cursor style={{ width: 420 }}>
       <CrtScreen {...PHOSPHOR_P31} />
       <Chips />
     </Display>
@@ -40,7 +40,7 @@ export const WithCursor: StoryObj<typeof CrtScreen> = {
 /** A long-persistence phosphor: the trail lingers for seconds. */
 export const LongTrail: StoryObj<typeof CrtScreen> = {
   render: () => (
-    <Display padding={16} cursor style={{ width: 420 }}>
+    <Display cursor style={{ width: 420 }}>
       <CrtScreen {...PHOSPHOR_P7} />
       <Chips />
     </Display>

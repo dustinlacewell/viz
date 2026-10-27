@@ -16,13 +16,14 @@
  *                   shading. No rim-light, no chamfer, no opinion about
  *                   what's around it. Composes inside Bezel/Lip.
  *
- *   EmbeddedScreen  Screen + own chamfer recipe. For bare mounting on a
- *                   Panel without a Bezel or Lip. Used by SegmentedDisplay
- *                   and HueStrip.
+ *   .screen-embedded  Screen + own chamfer recipe. For bare mounting on
+ *                   a Panel without a Bezel or Lip. Used by a Display
+ *                   with `bezel={false}`, SegmentedDisplay and HueStrip.
  *
- *   Display         canonical Lip · Bezel · Screen composition with
- *                   optional Header / Footer / Readout slots. Used by
- *                   the OLED display chassis and by CodeBlock.
+ *   Display         the React component. Lip · Bezel · Screen by
+ *                   default; `raised={false}` drops the Lip and
+ *                   `bezel={false}` swaps Bezel · Screen for
+ *                   .screen-embedded. Used by CodeBlock too.
  *
  * Effect recipes (--spill, --recess, --bezel-rim, --lip-catch,
  * --lip-seam, --lip-haze, --embedded-chamfer) live in tokens.css so
@@ -153,8 +154,8 @@
  * Screen decides padding around content.
  *
  * Always used inside a Bezel/Lip (which paint the interface rim
- * effects) or inside an EmbeddedScreen wrapper (which carries the
- * combined chamfer recipe). Never rendered bare in user-facing
+ * effects). For a glass with no Bezel or Lip, use .screen-embedded
+ * (which carries the combined chamfer recipe). Never rendered bare in user-facing
  * positions because there's nothing painting the chrome↔screen
  * interface.
  * ============================================================ */
@@ -177,8 +178,8 @@
  * seam-dark, inner highlight, recess depth) onto the screen's own
  * box-shadow, because no other element is positioned to paint them.
  *
- * Used by SegmentedDisplay (small digit readout) and HueStrip
- * (recessed hue picker slot). Both sit directly on a Panel.
+ * Used by a Display with `bezel={false}`, SegmentedDisplay (small
+ * digit readout) and HueStrip (recessed hue picker slot).
  *
  * Inherits the Screen's Spill + back panel; the --recess from .screen
  * is overridden by --embedded-chamfer (which includes its own inset
@@ -191,73 +192,44 @@
   box-shadow: var(--embedded-chamfer);
 }
 
+/* A Display's glass: the standard margin around its content. Zero
+   specificity, so the `padding` prop (inline) and any class rule
+   (e.g. .segdisplay) win over it. */
+:where(.display-glass) {
+  padding: var(--screen-inset);
+}
+
 /* ============================================================
- * .display — canonical Lip · Bezel · Screen composition.
+ * .display — a raised Display's Lip chassis.
  *
- * Markup:
+ * Markup (with `bezel={false}`, a .screen-embedded replaces the
+ * .bezel > .screen pair):
  *
  *   <div class="display lip chrome-raised">
  *     <span class="chrome-raised-shadow"></span>
  *     <span class="chrome-raised-edge"></span>
  *     <span class="chrome-raised-front"></span>
- *     [optional .display-header]
  *     <div class="bezel">
  *       <div class="screen">
  *         <!-- on-glass content -->
  *       </div>
  *     </div>
- *     [optional .display-footer]
  *   </div>
  *
  * The .display class itself carries no painting — it's the marker
- * class for "this Lip wraps a Bezel + Screen composition." All the
- * actual visual effects are owned by .lip, .bezel, .screen, and the
+ * class for "this Lip wraps a Display's glass." All the actual
+ * visual effects are owned by .lip, .bezel, .screen, and the
  * chrome-raised substrate spans. Kept as a hook in case future
  * variants (.display[data-variant='compact'], etc.) need a place
  * to attach overrides.
  * ============================================================ */
 
 /* ============================================================
- * Header / footer chrome strips on the Display chassis.
- *
- * These live on the chrome plate (Lip), not on the OLED glass —
- * this is where embedded controls (key displays, dropdowns, status
- * rows) mount. position:relative + z-index:3 lifts them above the
- * chrome-raised substrate spans which fill the whole chassis.
- *
- * Each strip centres its content between the bezel and the visible
- * chrome edge (--display-strip-gap on both sides). The outer side
- * cancels the Lip's padding, then corrects for the front face being
- * lifted by --raised-thrust (negative = up), which moves the visible
- * edge up from the box edge.
- * ============================================================ */
-.display-header,
-.display-footer {
-  --display-strip-gap: 8px;
-  position: relative;
-  z-index: 3;
-  padding: var(--display-strip-gap) 8px;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.display-header {
-  margin-top: calc(-1 * var(--lip-padding));
-  padding-top: calc(var(--display-strip-gap) + var(--raised-thrust));
-}
-
-.display-footer {
-  margin-bottom: calc(-1 * var(--lip-padding));
-  padding-bottom: calc(var(--display-strip-gap) - var(--raised-thrust));
-}
-
-/* ============================================================
  * On-screen content classes — lit typography on glass.
  *
  * These compose inside a Screen and assume "emitted-light pixel"
  * visual conventions: small caps, theme-hue, soft glow. They work
- * inside any Screen (a Display's Screen, an EmbeddedScreen, etc.).
+ * inside any glass (a .screen, a .screen-embedded).
  * No chrome anywhere inside.
  * ============================================================ */
 

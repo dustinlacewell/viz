@@ -108,6 +108,10 @@
   --chrome-screen-rim-color: #000;
   --chrome-screen-rim-thickness: 12px;
 
+  /* The margin between a screen's edge and its content. Full-bleed
+     content (a scope, a CRT canvas) sets it to 0. */
+  --screen-inset: 16px;
+
   /*
    * ===== Per-display emitted color =====
    *
@@ -165,7 +169,7 @@
   /*
    * ===== OLED-family named effect recipes =====
    * First-class identities for the cherished visual effects on Screen,
-   * Bezel, Lip, and EmbeddedScreen. Each is a complete `background`
+   * Bezel, Lip, and .screen-embedded. Each is a complete `background`
    * or `box-shadow` expression composed from the color tokens above.
    *
    * The composition rules (which owner paints which effect) are:
@@ -184,8 +188,8 @@
    *              packs these into a unified box-shadow at composition
    *              time so the Bezel inside doesn't have to know)
    *
-   *   EmbeddedScreen = Screen mounted bare on a host (e.g. a Panel)
-   *                    with no Bezel or Lip; carries a single
+   *   .screen-embedded = Screen mounted bare on a host (e.g. a Panel)
+   *                    with no Bezel; carries a single
    *                    chamfer recipe that collapses all four
    *                    interface effects (outer catch, seam-dark,
    *                    inner highlight, recess depth) onto its own
@@ -384,7 +388,7 @@
   --lip-catch: 0 1px 2px 0 var(--chrome-screen-rim-catch);
   --lip-haze:  0 0 16px 2px var(--chrome-screen-haze);
 
-  /* EmbeddedScreen — the four-shadow chamfer stack for a Screen
+  /* .screen-embedded — the four-shadow chamfer stack for a Screen
      mounted bare on a Panel (no Bezel, no Lip). Collapses all four
      interface effects into one box-shadow on the screen element
      itself:

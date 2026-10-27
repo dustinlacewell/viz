@@ -84,7 +84,7 @@ function PlaygroundSection() {
           keeps your patch in this browser; Reset restores the default.
         </p>
         <div className="playground">
-          <Display fill className="playground-display">
+          <Display fill padding={0} className="playground-display">
             <ScopeStage preset={preset} className="playground-stage" />
           </Display>
           <ChromePanel className="playground-chassis">
