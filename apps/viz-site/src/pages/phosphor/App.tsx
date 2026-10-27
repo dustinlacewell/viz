@@ -347,7 +347,7 @@ function DisplayDemo() {
   const noiseVal = NOISE_OPTIONS.find((o) => o.key === noise)?.n ?? 0
   return (
     <Display
-      style={{ width: '100%', height: '100%', boxSizing: 'border-box' }}
+      style={FILL_CELL}
       /* `fill` stretches the bezel + glass to the chassis height the
          grid cell gives it; without it the glass stays content-height
          and the chrome below it grows with the row.
@@ -652,10 +652,11 @@ function SegmentedDisplayDemo() {
 type Note = 'C' | 'D' | 'E' | 'F' | 'G' | 'A' | 'B'
 const NOTES: ReadonlyArray<Note> = ['C', 'D', 'E', 'F', 'G', 'A', 'B']
 
-/* Layout for "Display fills the Panel, content centered on glass":
-   the Panel is a flex parent, `<Display fill>` stretches the chassis
-   + bezel + screen to claim the available space, and screenStyle
-   centres the on-glass content on both axes. */
+/* Layout for "Display fills the demo cell, content centered on glass":
+   FILL_CELL sizes the Display to the cell, `fill` stretches the
+   bezel + screen to match, and screenStyle centres the on-glass
+   content on both axes. */
+const FILL_CELL = { width: '100%', height: '100%', boxSizing: 'border-box' } as const
 const CENTER_ON_GLASS = {
   ...GLASS_COLUMN,
   justifyContent: 'center',
@@ -665,52 +666,32 @@ const CENTER_ON_GLASS = {
 function ScrubChipDemo() {
   const [picked, setPicked] = useState<Note>('C')
   return (
-    <Panel
-      style={{
-        padding: 20,
-        width: '100%',
-        height: '100%',
-        boxSizing: 'border-box',
-        display: 'flex',
-      }}
-    >
-      <Display fill padding={SCREEN_INSET} screenStyle={CENTER_ON_GLASS}>
-        <ScrubChipRow<Note>
-          items={NOTES.map((n) => ({ key: n, lit: n === picked, content: n }))}
-          onSelect={(k) => setPicked(k)}
-        />
-      </Display>
-    </Panel>
+    <Display fill padding={SCREEN_INSET} style={FILL_CELL} screenStyle={CENTER_ON_GLASS}>
+      <ScrubChipRow<Note>
+        items={NOTES.map((n) => ({ key: n, lit: n === picked, content: n }))}
+        onSelect={(k) => setPicked(k)}
+      />
+    </Display>
   )
 }
 
 function ChipToggleDemo() {
   const [on, setOn] = useState(true)
   return (
-    <Panel
-      style={{
-        padding: 20,
-        width: '100%',
-        height: '100%',
-        boxSizing: 'border-box',
-        display: 'flex',
-      }}
-    >
-      <Display fill padding={SCREEN_INSET} screenStyle={CENTER_ON_GLASS}>
-        <div
-          className="screen-chip-row"
-          style={{ justifyContent: 'center' }}
-        >
-          <ChipToggle value={on} onChange={setOn} onLabel="ON" offLabel="OFF" />
-          <ChipToggle
-            value={!on}
-            onChange={(v) => setOn(!v)}
-            onLabel="STANDBY"
-            offLabel="LIVE"
-          />
-        </div>
-      </Display>
-    </Panel>
+    <Display fill padding={SCREEN_INSET} style={FILL_CELL} screenStyle={CENTER_ON_GLASS}>
+      <div
+        className="screen-chip-row"
+        style={{ justifyContent: 'center' }}
+      >
+        <ChipToggle value={on} onChange={setOn} onLabel="ON" offLabel="OFF" />
+        <ChipToggle
+          value={!on}
+          onChange={(v) => setOn(!v)}
+          onLabel="STANDBY"
+          offLabel="LIVE"
+        />
+      </div>
+    </Display>
   )
 }
 
