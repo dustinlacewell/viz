@@ -57,6 +57,8 @@ export interface HeroScopeProps extends Partial<PresetEndpoint> {
   className?: string
   style?: CSSProperties
   noTuning?: boolean
+  /** Render this preset instead of loading one from the endpoint. */
+  preset?: HeroPreset
   beamHz?: number
   /**
    * Per-wave sample budget. Each wave gets this many samples per frame
@@ -85,6 +87,7 @@ export function HeroScope({
   className,
   style,
   noTuning = false,
+  preset: presetProp,
   endpoint = DEFAULT_ENDPOINT.endpoint,
   fallbackUrl = DEFAULT_ENDPOINT.fallbackUrl,
   beamHz,
@@ -97,18 +100,20 @@ export function HeroScope({
     [endpoint, fallbackUrl],
   )
 
-  const [preset, setPreset] = useState<HeroPreset>(makeDefaultPreset)
+  const [loaded, setPreset] = useState<HeroPreset>(makeDefaultPreset)
+  const preset = presetProp ?? loaded
   const [, bump] = useReducer((x: number) => x + 1, 0)
   const handleChange = useCallback(() => bump(), [])
 
   useEffect(() => {
+    if (presetProp) return
     let cancelled = false
     void loadHeroPreset(endpointCfg).then((loaded) => {
       if (cancelled) return
       setPreset(loaded)
     })
     return () => { cancelled = true }
-  }, [endpointCfg])
+  }, [endpointCfg, presetProp])
 
   // ── Wave pumpers + BeamFn ───────────────────────────────────────
   const pumpers = useScopePumpers(preset.waves, beamHz ?? 500_000)

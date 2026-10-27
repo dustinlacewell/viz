@@ -15,6 +15,7 @@ import {
 import { HeroScope } from '../../shared/scope'
 import { DemoRow } from './components/DemoRow'
 import { LabeledDisplay } from './components/LabeledDisplay'
+import { useTunedScope } from './components/useTunedScope'
 import { WeatherGlyph, type WeatherIcon } from './components/WeatherGlyph'
 
 /**
@@ -345,6 +346,7 @@ function DisplayDemo() {
   const [noise, setNoise] = useState<NoiseKey>('low')
   const freqMul = FREQ_OPTIONS.find((o) => o.key === freq)?.mul ?? 1
   const noiseVal = NOISE_OPTIONS.find((o) => o.key === noise)?.n ?? 0
+  const preset = useTunedScope(freqMul, noiseVal)
   return (
     <Display
       style={FILL_CELL}
@@ -366,14 +368,10 @@ function DisplayDemo() {
           inset: 0,
         }}
       >
-        {/* DisplayDemo's chip-driven freq/noise no longer flow into
-            the sweep signal — they only affected the old splat-era
-            generator. The chips remain as a visual demo of on-glass
-            ScrubChipRow; wiring them to override individual wave dials
-            (e.g. by holding refs and mutating fundamental.freq.dial
-            .value) is a follow-up. `noTuning` keeps the dev panel
-            scoped to the hero scope only. */}
-        <HeroScope noTuning />
+        {/* The chips scale every fundamental's freq and set the
+            noise floor. `noTuning` keeps the dev panel scoped to the
+            hero scope only. */}
+        {preset && <HeroScope noTuning preset={preset} />}
       </div>
       <div
         style={{
