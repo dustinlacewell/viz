@@ -1,190 +1,269 @@
 # dials
 
-A parameter machine. An object of named slots; any slot's value can be driven
-by a modulation source whose own parameters are dials, recursively, no depth
-limit. Sample by pulling. Plain numbers out the other side.
-
-The library does not know about time, audio, graphics, React, or what your
-numbers mean. It walks a tree of slots and returns a record of values.
+Values you can modulate. The modulators have values too, and you can modulate
+those, as deep as you like. Read a value and you get a plain number.
 
 ```ts
-import { dial, read, attach, instantiate, lfo } from '@ldlework/dials'
+import { dial, read, sine, perlin1D } from '@ldlework/dials'
 
 const params = {
-  freq: dial(600, { min: 50, max: 3000 }),
-  amp:  dial(0.5, { min: 0,  max: 1    }),
+  freq: dial(2, { min: 0.1, max: 12, step: 0.1 }),
+  // amp rides a sine. The sine's own speed is driven by noise.
+  amp: dial(0.6, {
+    min: 0,
+    max: 1,
+    mod: sine({ freq: dial(1, { mod: perlin1D() }) }),
+    depth: 0.4,
+  }),
 }
 
-attach(params.freq, instantiate(lfo))   // freq now driven by an LFO
-
-const { freq, amp } = read(params, { t: performance.now() / 1000 })
+// Once per frame:
+const { freq, amp } = read(params, { t, dt })
 ```
 
-`read()` returns a shared buffer mutated in place. Destructure or copy; don't
-stash. Zero allocations on the hot path. The stdlib of sources auto-registers
-on import.
+`dial(0.6, ...)` is the value you set. `mod` is the source that moves it.
+`depth` is how far the source moves it, as a fraction of the dial's travel from
+`min` to `max`. `0.4` means up to 0.4 of the way up and 0.4 of the way down,
+stopping at the ends.
+
+The library has no clock. You pass a context, `{ t, dt }` above, and sources
+read what they need from it. `t` is time in seconds. `dt` is seconds since the
+last read. Sources that move over time use `dt`, and fall back to 1/60 without
+it.
+
+`read()` returns one shared object that it fills in again on every call.
+Destructure it or copy it. Do not keep a reference to it.
 
 ---
 
-# Reference
-
-## Types
+## Dials
 
 ```ts
-type Ctx = Record<string, unknown>
+dial(value, options?)             // a number
+typedDial<T>(type, value, options?) // any other value, tagged with a type name
+```
 
-interface DialMeta<T> {
-  label?: string; min?: number; max?: number; step?: number
-  space?: string; hints?: Record<string, unknown>
+Options:
+
+| Option | Meaning |
+|---|---|
+| `min`, `max`, `step` | Range and step. With both `min` and `max`, modulation stays inside the range. |
+| `scale` | `'linear'` (default) or `'log'`. Log needs `min > 0`. |
+| `unit` | Suffix for readouts, such as `'Hz'`. |
+| `label`, `description` | Text for the panel. |
+| `format` | Function that turns the value into display text. |
+| `modulatable` | `false` hides the attach control and refuses a source. |
+| `glidable` | `true` shows the glide control in the panel. |
+| `mod` | A source to attach, such as `sine()`. |
+| `depth` | Modulation depth, 0 to 1. |
+| `mode` | `'center'` (both ways), `'up'` or `'down'`. |
+| `glide` | Seconds. The output eases toward its target instead of jumping. |
+
+If you give `mod` and no `depth`, the depth is `DEFAULT_DEPTH` (0.15).
+
+## Sources
+
+A source turns its own parameters into one number. Call it to make an
+instance. Each parameter takes a number, or a dial.
+
+```ts
+sine()                              // defaults
+sine({ freq: 3 })                   // a number
+sine({ freq: dial(1, { mod: perlin1D() }) }) // a dial, which has its own mod
+```
+
+A number sets the parameter's value. A dial replaces the parameter's range,
+label and so on where it sets them, and brings its own `mod`. Every call makes
+a new instance with its own state.
+
+To drive several slots from one source, attach the same instance to each:
+
+```ts
+const lfo = sine({ freq: 0.5 })
+const params = {
+  x: dial(0, { min: -1, max: 1, mod: lfo }),
+  y: dial(0, { min: -1, max: 1, mod: lfo }),
 }
-
-interface Dial<T>   { kind: 'dial'; value: T; meta: DialMeta<T> }
-interface Slot<T>   { kind: 'slot'; outType: string; dial: Dial<T>
-                      attached: Source<any, T> | null }
-interface Source<P, Out> { kind: 'source'; def: SourceDef<P, Out>
-                           params: { [K in keyof P]: Slot<P[K]> }
-                           body: (p: P, ctx: Ctx) => Out
-                           /* _buf, _keys: internal */ }
-interface SourceDef<P, Out> { kind: 'sourceDef'; name: string; outType: string
-                              params: { [K in keyof P]: { type: string
-                                        makeSlot: () => Slot<P[K]> } }
-                              body:  Body<P,Out> | BodyFactory<P,Out>
-                              stateful: boolean }
-
-type Dials              = Record<string, Slot<unknown>>
-type DialsOut<D extends Dials> = { [K in keyof D]: SlotOut<D[K]> }
-type Body<P, Out>       = (params: P, ctx: Ctx) => Out
-type BodyFactory<P,Out> = () => Body<P, Out>
 ```
 
-## Constructors
+Pass `t` in the context so a shared source moves once per frame, not once per
+slot.
+
+### Built-in sources
+
+All return numbers. They are registered when you import the package.
+
+| Name | Parameters | Output |
+|---|---|---|
+| `sine`, `tri`, `saw` | `freq`, `phase` | -1 to 1 |
+| `square` | `freq`, `duty`, `phase` | -1 or 1 |
+| `whiteNoise` | `seed` | -1 to 1 |
+| `valueNoise`, `perlin1D` | `seed`, `rate` | -1 to 1 |
+| `fbm` | `seed`, `rate`, `octaves`, `lacunarity`, `gain` | -1 to 1 |
+| `brown` | `seed`, `rate` | -1 to 1 |
+| `smooth` | `signal`, `tau` | -1 to 1 |
+| `add`, `mul` | `a`, `b` | -1 to 1 |
+| `lerp` | `a`, `b`, `t` | -1 to 1 |
+| `gate` | `signal`, `closed`, `period`, `lo`, `hi` | -1 to 1 |
+| `phaseGate` | `signal`, `closed`, `lo`, `hi` | -1 to 1 |
+
+`smooth`, `add`, `mul`, `lerp`, `gate` and `phaseGate` take a signal as a
+parameter. Give that parameter its own `mod` to feed it another source.
+`phaseGate` reads `ctx.phase`, a number from 0 to 1 that you supply.
+
+## Make your own source
+
+A source with no memory uses `body`. The body gets the current parameter values
+and the context, and returns a number.
 
 ```ts
-dial(value: number, meta?): Slot<number>
-typedDial<T>(type: string, value: T, meta?): Slot<T>
+import { defineSource, dial, registerSource } from '@ldlework/dials'
 
-defineSource({ name, outType, params, body })          → SourceDef    // stateless
-defineStatefulSource({ name, outType, params, body })  → SourceDef    // body is factory
-
-instantiate(def: SourceDef): Source                     // fresh slots + state
+const clip = defineSource({
+  name: 'clip',
+  description: 'Limits a signal to plus or minus limit.',
+  polarity: 'bipolar',
+  params: {
+    signal: dial(0, { min: -1, max: 1 }),
+    limit: dial(0.5, { min: 0, max: 1 }),
+  },
+  body: ({ signal, limit }) => Math.max(-limit, Math.min(limit, signal)),
+})
 ```
 
-`params` schema:
+A source that remembers things between reads uses `setup` instead. `setup`
+runs once for each instance and returns the body. Variables inside `setup` are
+that instance's state.
 
 ```ts
-{ [paramName]: { type: string, slot: () => Slot<T> } }
+const wave = defineSource({
+  name: 'wave',
+  description: 'A sine wave.',
+  polarity: 'bipolar',
+  params: {
+    freq: dial(1, { min: 0.01, max: 20, scale: 'log', unit: 'Hz' }),
+  },
+  setup: () => {
+    let cycle = 0 // how far through the wave we are, 0 to 1
+    return ({ freq }, ctx) => {
+      const dt = typeof ctx['dt'] === 'number' ? ctx['dt'] : 1 / 60
+      cycle = (cycle + freq * dt) % 1
+      return Math.sin(2 * Math.PI * cycle)
+    }
+  },
+})
+
+wave({ freq: 2 })
 ```
 
-The `slot` thunk runs at every `instantiate()` so each instance gets fresh
-sub-slots. For stateful sources, the body is `() => (p, ctx) => out` — the
-outer fn runs once per instance and the inner closes over per-instance state.
+Rules:
 
-## Registry
+- Give `body` or `setup`, not both.
+- `polarity` is the range the source returns. `'bipolar'` is -1 to 1. `'unipolar'`
+  is 0 to 1. The slot uses it to place the swing around its value.
+- `params` are dials. The body gets their current values as plain numbers, and
+  the types come from `params`.
+- `outType` is `'number'` unless you say otherwise. If the body returns
+  anything else, you must give `outType`.
+- Call `registerSource(wave)` to list the source in the panel's picker. Presets
+  find sources by name through the same list.
+
+A source that returns another type attaches to dials of that type:
 
 ```ts
-registerSource(def)         → def         // idempotent on name
-getSource(name)             → def | undefined
-sourcesForType(outType)     → def[]       // used by the panel picker
-clearRegistry()             → void        // tests / HMR
+const warm = defineSource({
+  name: 'warm',
+  outType: 'rgb',
+  polarity: 'bipolar',
+  body: () => [1, 0.5, 0] as [number, number, number],
+})
+
+const tint = typedDial<[number, number, number]>('rgb', [0, 0, 0], { mod: warm() })
 ```
 
-## Attach
+Only numbers blend with the dial's value. For any other type the source's
+output replaces the value.
+
+## Change things at runtime
+
+These are the calls the panel uses. Use them to build your own controls.
 
 ```ts
-attach(slot, source)        → slot        // throws on outType mismatch
-attachFrom(slot, def)       → source      // instantiate + attach
-detach(slot)                → void        // dial value preserved
+import { attach, detach, setDepth, setMode, setDial, setGlide, sine } from '@ldlework/dials'
+
+const slot = params.amp
+
+const src = attach(slot, sine({ freq: 2 })) // returns the source
+src.params.freq                              // the source's own dials
+setDepth(slot, 0.25)                         // 0 to 1
+setMode(slot, 'up')                          // 'center' | 'up' | 'down'
+setGlide(slot, 0.2)                          // seconds
+setDial(slot, 0.8)                           // the value you set, clamped to min and max
+detach(slot)                                 // the value you set stays
 ```
 
-## Sample
+`attach` throws if the source's `outType` is not the slot's type. Depth, mode
+and glide belong to the slot. They survive `detach` and a later `attach`.
+
+To read one slot or one source without a whole object, use `sampleSlot(slot,
+ctx)` and `sampleSource(source, ctx)`.
+
+## Presets
 
 ```ts
-read(dials, ctx?)           → DialsOut<D> // SHARED buffer; valid until next read()
-sampleSlot(slot, ctx)       → T           // one slot
-sampleSource(source, ctx)   → T           // one source
+import { toJSON, fromJSON } from '@ldlework/dials'
+
+const preset = toJSON(params)      // plain data, safe to JSON.stringify
+fromJSON(params, preset)           // writes it back into params
 ```
 
-## Mutate
+A preset holds values, depth, mode, glide, and which source sits on each slot,
+by name. It does not hold the code: ranges, labels and source definitions stay
+in your code.
 
-```ts
-setDial(slot, value)        → void        // clamps if min/max set and T = number
-```
+On load, a slot that already has the named source keeps it. Only the values
+are applied to it. A slot with no source, or a different one, gets a new
+instance of the registered source with that name. A name that is not
+registered throws. To skip such slots and keep their values, pass
+`{ onMissingSource: 'drop' }` as the third argument.
 
-## Persistence
+Keys missing from the preset keep their defaults. Keys in the preset that
+`params` lacks are ignored.
 
-```ts
-toJSON(dials)               → DialsSnap
-fromJSON(dials, snap)       → void        // throws on missing registered source
-
-type SlotSnap   = { value: unknown; attached?: SourceSnap }
-type SourceSnap = { name: string; params: Record<string, SlotSnap> }
-type DialsSnap  = Record<string, SlotSnap>
-```
-
-Snapshots store dial values and the structure of attached sources by name.
-Source defs and type tags live in code; the named source must be registered
-before `fromJSON()`.
-
-## Standard library (auto-registered)
-
-All produce `number`. Read `ctx.t` (seconds), `ctx.dt` (seconds), or
-`ctx.phase` (`[0,1]`) as noted. Stateful means per-instance closure state.
-
-| Name | Stateful | Reads | Params |
-|---|---|---|---|
-| `const` | no | – | `value` |
-| `sine` | no | `t` | `center, depth, freq, phase` |
-| `lfo` | no | `t` | `center, depth, rate, phase` |
-| `tri` | no | `t` | `center, depth, freq, phase` |
-| `saw` | no | `t` | `center, depth, freq, phase` |
-| `square` | no | `t` | `center, depth, freq, duty, phase` |
-| `whiteNoise` | yes | – | `seed, center, depth` |
-| `valueNoise` | yes | `t` | `seed, center, depth, rate` |
-| `smooth` | yes | `dt` | `signal, tau` |
-| `add` | no | – | `a, b` |
-| `mul` | no | – | `a, b` |
-| `lerp` | no | – | `a, b, t` |
-| `clamp` | no | – | `signal, lo, hi` |
-| `remap` | no | – | `signal, inLo, inHi, outLo, outHi` |
-| `gate` | no | `t` | `signal, closed, period, lo, hi` |
-| `phaseGate` | no | `phase` | `signal, closed, lo, hi` |
+Values go through `JSON.stringify` as they are. For a type that does not
+survive that, such as a class instance, write your own save and load.
 
 ## React panel
 
 ```tsx
 import { Panel, type SlotEditor } from '@ldlework/dials/react'
 
-<Panel dials={params} title="..." editors={{ rgb: MyColorEditor }} />
+<Panel dials={params} title="Controls" editors={{ rgb: MyColorEditor }} />
 ```
 
-Walks the dials object, renders one row per slot. Numeric slots → range +
-number inputs. Non-numeric slots use `editors[outType]` or fall back to
-read-only display. Every slot row has an "↻ modulate…" picker built from
-`sourcesForType(slot.outType)`. Attach → nested sub-panel for the source's
-params, recursively. Detach restores the dial's prior value.
+The panel shows one row per slot. A number gets a slider and a number field.
+Other types use `editors[outType]`, or show read-only. Each row has a picker
+built from `sourcesForType(slot.outType)`. Picking a source opens a nested
+panel for its parameters, and those nest the same way.
 
-Markup is unstyled. Stable hooks:
+`onChange` runs after any edit. `components` replaces any part of the look.
+`actions` replaces how edits are applied, for apps that route edits through
+their own layer.
+
+The default markup has no styles. These attributes are there for your CSS:
 `data-dials-panel`, `data-dials-slot`, `data-dials-attached`,
 `data-dials-source`, `data-dials-number`, `data-dials-readonly`,
-`data-dials-attach`, `data-dials-detach`.
+`data-dials-attach`, `data-dials-depth`, `data-dials-mode`, `data-dials-glide`.
 
-## Performance
+React is an optional peer dependency. The core has no React import.
 
-`read()` and every `sampleSource()` reuse buffers — zero allocations per
-frame. Each dials object's result buffer is cached in a WeakMap, so multiple
-dials objects can coexist without interfering. The returned object is the
-same reference every call; valid until the next `read()` on the same dials
-object.
+## Notes
 
-## Constraints
-
-- One source instance per slot. No DAG sharing. Drive multiple slots from one
-  signal by defining a source and attaching independent instances.
-- No clock, no scheduler, no subscriptions. You drive the frame loop.
-- `ctx` is whatever you pass. Sources read fields by name; missing fields
-  default per-source (typically `0`).
-- Non-numeric dial values pass through `JSON.stringify` as-is; supply your
-  own (de)serializer pair if you use non-JSON-friendly types.
+- The library has no clock and no scheduler. You call `read()` in your own
+  frame loop.
+- `ctx` is whatever object you pass. Sources read fields by name and use a
+  default when one is missing.
+- Reads do not allocate on the hot path.
 
 ## License
 
