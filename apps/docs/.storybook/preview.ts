@@ -4,6 +4,9 @@ import '@ldlework/phosphor-crt/styles.css'
 import './preview.css'
 
 const preview: Preview = {
+  // A Docs page for every component. Each story's JSDoc shows there as
+  // its description.
+  tags: ['autodocs'],
   parameters: {
     layout: 'centered',
     backgrounds: {

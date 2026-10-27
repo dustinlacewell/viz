@@ -249,8 +249,6 @@ built from `sourcesForType(slot.outType)`. Picking a source opens a nested
 panel for its parameters, and those nest the same way.
 
 `onChange` runs after any edit. `components` replaces any part of the look.
-`actions` replaces how edits are applied, for apps that route edits through
-their own layer.
 
 The default markup has no styles. These attributes are there for your CSS:
 `data-dials-panel`, `data-dials-slot`, `data-dials-attached`,
@@ -258,6 +256,48 @@ The default markup has no styles. These attributes are there for your CSS:
 `data-dials-attach`, `data-dials-depth`, `data-dials-mode`, `data-dials-glide`.
 
 React is an optional peer dependency. The core has no React import.
+
+### Host hooks
+
+Three hooks let the app own parts of the panel. They show nothing on
+their own.
+
+`actions` applies every edit the panel makes: set a value, attach a
+source, set depth, mode, or glide. Each call gets the slot's path and the
+slot. Pass only the ones you change. The rest fall back to
+`defaultSlotActions`, which edit the slot in place.
+
+```tsx
+const actions: Partial<SlotActions> = {
+  setValue: (path, slot, v) => {
+    log(path, v)
+    defaultSlotActions.setValue(path, slot, v)
+  },
+}
+<Panel dials={params} actions={actions} />
+```
+
+`liveOverride` gives a slot a live value from outside dials, such as a
+wire in the app. Return a function that reads the value, or `undefined`
+to show the slot's own sample. The knob polls it every frame, so it must
+only read.
+
+```tsx
+const liveOverride: LiveOverride = (path) =>
+  path.join('/') === 'zoom' ? () => wires.zoom.value : undefined
+<Panel dials={params} liveOverride={liveOverride} />
+```
+
+`components.SlotChrome` wraps each slot's editor in app UI. It gets the
+slot's path, the slot, and the editor as `children`. Use it for marks
+such as a MIDI mapping.
+
+```tsx
+function MidiMark({ path, children }: SlotChromeProps) {
+  return <div>{children}{midiMap[path.join('/')] ? '•' : null}</div>
+}
+<Panel dials={params} components={{ SlotChrome: MidiMark }} />
+```
 
 ## Notes
 
