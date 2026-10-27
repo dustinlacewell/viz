@@ -5,7 +5,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dustinlacewell/lightherder.git",
+    "url": "git+https://github.com/dustinlacewell/viz.git",
     "directory": "packages/gl"
   },
   "type": "module",
