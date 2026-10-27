@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import { useEffect, useState } from 'react'
-import { HueStrip, Display, Panel } from '@ldlework/phosphor'
+import { HueStrip, Panel, SegmentedDisplay } from '@ldlework/phosphor'
 
 const meta: Meta<typeof HueStrip> = {
   title: 'Primitives/HueStrip',
@@ -20,17 +20,13 @@ export const Default: StoryObj<typeof HueStrip> = {
       document.documentElement.style.setProperty('--theme-hue', String(hue))
     }, [hue])
     return (
-      <Panel style={{ padding: 20, width: 360 }}>
-        <Display padding={16}>
-          <div className="screen-row">
-            <span className="screen-row-label">Hue</span>
-            <span className="screen-row-readout">
-              H {Math.round(hue).toString().padStart(3, '0')}°
-            </span>
-          </div>
-        </Display>
-        <div style={{ height: 12 }} />
-        <HueStrip hue={hue} onChange={setHue} />
+      <Panel style={{ padding: 20, width: 360, display: 'flex', alignItems: 'center', gap: 14 }}>
+        <SegmentedDisplay style={{ minWidth: '5ch' }}>
+          {Math.round(hue).toString().padStart(3, '0')}
+        </SegmentedDisplay>
+        <div style={{ flex: 1 }}>
+          <HueStrip hue={hue} onChange={setHue} />
+        </div>
       </Panel>
     )
   },

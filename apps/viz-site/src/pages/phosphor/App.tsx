@@ -109,39 +109,10 @@ function FeaturesSection() {
             inside. Everything tints from a single OKLCH hue, so you can
             re-skin the whole library by setting one CSS variable.
           </p>
-          <MetaphorDemo />
+          <HueStripDemo />
         </div>
       </div>
     </section>
-  )
-}
-
-/**
- * One composed demo that shows the metaphor end-to-end:
- *   Panel (chassis)
- *     └─ Display (recessed glass)
- *         └─ HueStrip + readout (lit-pixel control)
- * Dragging the hue strip re-skins the whole page including the
- * chassis it sits on — the single-knob theming is the punchline.
- */
-function MetaphorDemo() {
-  const [hue, setHue] = useSharedHue()
-  return (
-    <Panel style={{ padding: 20 }}>
-      {/* The OLED on top of the chassis displays the current hue;
-          the recessed-glass HueStrip is a chassis-mounted control
-          below it. Same Panel hosts both — that's the metaphor. */}
-      <Display padding={SCREEN_INSET}>
-        <div className="screen-row">
-          <span className="screen-row-label">Hue</span>
-          <span className="screen-row-readout">
-            H {Math.round(hue).toString().padStart(3, '0')}°
-          </span>
-        </div>
-      </Display>
-      <div style={{ height: 12 }} />
-      <HueStrip hue={hue} onChange={setHue} />
-    </Panel>
   )
 }
 
