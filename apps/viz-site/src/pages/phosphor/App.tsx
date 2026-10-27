@@ -721,7 +721,7 @@ function HueStripDemo() {
    any plausible composition works. */
 const CODEBLOCK_DEMO_SOURCE = `export function PowerStrip({ on, onToggle }) {
   return (
-    <Display>
+    <Display padding={16}>
       <ChipToggle
         value={on}
         onChange={onToggle}
@@ -769,7 +769,7 @@ import { Display, PushButton } from '@ldlework/phosphor'
 
 export function Example() {
   return (
-    <Display>
+    <Display padding={16}>
       <span className="screen-chip" data-lit="true">
         ON AIR
       </span>
