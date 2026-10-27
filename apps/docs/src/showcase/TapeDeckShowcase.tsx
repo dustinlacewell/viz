@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { Circle, Play, Square } from 'lucide-react'
 import {
   LeverSwitch,
@@ -24,6 +24,8 @@ const TRACKS: readonly Track[] = [
 
 const ICON = { size: 14, fill: 'currentColor', strokeWidth: 0 } as const
 const LEVEL_FLOOR = -60
+/** Narrow lever modes so the switch fits beside the transport keys. */
+const LEVER_SIZE = { '--lever-w': '64px' } as CSSProperties
 
 /**
  * A pretend tape-deck face — Panel as the chassis, a Display with the
@@ -60,28 +62,34 @@ export function TapeDeckShowcase() {
           </span>
         }
       >
-        <div className="screen-readout">{track.title}</div>
-        <div className="screen-row">
-          <span className="screen-row-label">{track.artist}</span>
-          <span className="screen-row-readout">{formatTime(track.seconds)}</span>
+        <div className="screen-rows">
+          <div className="screen-row">
+            <span className="screen-row-label">{track.title}</span>
+            <span className="screen-row-readout">{formatTime(track.seconds)}</span>
+          </div>
+          <div className="screen-row">
+            <span className="screen-row-label">{track.artist}</span>
+          </div>
         </div>
         <div className="screen-divider" />
-        <div className="screen-chip-row">
-          <span className="screen-chip" data-lit={transport === 'play' ? 'true' : 'false'}>
-            PLAY
-          </span>
-          <span className="screen-chip" data-lit={transport === 'rec' ? 'alt' : 'false'}>
-            REC
-          </span>
-          <span className="screen-chip" data-lit={transport === 'stop' ? 'true' : 'false'}>
-            STOP
-          </span>
-        </div>
-        <div className="screen-row">
-          <span className="screen-row-label">Monitor</span>
-          <span className="screen-row-readout">
-            {monitor === 'left' ? 'TAPE' : 'SOURCE'}
-          </span>
+        <div className="screen-rows">
+          <div className="screen-chip-row">
+            <span className="screen-chip" data-lit={transport === 'play' ? 'true' : 'false'}>
+              PLAY
+            </span>
+            <span className="screen-chip" data-lit={transport === 'rec' ? 'alt' : 'false'}>
+              REC
+            </span>
+            <span className="screen-chip" data-lit={transport === 'stop' ? 'true' : 'false'}>
+              STOP
+            </span>
+          </div>
+          <div className="screen-row">
+            <span className="screen-row-label">Monitor</span>
+            <span className="screen-row-readout">
+              {monitor === 'left' ? 'TAPE' : 'SOURCE'}
+            </span>
+          </div>
         </div>
       </Display>
 
@@ -96,7 +104,13 @@ export function TapeDeckShowcase() {
           <Circle {...ICON} />
         </PushButton>
         <div style={{ flex: 1 }} />
-        <LeverSwitch left="TAPE" right="SRC" position={monitor} onChange={setMonitor} />
+        <LeverSwitch
+          left="TAPE"
+          right="SRC"
+          position={monitor}
+          onChange={setMonitor}
+          style={LEVER_SIZE}
+        />
       </div>
     </Panel>
   )
