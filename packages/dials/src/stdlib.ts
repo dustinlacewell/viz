@@ -22,60 +22,19 @@
  *
  * Stateful sources (the oscillators, `smooth`, the noises, `gate`)
  * hold their state — accumulators, filter memory, RNG cursors
- * — in a closure created at instantiation time. Each `instantiate()`
- * call gets its own state — two instances on different slots never
- * share memory.
+ * — in a closure created by `setup` once per instance. Two instances
+ * on different slots never share memory.
+ *
+ * Param `description`s are the param docstrings, surfaced by the panel
+ * on hover of the param's title; `unit` is the readout suffix ('Hz',
+ * 's'). A param's `label` is set only where it differs from its key.
  */
 
-import type { Ctx, SourceDef } from './core'
+import type { AnySourceDef, Ctx } from './core'
 import { dial } from './dial'
-import {
-  defineSource,
-  defineStatefulSource,
-  registerSource,
-  type ParamSpec,
-} from './source'
+import { defineSource, registerSource } from './source'
 
 // ─── helpers ───────────────────────────────────────────────────────────
-
-/**
- * Convenience for stdlib param defs — every param is a number dial.
- * `description` is the param's docstring, surfaced by the panel on
- * hover of the param's title; `unit` is the readout suffix ('Hz', 's')
- * carried as first-class meta rather than baked into the label.
- */
-function num(
-  value: number,
-  min: number,
-  max: number,
-  label?: string,
-  description?: string,
-  unit?: string,
-): ParamSpec<number> {
-  return {
-    type: 'number',
-    slot: () => dial(value, { min, max, label, description, unit }),
-  }
-}
-
-/**
- * Like `num`, but the slider scales logarithmically — useful for any
- * quantity humans tune in log space (frequencies, time constants).
- * Requires min > 0. `description` / `unit` as in `num`.
- */
-function logNum(
-  value: number,
-  min: number,
-  max: number,
-  label?: string,
-  description?: string,
-  unit?: string,
-): ParamSpec<number> {
-  return {
-    type: 'number',
-    slot: () => dial(value, { min, max, label, description, unit, scale: 'log' }),
-  }
-}
 
 /** Read `ctx.dt` as a number, defaulting to 1/60. */
 function getDt(ctx: Ctx): number {
@@ -104,16 +63,15 @@ function mulberry32(seed: number): () => number {
  * the sine). Accumulating means a live `freq` edit bends the pitch
  * from here on without snapping the current position.
  */
-export const sine = defineStatefulSource({
+export const sine = defineSource({
   name: 'sine',
   description: 'Smooth periodic wave.',
-  outType: 'number',
   polarity: 'bipolar',
   params: {
-    freq:  logNum(1, 0.01, 20, 'freq', 'Cycles per second.', 'Hz'),
-    phase: num(0,  0,      6.2832, 'phase', 'Start offset, in radians.'),
+    freq:  dial(1, { min: 0.01, max: 20, scale: 'log', unit: 'Hz', description: 'Cycles per second.' }),
+    phase: dial(0, { min: 0, max: 6.2832, description: 'Start offset, in radians.' }),
   },
-  body: () => {
+  setup: () => {
     let ph = 0 // phase accumulator, cycles
     return ({ freq, phase }, ctx) => {
       ph = (ph + freq * getDt(ctx)) % 1
@@ -126,16 +84,15 @@ export const sine = defineStatefulSource({
  * `tri` — triangle wave, bipolar [-1, 1]. Phase accumulates by
  * `freq · dt`; `phase` is a cycle offset in [0, 1].
  */
-export const tri = defineStatefulSource({
+export const tri = defineSource({
   name: 'tri',
   description: 'Linear rise and fall.',
-  outType: 'number',
   polarity: 'bipolar',
   params: {
-    freq:  logNum(1, 0.01, 20, 'freq', 'Cycles per second.', 'Hz'),
-    phase: num(0,  0,      1,  'phase', 'Start offset, one full cycle = 1.'),
+    freq:  dial(1, { min: 0.01, max: 20, scale: 'log', unit: 'Hz', description: 'Cycles per second.' }),
+    phase: dial(0, { min: 0, max: 1, description: 'Start offset, one full cycle = 1.' }),
   },
-  body: () => {
+  setup: () => {
     let ph = 0 // phase accumulator, cycles
     return ({ freq, phase }, ctx) => {
       ph = (ph + freq * getDt(ctx)) % 1
@@ -149,16 +106,15 @@ export const tri = defineStatefulSource({
  * `saw` — rising sawtooth, bipolar [-1, 1]. Phase accumulates by
  * `freq · dt`; `phase` is a cycle offset in [0, 1].
  */
-export const saw = defineStatefulSource({
+export const saw = defineSource({
   name: 'saw',
   description: 'Ramps up, snaps back.',
-  outType: 'number',
   polarity: 'bipolar',
   params: {
-    freq:  logNum(1, 0.01, 20, 'freq', 'Cycles per second.', 'Hz'),
-    phase: num(0,  0,      1,  'phase', 'Start offset, one full cycle = 1.'),
+    freq:  dial(1, { min: 0.01, max: 20, scale: 'log', unit: 'Hz', description: 'Cycles per second.' }),
+    phase: dial(0, { min: 0, max: 1, description: 'Start offset, one full cycle = 1.' }),
   },
-  body: () => {
+  setup: () => {
     let ph = 0 // phase accumulator, cycles
     return ({ freq, phase }, ctx) => {
       ph = (ph + freq * getDt(ctx)) % 1
@@ -172,17 +128,16 @@ export const saw = defineStatefulSource({
  * `square` — duty-cycle-able pulse, bipolar {-1, +1}. Phase
  * accumulates by `freq · dt`; `phase` is a cycle offset in [0, 1].
  */
-export const square = defineStatefulSource({
+export const square = defineSource({
   name: 'square',
   description: 'Flips between extremes. Duty sets the split.',
-  outType: 'number',
   polarity: 'bipolar',
   params: {
-    freq:  logNum(1, 0.01, 20, 'freq', 'Cycles per second.', 'Hz'),
-    duty:  num(0.5, 0,      1, 'duty', 'Fraction of each cycle spent high.'),
-    phase: num(0,   0,      1, 'phase', 'Start offset, one full cycle = 1.'),
+    freq:  dial(1, { min: 0.01, max: 20, scale: 'log', unit: 'Hz', description: 'Cycles per second.' }),
+    duty:  dial(0.5, { min: 0, max: 1, description: 'Fraction of each cycle spent high.' }),
+    phase: dial(0, { min: 0, max: 1, description: 'Start offset, one full cycle = 1.' }),
   },
-  body: () => {
+  setup: () => {
     let ph = 0 // phase accumulator, cycles
     return ({ freq, duty, phase }, ctx) => {
       ph = (ph + freq * getDt(ctx)) % 1
@@ -196,18 +151,16 @@ export const square = defineStatefulSource({
 
 /**
  * `whiteNoise` — uniform random, bipolar [-1, 1). Seeded; each
- * `instantiate` gets its own RNG stream. Body is a factory so
- * per-instance RNG state is isolated.
+ * instance gets its own RNG stream from `setup`.
  */
-export const whiteNoise = defineStatefulSource({
+export const whiteNoise = defineSource({
   name: 'whiteNoise',
   description: 'A new random value every sample.',
-  outType: 'number',
   polarity: 'bipolar',
   params: {
-    seed: num(1, 1, 9999, 'seed', 'Picks the random stream — same seed, same noise.'),
+    seed: dial(1, { min: 1, max: 9999, description: 'Picks the random stream — same seed, same noise.' }),
   },
-  body: () => {
+  setup: () => {
     let rng: (() => number) | null = null
     let lastSeed = NaN
     return ({ seed }) => {
@@ -228,16 +181,15 @@ export const whiteNoise = defineStatefulSource({
  * by `rate · dt` each frame, so a live `rate` edit changes the drift
  * speed from here on without teleporting the position.
  */
-export const valueNoise = defineStatefulSource({
+export const valueNoise = defineSource({
   name: 'valueNoise',
   description: 'Random values, smoothly eased between.',
-  outType: 'number',
   polarity: 'bipolar',
   params: {
-    seed: num(1, 1, 9999, 'seed', 'Picks the random stream — same seed, same noise.'),
-    rate: logNum(1, 0.01, 20, 'rate', 'New random points per second.', 'pts/s'),
+    seed: dial(1, { min: 1, max: 9999, description: 'Picks the random stream — same seed, same noise.' }),
+    rate: dial(1, { min: 0.01, max: 20, scale: 'log', unit: 'pts/s', description: 'New random points per second.' }),
   },
-  body: () => {
+  setup: () => {
     const hash = (seed: number, n: number) => {
       const v = Math.sin(seed * 12.9898 + n * 78.233) * 43758.5453
       return v - Math.floor(v)
@@ -289,16 +241,15 @@ function gradient1D(seed: number, i: number): number {
  * sample position accumulates `rate · dt` per frame, so a live `rate`
  * edit changes drift speed without teleporting the position.
  */
-export const perlin1D = defineStatefulSource({
+export const perlin1D = defineSource({
   name: 'perlin1D',
   description: 'Smooth gradient noise.',
-  outType: 'number',
   polarity: 'bipolar',
   params: {
-    seed: num(1, 1, 9999, 'seed', 'Picks the random stream — same seed, same noise.'),
-    rate: logNum(1, 0.01, 20, 'rate', 'How fast the noise drifts.', 'u/s'),
+    seed: dial(1, { min: 1, max: 9999, description: 'Picks the random stream — same seed, same noise.' }),
+    rate: dial(1, { min: 0.01, max: 20, scale: 'log', unit: 'u/s', description: 'How fast the noise drifts.' }),
   },
-  body: () => {
+  setup: () => {
     let x = 0 // position accumulator, units
     return ({ seed, rate }, ctx) => {
       x += rate * getDt(ctx)
@@ -334,19 +285,18 @@ export const perlin1D = defineStatefulSource({
  *   lacunarity frequency multiplier per octave (default 2)
  *   gain       amplitude multiplier per octave (default 0.5)
  */
-export const fbm = defineStatefulSource({
+export const fbm = defineSource({
   name: 'fbm',
   description: 'Layered noise — broad drift with fine detail.',
-  outType: 'number',
   polarity: 'bipolar',
   params: {
-    seed:       num(1, 1,    9999, 'seed', 'Picks the random stream — same seed, same noise.'),
-    rate:       logNum(1, 0.01, 20, 'rate', 'How fast the noise drifts.', 'u/s'),
-    octaves:    num(4,   1,    6,    'octaves', 'How many layers of detail to stack.'),
-    lacunarity: num(2,   1.01, 4,    'lacunarity', 'Frequency step between layers.'),
-    gain:       num(0.5, 0.05, 0.95, 'gain', 'How much each finer layer contributes.'),
+    seed:       dial(1, { min: 1, max: 9999, description: 'Picks the random stream — same seed, same noise.' }),
+    rate:       dial(1, { min: 0.01, max: 20, scale: 'log', unit: 'u/s', description: 'How fast the noise drifts.' }),
+    octaves:    dial(4, { min: 1, max: 6, description: 'How many layers of detail to stack.' }),
+    lacunarity: dial(2, { min: 1.01, max: 4, description: 'Frequency step between layers.' }),
+    gain:       dial(0.5, { min: 0.05, max: 0.95, description: 'How much each finer layer contributes.' }),
   },
-  body: () => {
+  setup: () => {
     let pos = 0 // base position accumulator, units
     return ({ seed, rate, octaves, lacunarity, gain }, ctx) => {
       pos += rate * getDt(ctx)
@@ -393,16 +343,15 @@ export const fbm = defineStatefulSource({
  *
  * Stateful: the walk state lives per-instance.
  */
-export const brown = defineStatefulSource({
+export const brown = defineSource({
   name: 'brown',
   description: "Random walk — wanders, doesn't jump.",
-  outType: 'number',
   polarity: 'bipolar',
   params: {
-    seed: num(1, 1, 9999, 'seed', 'Picks the random stream — same seed, same walk.'),
-    rate: logNum(1, 0.01, 50, 'step rate', 'How fast the walk wanders.'),
+    seed: dial(1, { min: 1, max: 9999, description: 'Picks the random stream — same seed, same walk.' }),
+    rate: dial(1, { min: 0.01, max: 50, scale: 'log', label: 'step rate', description: 'How fast the walk wanders.' }),
   },
-  body: () => {
+  setup: () => {
     let rng: (() => number) | null = null
     let lastSeed = NaN
     let y = 0 // walk position in [-1, 1]
@@ -434,16 +383,15 @@ export const brown = defineStatefulSource({
  * `signal`. Useful for de-jittering modulators. Each instance has its
  * own filter memory.
  */
-export const smooth = defineStatefulSource({
+export const smooth = defineSource({
   name: 'smooth',
   description: 'Lowpasses its input signal.',
-  outType: 'number',
   polarity: 'bipolar',
   params: {
-    signal: num(0, -1, 1, 'signal', 'The input to smooth — modulate it with a source.'),
-    tau:    logNum(0.1, 0.001, 5, 'tau', 'Smoothing time — bigger lags more.', 's'),
+    signal: dial(0, { min: -1, max: 1, description: 'The input to smooth — modulate it with a source.' }),
+    tau:    dial(0.1, { min: 0.001, max: 5, scale: 'log', unit: 's', description: 'Smoothing time — bigger lags more.' }),
   },
-  body: () => {
+  setup: () => {
     let y = NaN
     return ({ signal, tau }, ctx) => {
       if (!Number.isFinite(y)) y = signal
@@ -465,11 +413,10 @@ export const smooth = defineStatefulSource({
 export const add = defineSource({
   name: 'add',
   description: 'Sum of two signals.',
-  outType: 'number',
   polarity: 'bipolar',
   params: {
-    a: num(0, -1, 1, 'a', 'First input — modulate it with a source.'),
-    b: num(0, -1, 1, 'b', 'Second input — modulate it with a source.'),
+    a: dial(0, { min: -1, max: 1, description: 'First input — modulate it with a source.' }),
+    b: dial(0, { min: -1, max: 1, description: 'Second input — modulate it with a source.' }),
   },
   body: ({ a, b }) => a + b,
 })
@@ -482,11 +429,10 @@ export const add = defineSource({
 export const mul = defineSource({
   name: 'mul',
   description: 'Product of two signals.',
-  outType: 'number',
   polarity: 'bipolar',
   params: {
-    a: num(1, -1, 1, 'a', 'First input — modulate it with a source.'),
-    b: num(1, -1, 1, 'b', 'Second input — modulate it with a source.'),
+    a: dial(1, { min: -1, max: 1, description: 'First input — modulate it with a source.' }),
+    b: dial(1, { min: -1, max: 1, description: 'Second input — modulate it with a source.' }),
   },
   body: ({ a, b }) => a * b,
 })
@@ -499,12 +445,11 @@ export const mul = defineSource({
 export const lerp = defineSource({
   name: 'lerp',
   description: 'Blend of two signals by t.',
-  outType: 'number',
   polarity: 'bipolar',
   params: {
-    a: num(0, -1, 1, 'a', 'Value at t=0 — modulate it with a source.'),
-    b: num(1, -1, 1, 'b', 'Value at t=1 — modulate it with a source.'),
-    t: num(0.5, 0, 1, 't', 'Blend position — 0 is all a, 1 is all b.'),
+    a: dial(0, { min: -1, max: 1, description: 'Value at t=0 — modulate it with a source.' }),
+    b: dial(1, { min: -1, max: 1, description: 'Value at t=1 — modulate it with a source.' }),
+    t: dial(0.5, { min: 0, max: 1, description: 'Blend position — 0 is all a, 1 is all b.' }),
   },
   body: ({ a, b, t }) => a + (b - a) * t,
 })
@@ -524,19 +469,18 @@ export const lerp = defineSource({
  * Common use: gate a sub-modulator to only fire during a portion of a
  * cyclic event.
  */
-export const gate = defineStatefulSource({
+export const gate = defineSource({
   name: 'gate',
   description: 'Chops between signal and a floor on a timer.',
-  outType: 'number',
   polarity: 'bipolar',
   params: {
-    signal: num(0, -1, 1, 'signal', 'Passed through while open — modulate it with a source.'),
-    closed: num(0, -1, 1, 'closed value', 'Held while the gate is shut.'),
-    period: num(1, 0.001, 60, 'period', 'Seconds per open/close cycle.', 's'),
-    lo:     num(0, 0, 1, 'open at (frac)', 'Cycle fraction the gate opens at.'),
-    hi:     num(0.5, 0, 1, 'close at (frac)', 'Cycle fraction the gate closes at.'),
+    signal: dial(0, { min: -1, max: 1, description: 'Passed through while open — modulate it with a source.' }),
+    closed: dial(0, { min: -1, max: 1, label: 'closed value', description: 'Held while the gate is shut.' }),
+    period: dial(1, { min: 0.001, max: 60, unit: 's', description: 'Seconds per open/close cycle.' }),
+    lo:     dial(0, { min: 0, max: 1, label: 'open at (frac)', description: 'Cycle fraction the gate opens at.' }),
+    hi:     dial(0.5, { min: 0, max: 1, label: 'close at (frac)', description: 'Cycle fraction the gate closes at.' }),
   },
-  body: () => {
+  setup: () => {
     let ph = 0 // cycle phase accumulator, [0, 1)
     return ({ signal, closed, period, lo, hi }, ctx) => {
       ph = (ph + getDt(ctx) / Math.max(period, 1e-9)) % 1
@@ -555,13 +499,12 @@ export const gate = defineStatefulSource({
 export const phaseGate = defineSource({
   name: 'phaseGate',
   description: 'Passes the signal only inside a phase window.',
-  outType: 'number',
   polarity: 'bipolar',
   params: {
-    signal: num(0, -1, 1, 'signal', 'Passed through inside the window — modulate it with a source.'),
-    closed: num(0, -1, 1, 'closed value', 'Held outside the window.'),
-    lo:     num(0, 0, 1, 'open at', 'Phase the window opens at.'),
-    hi:     num(0.5, 0, 1, 'close at', 'Phase the window closes at.'),
+    signal: dial(0, { min: -1, max: 1, description: 'Passed through inside the window — modulate it with a source.' }),
+    closed: dial(0, { min: -1, max: 1, label: 'closed value', description: 'Held outside the window.' }),
+    lo:     dial(0, { min: 0, max: 1, label: 'open at', description: 'Phase the window opens at.' }),
+    hi:     dial(0.5, { min: 0, max: 1, label: 'close at', description: 'Phase the window closes at.' }),
   },
   body: ({ signal, closed, lo, hi }, ctx) => {
     const p = ctx['phase']
@@ -576,7 +519,7 @@ export const phaseGate = defineSource({
  * Every stdlib source, in one list. Imported by `index.ts` which
  * auto-registers them.
  */
-export const STDLIB: SourceDef<Record<string, unknown>, unknown>[] = [
+export const STDLIB: AnySourceDef[] = [
   sine,
   tri,
   saw,
@@ -592,7 +535,7 @@ export const STDLIB: SourceDef<Record<string, unknown>, unknown>[] = [
   lerp,
   gate,
   phaseGate,
-] as unknown as SourceDef<Record<string, unknown>, unknown>[]
+]
 
 /**
  * Register every stdlib source. Called at package-import time by

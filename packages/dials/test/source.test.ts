@@ -1,35 +1,37 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, expectTypeOf, it } from 'vitest'
 import {
+  attach,
   defineSource,
-  defineStatefulSource,
   dial,
-  instantiate,
   registerSource,
   getSource,
   sourcesForType,
   clearRegistry,
+  sampleSlot,
   sampleSource,
+  sine,
+  typedDial,
+  type Slot,
+  type SourceDef,
 } from '../src'
 
 const add = defineSource({
   name: 'test.add',
-  outType: 'number',
   polarity: 'bipolar',
   params: {
-    a: { type: 'number', slot: () => dial(0) },
-    b: { type: 'number', slot: () => dial(0) },
+    a: dial(0),
+    b: dial(0),
   },
   body: ({ a, b }) => a + b,
 })
 
-const counter = defineStatefulSource({
+const counter = defineSource({
   name: 'test.counter',
-  outType: 'number',
   polarity: 'unipolar',
   params: {
-    step: { type: 'number', slot: () => dial(1) },
+    step: dial(1),
   },
-  body: () => {
+  setup: () => {
     let n = 0
     return ({ step }) => {
       n += step
@@ -39,40 +41,82 @@ const counter = defineStatefulSource({
 })
 
 describe('defineSource()', () => {
-  it('produces a def with the supplied metadata', () => {
+  it('produces a callable def with the supplied metadata', () => {
+    expect(typeof add).toBe('function')
     expect(add.kind).toBe('sourceDef')
     expect(add.name).toBe('test.add')
     expect(add.outType).toBe('number')
     expect(add.polarity).toBe('bipolar')
-    expect(add.stateful).toBe(false)
+    expect(counter.polarity).toBe('unipolar')
   })
 
-  it('marks stateful defs', () => {
-    expect(counter.stateful).toBe(true)
-    expect(counter.polarity).toBe('unipolar')
+  it('carries the stdlib name and kind on the function object', () => {
+    expect(sine.name).toBe('sine')
+    expect(sine.kind).toBe('sourceDef')
+    expect(Object.keys(sine)).toContain('name')
+  })
+
+  it('is frozen', () => {
+    expect(Object.isFrozen(add)).toBe(true)
+    expect(Object.isFrozen(add.params)).toBe(true)
+  })
+
+  it('keeps an explicit outType', () => {
+    const s = defineSource({
+      name: 'test.str',
+      outType: 'string',
+      polarity: 'bipolar',
+      body: () => 'x',
+    })
+    expect(s.outType).toBe('string')
+  })
+
+  it('throws without a body or setup', () => {
+    expect(() =>
+      defineSource({ name: 'test.none', polarity: 'bipolar' } as never),
+    ).toThrow(/test\.none/)
+  })
+
+  it('infers body param types from params', () => {
+    const typed = defineSource({
+      name: 'test.typed',
+      outType: 'text',
+      polarity: 'bipolar',
+      params: { n: dial(0), s: typedDial<string>('text', 'x') },
+      body: (p) => {
+        expectTypeOf(p).toEqualTypeOf<{ n: number; s: string }>()
+        return p.s.repeat(p.n)
+      },
+    })
+    expectTypeOf(typed).toEqualTypeOf<SourceDef<{ n: number; s: string }, string>>()
+    expectTypeOf(typed().params.n).toEqualTypeOf<Slot<number>>()
+    expectTypeOf(sine().params.freq).toEqualTypeOf<Slot<number>>()
   })
 })
 
-describe('instantiate()', () => {
-  it('builds a live source with fresh sub-slots', () => {
-    const s = instantiate(add)
+describe('def()', () => {
+  it('builds a live source with sub-slots cloned from the prototypes', () => {
+    const s = add()
     expect(s.kind).toBe('source')
     expect(s.def).toBe(add)
     expect(s.params.a.kind).toBe('slot')
     expect(s.params.b.kind).toBe('slot')
     expect(s.params.a.dial.value).toBe(0)
+    expect(s.params.a).not.toBe(add.params.a)
+    expect(s.params.a.dial.meta).toBe(add.params.a.dial.meta)
   })
 
   it('gives each instance independent slots', () => {
-    const a = instantiate(add)
-    const b = instantiate(add)
+    const a = add()
+    const b = add()
     a.params.a.dial.value = 5
     expect(b.params.a.dial.value).toBe(0)
+    expect(add.params.a.dial.value).toBe(0)
   })
 
   it('isolates stateful body closures per instance', () => {
-    const c1 = instantiate(counter)
-    const c2 = instantiate(counter)
+    const c1 = counter()
+    const c2 = counter()
     expect(sampleSource(c1, {})).toBe(1)
     expect(sampleSource(c1, {})).toBe(2)
     expect(sampleSource(c2, {})).toBe(1) // c2 not affected by c1
@@ -80,14 +124,34 @@ describe('instantiate()', () => {
   })
 
   it('shares stateless bodies across instances safely', () => {
-    const a1 = instantiate(add)
-    const a2 = instantiate(add)
+    const a1 = add()
+    const a2 = add()
+    expect(a1.body).toBe(a2.body)
     a1.params.a.dial.value = 3
     a1.params.b.dial.value = 4
     a2.params.a.dial.value = 10
     a2.params.b.dial.value = 20
     expect(sampleSource(a1, {})).toBe(7)
     expect(sampleSource(a2, {})).toBe(30)
+  })
+
+  it('gives a prototype-attached source a fresh instance per instance', () => {
+    const step = dial(0)
+    attach(step, counter())
+    const def = defineSource({
+      name: 'test.ridesCounter',
+      polarity: 'bipolar',
+      params: { step },
+      body: ({ step }) => step,
+    })
+    const a = def()
+    const b = def()
+    expect(a.params.step.attached).not.toBe(step.attached)
+    expect(a.params.step.attached).not.toBe(b.params.step.attached)
+    const first = sampleSlot(a.params.step, {})
+    expect(sampleSlot(a.params.step, {})).not.toBe(first)
+    // b's counter has not advanced with a's.
+    expect(sampleSlot(b.params.step, {})).toBe(first)
   })
 })
 
@@ -110,7 +174,6 @@ describe('registry', () => {
       name: 'test.s',
       outType: 'string',
       polarity: 'bipolar',
-      params: {},
       body: () => 'x',
     })
     registerSource(stringy)
@@ -124,9 +187,7 @@ describe('registry', () => {
     registerSource(add)
     const replacement = defineSource({
       name: 'test.add', // same name
-      outType: 'number',
       polarity: 'bipolar',
-      params: {},
       body: () => 999,
     })
     registerSource(replacement)
@@ -136,7 +197,7 @@ describe('registry', () => {
 
 describe('stateful per-tick guard', () => {
   it('advances once per tick — repeated samples at the same t are cached', () => {
-    const c = instantiate(counter)
+    const c = counter()
     expect(sampleSource(c, { t: 0, dt: 1 })).toBe(1)
     expect(sampleSource(c, { t: 0, dt: 1 })).toBe(1) // no re-advance
     expect(sampleSource(c, { t: 1, dt: 1 })).toBe(2)
@@ -144,7 +205,7 @@ describe('stateful per-tick guard', () => {
   })
 
   it('keeps advancing per call when ctx has no numeric t', () => {
-    const c = instantiate(counter)
+    const c = counter()
     expect(sampleSource(c, {})).toBe(1)
     expect(sampleSource(c, {})).toBe(2)
   })

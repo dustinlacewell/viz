@@ -3,7 +3,6 @@ import {
   attach,
   defineSource,
   dial,
-  instantiate,
   read,
   sampleSlot,
   setDepth,
@@ -35,25 +34,21 @@ function attachAt<T>(
 
 const passThrough = defineSource({
   name: 'test.passThrough',
-  outType: 'number',
   polarity: 'bipolar',
-  params: { x: { type: 'number', slot: () => dial(0) } },
+  params: { x: dial(0) },
   body: ({ x }) => x,
 })
 
 const uniPassThrough = defineSource({
   name: 'test.uniPassThrough',
-  outType: 'number',
   polarity: 'unipolar',
-  params: { x: { type: 'number', slot: () => dial(0) } },
+  params: { x: dial(0) },
   body: ({ x }) => x,
 })
 
 const fromCtx = defineSource({
   name: 'test.fromCtx',
-  outType: 'number',
   polarity: 'bipolar',
-  params: {},
   body: (_, ctx) => (ctx.t as number) ?? -1,
 })
 
@@ -61,20 +56,19 @@ const strSrc = defineSource({
   name: 'test.str',
   outType: 'str',
   polarity: 'bipolar',
-  params: {},
   body: () => 'from-source',
 })
 
 /** Instantiate passThrough with its `x` sub-dial preset to `v`. */
 function signal(v: number) {
-  const src = instantiate(passThrough)
+  const src = passThrough()
   src.params.x.dial.value = v
   return src
 }
 
 /** A unipolar source emitting the constant `v`. */
 function uniSignal(v: number) {
-  const src = instantiate(uniPassThrough)
+  const src = uniPassThrough()
   src.params.x.dial.value = v
   return src
 }
@@ -87,7 +81,7 @@ describe('read()', () => {
 
   it('passes ctx through to sources', () => {
     const params = { now: dial(0) }
-    attachAt(params.now, instantiate(fromCtx), 1)
+    attachAt(params.now, fromCtx(), 1)
     expect(read(params, { t: 99 }).now).toBe(99)
   })
 
@@ -223,7 +217,7 @@ describe('combine semantics', () => {
 
   it('replaces (not combines) for non-numeric outputs', () => {
     const s = typedDial<string>('str', 'base')
-    attach(s, instantiate(strSrc))
+    attach(s, strSrc())
     expect(sampleSlot(s, {})).toBe('from-source')
   })
 
@@ -292,8 +286,8 @@ describe('nested modulation', () => {
   it('resolves a depth-2 chain', () => {
     // outer.x ← passThrough → inner.x ← 5. Sub-slots have no range
     // metadata, so at depth 1 each layer is base(0) + 1·signal.
-    const outer = instantiate(passThrough)
-    const inner = instantiate(passThrough)
+    const outer = passThrough()
+    const inner = passThrough()
     inner.params.x.dial.value = 5
     attachAt(outer.params.x, inner, 1)
     expect(sampleSlot(outer.params.x, {})).toBe(5)
@@ -302,11 +296,11 @@ describe('nested modulation', () => {
   it('resolves a depth-5 chain', () => {
     // dial 9 wrapped 5 levels deep through passThrough at depth 1
     const layers = [
-      instantiate(passThrough),
-      instantiate(passThrough),
-      instantiate(passThrough),
-      instantiate(passThrough),
-      instantiate(passThrough),
+      passThrough(),
+      passThrough(),
+      passThrough(),
+      passThrough(),
+      passThrough(),
     ]
     layers[4]!.params.x.dial.value = 9
     for (let i = 0; i < 4; i++) attachAt(layers[i]!.params.x, layers[i + 1]!, 1)
@@ -314,8 +308,8 @@ describe('nested modulation', () => {
   })
 
   it('mutation at the deepest leaf propagates upward', () => {
-    const a = instantiate(passThrough)
-    const b = instantiate(passThrough)
+    const a = passThrough()
+    const b = passThrough()
     attachAt(a.params.x, b, 1)
     b.params.x.dial.value = 1
     expect(sampleSlot(a.params.x, {})).toBe(1)
@@ -325,7 +319,7 @@ describe('nested modulation', () => {
 
   it('sub-slot params combine with their own base value', () => {
     // The modulated sub-slot's dial stays live: base 10 + 0.5·4 = 12.
-    const outer = instantiate(passThrough)
+    const outer = passThrough()
     outer.params.x.dial.value = 10
     attachAt(outer.params.x, signal(4), 0.5)
     expect(sampleSlot(outer.params.x, {})).toBeCloseTo(12)

@@ -115,24 +115,27 @@ export interface Dial<T> {
  * A source body — pure function from resolved params + ctx to output.
  *
  * Stateless sources supply this directly. Stateful sources (filters,
- * integrators, seeded RNG) supply a `BodyFactory` instead — it runs
- * once per instantiation and closes over per-instance mutable state.
+ * integrators, seeded RNG) supply a `setup` instead — it runs once per
+ * instance and returns a body closing over per-instance mutable state.
  */
-export type Body<Params extends Record<string, unknown>, Out> = (
-  params: Params,
-  ctx: Ctx,
-) => Out
+export type Body<Params, Out> = (params: Params, ctx: Ctx) => Out
 
 /**
- * A factory that, when invoked at `instantiate()` time, returns a
- * fresh body closure.
+ * A source's normalized emission range: `'bipolar'` emits in `[-1, 1]`,
+ * `'unipolar'` in `[0, 1]`.
  */
-export type BodyFactory<Params extends Record<string, unknown>, Out> = () => Body<
-  Params,
-  Out
->
+export type Polarity = 'bipolar' | 'unipolar'
 
+/** The resolved param record a source body receives, from its param slots. */
+export type ParamsOf<S> = { [K in keyof S]: SlotOut<S[K]> }
+
+/**
+ * A source definition. Callable: `def()` builds a live `Source` with its
+ * own fresh param slots (cloned from `params`) and, for stateful
+ * sources, its own body closure.
+ */
 export interface SourceDef<Params extends Record<string, unknown>, Out> {
+  (): Source<Params, Out>
   readonly kind: 'sourceDef'
   /** Globally unique name used for serialization and the picker. */
   readonly name: string
@@ -147,26 +150,21 @@ export interface SourceDef<Params extends Record<string, unknown>, Out> {
    * math's expectations — a bipolar signal swings the slot both ways
    * around its base value; a unipolar one pushes only upward.
    */
-  readonly polarity: 'bipolar' | 'unipolar'
+  readonly polarity: Polarity
   /**
-   * Per-parameter defaults. Each entry is a recipe for the *initial*
-   * sub-slot when this source is selected. The thunk gives each
-   * instantiation its own fresh slots.
+   * Prototype param slots. Each instance gets a deep clone of every
+   * prototype (`cloneSlot`), so instances never share slot state.
+   * Prototypes are never sampled.
    */
-  readonly params: {
-    [K in keyof Params]: {
-      type: string
-      makeSlot: () => Slot<Params[K]>
-    }
-  }
-  /**
-   * Either a direct body (stateless) or a factory that builds one
-   * fresh body per instantiation (stateful).
-   */
-  readonly body: Body<Params, Out> | BodyFactory<Params, Out>
-  /** @internal — set to true if `body` is a `BodyFactory`. */
-  readonly stateful: boolean
+  readonly params: { readonly [K in keyof Params]: Slot<Params[K]> }
+  /** @internal — the stateless body, shared by every instance. */
+  readonly body?: Body<Params, Out>
+  /** @internal — the stateful body factory, run once per instance. */
+  readonly setup?: () => Body<Params, Out>
 }
+
+/** A source def with its param and output types erased — for registries and lists. */
+export type AnySourceDef = SourceDef<any, any>
 
 /**
  * A live instance of a source — the def plus per-instance sub-slots
@@ -177,7 +175,7 @@ export interface Source<Params extends Record<string, unknown>, Out> {
   readonly def: SourceDef<Params, Out>
   /** One slot per param. Iteration order matches `def.params`. */
   readonly params: { [K in keyof Params]: Slot<Params[K]> }
-  /** Resolved body (post-factory for stateful defs). */
+  /** Resolved body (the per-instance `setup()` result for stateful defs). */
   readonly body: Body<Params, Out>
   /** @internal — reusable params buffer for the sampler. */
   readonly _buf: Params

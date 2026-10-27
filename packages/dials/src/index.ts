@@ -27,14 +27,16 @@ registerStdlib()
 // ─── Core re-exports ───────────────────────────────────────────────────
 
 export type {
+  AnySourceDef,
   Body,
-  BodyFactory,
   Ctx,
   Dial,
   DialMeta,
   Dials,
   DialsOut,
   ModMode,
+  ParamsOf,
+  Polarity,
   Slot,
   SlotOut,
   Source,
@@ -45,19 +47,12 @@ export { dial, typedDial, setDial, setGlide, rebaseSlot, slotFromDial } from './
 
 export {
   defineSource,
-  defineStatefulSource,
-  instantiate,
   registerSource,
   getSource,
   sourcesForType,
   clearRegistry,
 } from './source'
-export type {
-  DefineSourceArgs,
-  DefineStatefulSourceArgs,
-  ParamSpec,
-  ParamsSpec,
-} from './source'
+export type { SourceSpec } from './source'
 
 export {
   attach,
@@ -76,7 +71,8 @@ export { read, sampleSlot, sampleSource } from './sample'
 export { toJSON, fromJSON } from './json'
 export type { SlotSnap, SourceSnap, DialsSnap } from './json'
 
-export { cloneSlot, cloneDials, adoptBody } from './clone'
+export { cloneSlot } from './instance'
+export { cloneDials, adoptBody } from './clone'
 
 export { loadDials, saveDials } from './network'
 export type { DialsEndpoint } from './network'

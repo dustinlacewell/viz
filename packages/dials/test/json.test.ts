@@ -5,7 +5,6 @@ import {
   defineSource,
   dial,
   fromJSON,
-  instantiate,
   read,
   registerSource,
   registerStdlib,
@@ -43,7 +42,7 @@ describe('toJSON()', () => {
 
   it('snapshots an attached source with slot depth/mode and sub-slot values', () => {
     const d = { freq: dial(600) }
-    const src = instantiate(sine)
+    const src = sine()
     src.params.freq.dial.value = 0.3
     src.params.phase.dial.value = 0
     attach(d.freq, src)
@@ -67,8 +66,8 @@ describe('toJSON()', () => {
 
   it('snapshots nested modulation (depth-2)', () => {
     const d = { freq: dial(600) }
-    const outer = instantiate(sine)
-    const inner = instantiate(sine)
+    const outer = sine()
+    const inner = sine()
     attach(d.freq, outer)
     attach(outer.params.freq, inner)
     setDepth(outer.params.freq, 0.2)
@@ -90,7 +89,7 @@ describe('fromJSON()', () => {
 
   it('round-trips an attached source with its slot-level depth', () => {
     const d = { freq: dial(600) }
-    const src = instantiate(sine)
+    const src = sine()
     src.params.freq.dial.value = 0.5
     src.params.phase.dial.value = 1.5
     attach(d.freq, src)
@@ -135,7 +134,7 @@ describe('fromJSON()', () => {
 
   it('round-trips the slot-level modulation mode', () => {
     const d = { freq: dial(600) }
-    const src = instantiate(sine)
+    const src = sine()
     attach(d.freq, src)
     setMode(d.freq, 'down')
     setDepth(d.freq, 0.3)
@@ -189,7 +188,7 @@ describe('fromJSON()', () => {
 
   it('detaches when the snapshot has no attached field', () => {
     const d = { freq: dial(600) }
-    attach(d.freq, instantiate(sine))
+    attach(d.freq, sine())
     fromJSON(d, { freq: { value: 600 } })
     expect(d.freq.attached).toBeNull()
   })
@@ -218,7 +217,7 @@ describe('fromJSON()', () => {
 
   it('survives JSON.stringify / JSON.parse', () => {
     const d = { freq: dial(600) }
-    const src = instantiate(sine)
+    const src = sine()
     src.params.freq.dial.value = 6.33
     attach(d.freq, src)
     setDepth(d.freq, 0.6)
@@ -269,14 +268,13 @@ describe('custom registered source', () => {
   it('round-trips when registered', () => {
     const custom = defineSource({
       name: 'test.custom',
-      outType: 'number',
       polarity: 'bipolar',
-      params: { v: { type: 'number', slot: () => dial(0) } },
+      params: { v: dial(0) },
       body: ({ v }) => v,
     })
     registerSource(custom)
     const d = { x: dial(0) }
-    attach(d.x, instantiate(custom))
+    attach(d.x, custom())
     d.x.attached!.params.v.dial.value = 13
     const snap = toJSON(d)
     const fresh = { x: dial(0) }

@@ -19,7 +19,7 @@
  */
 
 import type { ModMode, Slot, Source, SourceDef } from './core'
-import { eraseSource, instantiate } from './source'
+import { eraseSource } from './source'
 
 /** Default modulation half-width in knob-travel space. */
 export const DEFAULT_DEPTH = 0.15
@@ -66,7 +66,7 @@ export function attachFrom<P extends Record<string, unknown>, T>(
     )
   }
   if (slot.modDepth === 0) slot.modDepth = DEFAULT_DEPTH
-  const src = instantiate(def)
+  const src = def()
   slot.attached = eraseSource(src)
   return src
 }

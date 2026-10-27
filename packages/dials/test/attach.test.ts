@@ -6,7 +6,6 @@ import {
   defineSource,
   detach,
   dial,
-  instantiate,
   sampleSlot,
   setDepth,
   setMode,
@@ -17,17 +16,13 @@ import {
 
 const k1 = defineSource({
   name: 'test.k1',
-  outType: 'number',
   polarity: 'bipolar',
-  params: {},
   body: () => 1,
 })
 
 const uni = defineSource({
   name: 'test.uni',
-  outType: 'number',
   polarity: 'unipolar',
-  params: {},
   body: () => 1,
 })
 
@@ -35,14 +30,13 @@ const rgbBlack = defineSource({
   name: 'test.rgbBlack',
   outType: 'rgb',
   polarity: 'bipolar',
-  params: {},
   body: () => [0, 0, 0] as [number, number, number],
 })
 
 describe('attach()', () => {
   it('stores the bare source on the slot', () => {
     const s = dial(7)
-    const src = instantiate(k1)
+    const src = k1()
     attach(s, src)
     expect(s.attached).toBe(src)
   })
@@ -50,21 +44,21 @@ describe('attach()', () => {
   it('leaves modMode alone (attaching a unipolar source does not flip it)', () => {
     const s = dial(7)
     expect(s.modMode).toBe('center')
-    attach(s, instantiate(uni))
+    attach(s, uni())
     expect(s.modMode).toBe('center')
   })
 
   it('seeds modDepth to DEFAULT_DEPTH when the slot depth is 0', () => {
     const s = dial(7)
     expect(s.modDepth).toBe(0)
-    attach(s, instantiate(k1))
+    attach(s, k1())
     expect(s.modDepth).toBe(DEFAULT_DEPTH)
   })
 
   it('respects a pre-set modDepth (does not re-seed)', () => {
     const s = dial(7)
     setDepth(s, 0.4)
-    attach(s, instantiate(k1))
+    attach(s, k1())
     expect(s.modDepth).toBe(0.4)
   })
 
@@ -72,19 +66,19 @@ describe('attach()', () => {
     // No range metadata → value-space combine: base + modDepth·signal.
     const s = dial(7)
     expect(sampleSlot(s, {})).toBe(7)
-    attach(s, instantiate(k1))
+    attach(s, k1())
     setDepth(s, 0.5)
     expect(sampleSlot(s, {})).toBeCloseTo(7.5)
   })
 
   it('throws on outType mismatch', () => {
     const s = dial(0) // 'number'
-    expect(() => attach(s, instantiate(rgbBlack) as never)).toThrow(/outType|number|rgb/i)
+    expect(() => attach(s, rgbBlack() as never)).toThrow(/outType|number|rgb/i)
   })
 
   it('returns the slot for chaining', () => {
     const s = dial(0)
-    expect(attach(s, instantiate(k1))).toBe(s)
+    expect(attach(s, k1())).toBe(s)
   })
 })
 
@@ -152,7 +146,7 @@ describe('mode', () => {
 
   it('is untouched by attaching any source (unipolar included)', () => {
     const s = dial(0)
-    attach(s, instantiate(uni))
+    attach(s, uni())
     expect(s.modMode).toBe('center')
     const t = dial(0)
     attachFrom(t, uni)
@@ -190,7 +184,7 @@ describe('mode', () => {
 describe('detach()', () => {
   it('drops the attachment and reveals the unmodulated dial value', () => {
     const s = dial(7)
-    attach(s, instantiate(k1))
+    attach(s, k1())
     setDepth(s, 0.5)
     expect(sampleSlot(s, {})).toBeCloseTo(7.5)
     detach(s)
@@ -201,7 +195,7 @@ describe('detach()', () => {
   it('preserves the dial value across attach/detach cycles', () => {
     const s = dial(7)
     s.dial.value = 99
-    attach(s, instantiate(k1))
+    attach(s, k1())
     detach(s)
     expect(s.dial.value).toBe(99)
   })
@@ -225,14 +219,14 @@ describe('attachFrom() typing', () => {
 
   it('attach() takes a typed instance without a cast', () => {
     const s = dial(0.5, { min: 0, max: 1 })
-    expect(attach(s, instantiate(sine))).toBe(s)
+    expect(attach(s, sine())).toBe(s)
   })
 })
 
 describe('typed dial attach', () => {
   it('accepts a source whose outType matches (non-numeric → replace)', () => {
     const s = typedDial<[number, number, number]>('rgb', [1, 1, 1])
-    attach(s, instantiate(rgbBlack))
+    attach(s, rgbBlack())
     expect(sampleSlot(s, {})).toEqual([0, 0, 0])
   })
 })

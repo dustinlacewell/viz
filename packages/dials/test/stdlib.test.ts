@@ -4,7 +4,6 @@ import {
   brown,
   fbm,
   gate,
-  instantiate,
   lerp,
   mul,
   perlin1D,
@@ -17,15 +16,16 @@ import {
   tri,
   valueNoise,
   whiteNoise,
+  type AnySourceDef,
 } from '../src'
 
 // Tiny helper: build, set params, sample once.
 function once<T>(
-  def: Parameters<typeof instantiate>[0],
+  def: AnySourceDef,
   paramOverrides: Record<string, number>,
   ctx: Record<string, unknown> = {},
 ): T {
-  const s = instantiate(def)
+  const s = def()
   for (const [k, v] of Object.entries(paramOverrides)) {
     ;(s.params as Record<string, { dial: { value: number } }>)[k]!.dial.value = v
   }
@@ -44,7 +44,7 @@ describe('sine', () => {
   })
 
   it('troughs at -1 three-quarters of a cycle in', () => {
-    const s = instantiate(sine)
+    const s = sine()
     s.params.freq.dial.value = 1
     sampleSource(s, { dt: 0.75 }) // phase 0.75 → sin(3π/2) = -1
     expect(sampleSource(s, { dt: 0 })).toBeCloseTo(-1)
@@ -56,7 +56,7 @@ describe('sine', () => {
   })
 
   it('stays within [-1, 1]', () => {
-    const s = instantiate(sine)
+    const s = sine()
     s.params.freq.dial.value = 3
     for (let i = 0; i < 100; i++) {
       const v = sampleSource(s, { dt: 0.037 }) as number
@@ -70,7 +70,7 @@ describe('sine', () => {
     // sample must stay near the previous one — the accumulated phase is
     // preserved, only the slope changes. (Pre-fix, absolute-t rescaling
     // would teleport the phase to freq·t and snap the output.)
-    const s = instantiate(sine)
+    const s = sine()
     s.params.freq.dial.value = 1
     const dt = 1 / 60
     let prev = 0
@@ -103,7 +103,7 @@ describe('tri', () => {
   })
 
   it('stays within [-1, 1]', () => {
-    const s = instantiate(tri)
+    const s = tri()
     s.params.freq.dial.value = 2
     for (let i = 0; i < 100; i++) {
       const v = sampleSource(s, { dt: 0.041 }) as number
@@ -113,7 +113,7 @@ describe('tri', () => {
   })
 
   it('phase is continuous across a live freq change (no snap)', () => {
-    const s = instantiate(tri)
+    const s = tri()
     s.params.freq.dial.value = 1
     const dt = 1 / 60
     let prev = 0
@@ -142,7 +142,7 @@ describe('saw', () => {
   })
 
   it('phase is continuous across a live freq change (no snap)', () => {
-    const s = instantiate(saw)
+    const s = saw()
     s.params.freq.dial.value = 1
     const dt = 1 / 60
     // Land somewhere mid-ramp (away from the wrap discontinuity).
@@ -168,7 +168,7 @@ describe('square', () => {
   })
 
   it('duty ratio: high for `duty` of the cycle when swept finely', () => {
-    const s = instantiate(square)
+    const s = square()
     s.params.freq.dial.value = 1
     s.params.duty.dial.value = 0.3
     const N = 1000
@@ -180,7 +180,7 @@ describe('square', () => {
   it('phase edge is continuous across a live freq change (no false flip)', () => {
     // Sitting inside the high region, a freq change must not jump the
     // phase across the duty edge on the next small step.
-    const s = instantiate(square)
+    const s = square()
     s.params.freq.dial.value = 1
     s.params.duty.dial.value = 0.5
     const dt = 1 / 240
@@ -194,7 +194,7 @@ describe('square', () => {
 
 describe('whiteNoise', () => {
   it('produces values inside [-1, 1]', () => {
-    const inst = instantiate(whiteNoise)
+    const inst = whiteNoise()
     inst.params.seed.dial.value = 42
     for (let i = 0; i < 100; i++) {
       const v = sampleSource(inst, {})
@@ -204,8 +204,8 @@ describe('whiteNoise', () => {
   })
 
   it('two instances with the same seed produce the same sequence', () => {
-    const a = instantiate(whiteNoise)
-    const b = instantiate(whiteNoise)
+    const a = whiteNoise()
+    const b = whiteNoise()
     a.params.seed.dial.value = 99
     b.params.seed.dial.value = 99
     for (let i = 0; i < 10; i++) {
@@ -214,8 +214,8 @@ describe('whiteNoise', () => {
   })
 
   it('different seeds produce different sequences', () => {
-    const a = instantiate(whiteNoise)
-    const b = instantiate(whiteNoise)
+    const a = whiteNoise()
+    const b = whiteNoise()
     a.params.seed.dial.value = 1
     b.params.seed.dial.value = 2
     const seqA = [0, 0, 0].map(() => sampleSource(a, {}))
@@ -226,7 +226,7 @@ describe('whiteNoise', () => {
 
 describe('valueNoise', () => {
   it('produces values inside [-1, 1]', () => {
-    const inst = instantiate(valueNoise)
+    const inst = valueNoise()
     inst.params.rate.dial.value = 3
     for (let i = 0; i < 200; i++) {
       const v = sampleSource(inst, { dt: 0.07 })
@@ -236,8 +236,8 @@ describe('valueNoise', () => {
   })
 
   it('is deterministic: same seed + same dt sequence → same outputs', () => {
-    const a = instantiate(valueNoise)
-    const b = instantiate(valueNoise)
+    const a = valueNoise()
+    const b = valueNoise()
     a.params.seed.dial.value = 5
     b.params.seed.dial.value = 5
     for (let i = 0; i < 20; i++) {
@@ -248,7 +248,7 @@ describe('valueNoise', () => {
   })
 
   it('changes smoothly step to step (consecutive samples are close)', () => {
-    const inst = instantiate(valueNoise)
+    const inst = valueNoise()
     inst.params.rate.dial.value = 1
     // Advance to mid-domain, then take a tiny step.
     for (let i = 0; i < 50; i++) sampleSource(inst, { dt: 0.01 })
@@ -262,7 +262,7 @@ describe('valueNoise', () => {
     // sample must stay near the previous — position accumulates, so a
     // rate change only bends the drift speed. (Pre-fix, position =
     // rate·t would teleport and snap the output.)
-    const s = instantiate(valueNoise)
+    const s = valueNoise()
     s.params.rate.dial.value = 1
     const dt = 1 / 60
     let prev = 0
@@ -278,14 +278,14 @@ describe('valueNoise', () => {
 
 describe('smooth', () => {
   it('initializes to first signal value', () => {
-    const s = instantiate(smooth)
+    const s = smooth()
     s.params.signal.dial.value = 0.5
     s.params.tau.dial.value = 0.1
     expect(sampleSource(s, { dt: 1 / 60 })).toBe(0.5)
   })
 
   it('converges toward signal over time', () => {
-    const s = instantiate(smooth)
+    const s = smooth()
     s.params.tau.dial.value = 0.01
     s.params.signal.dial.value = 0
     sampleSource(s, { dt: 1 / 60 }) // y = 0
@@ -334,7 +334,7 @@ describe('gate', () => {
   })
   it('wraps phase across periods', () => {
     // Accumulate to 1.3 → wrapped phase 0.3, inside [0.2, 0.5].
-    const g = instantiate(gate)
+    const g = gate()
     g.params.signal.dial.value = 1
     g.params.closed.dial.value = 0
     g.params.period.dial.value = 1
@@ -347,7 +347,7 @@ describe('gate', () => {
     // Sit open inside the window, then change period. The next small
     // step must not teleport the phase out of the window. (Pre-fix,
     // phase = t/period would jump when period changed.)
-    const g = instantiate(gate)
+    const g = gate()
     g.params.signal.dial.value = 1
     g.params.closed.dial.value = -1
     g.params.period.dial.value = 1
@@ -379,7 +379,7 @@ describe('phaseGate', () => {
 
 describe('perlin1D', () => {
   it('produces values inside [-1, 1]', () => {
-    const inst = instantiate(perlin1D)
+    const inst = perlin1D()
     inst.params.rate.dial.value = 1
     for (let i = 0; i < 100; i++) {
       const v = sampleSource(inst, { dt: 0.1 })
@@ -389,8 +389,8 @@ describe('perlin1D', () => {
   })
 
   it('is deterministic: same seed + same dt sequence → same outputs', () => {
-    const a = instantiate(perlin1D)
-    const b = instantiate(perlin1D)
+    const a = perlin1D()
+    const b = perlin1D()
     a.params.seed.dial.value = 7
     b.params.seed.dial.value = 7
     for (let i = 0; i < 20; i++) {
@@ -401,7 +401,7 @@ describe('perlin1D', () => {
   })
 
   it('is smooth — consecutive samples close together', () => {
-    const inst = instantiate(perlin1D)
+    const inst = perlin1D()
     inst.params.rate.dial.value = 1
     for (let i = 0; i < 5; i++) sampleSource(inst, { dt: 0.1 }) // x = 0.5
     const v1 = sampleSource(inst, { dt: 0 }) as number
@@ -414,7 +414,7 @@ describe('perlin1D', () => {
     // weighted by f=0), so the signal at the integer is exactly the
     // bipolar midpoint: 0. Accumulate exactly to x = 3 via three dt=1
     // steps at rate 1.
-    const inst = instantiate(perlin1D)
+    const inst = perlin1D()
     inst.params.rate.dial.value = 1
     let v = 0
     for (let i = 0; i < 3; i++) v = sampleSource(inst, { dt: 1 }) as number
@@ -425,7 +425,7 @@ describe('perlin1D', () => {
     // 1D perlin can't theoretically reach the exact extremes (gradient
     // alignment is rare), but over a long range it should cover most
     // of the signal range — both bottom and top.
-    const inst = instantiate(perlin1D)
+    const inst = perlin1D()
     inst.params.seed.dial.value = 1
     inst.params.rate.dial.value = 1
     let min = Infinity, max = -Infinity
@@ -441,7 +441,7 @@ describe('perlin1D', () => {
   })
 
   it('position is continuous across a live rate change (no teleport)', () => {
-    const s = instantiate(perlin1D)
+    const s = perlin1D()
     s.params.seed.dial.value = 1
     s.params.rate.dial.value = 1
     const dt = 1 / 60
@@ -457,7 +457,7 @@ describe('perlin1D', () => {
 
 describe('fbm', () => {
   it('produces values inside [-1, 1]', () => {
-    const inst = instantiate(fbm)
+    const inst = fbm()
     inst.params.rate.dial.value = 1
     inst.params.octaves.dial.value = 4
     for (let i = 0; i < 100; i++) {
@@ -468,8 +468,8 @@ describe('fbm', () => {
   })
 
   it('is deterministic: same seed + same dt sequence → same outputs', () => {
-    const a = instantiate(fbm)
-    const b = instantiate(fbm)
+    const a = fbm()
+    const b = fbm()
     a.params.seed.dial.value = 13
     b.params.seed.dial.value = 13
     for (let i = 0; i < 20; i++) {
@@ -480,8 +480,8 @@ describe('fbm', () => {
   })
 
   it('more octaves produces a different (higher-detail) trajectory', () => {
-    const a = instantiate(fbm)
-    const b = instantiate(fbm)
+    const a = fbm()
+    const b = fbm()
     a.params.seed.dial.value = 1; a.params.octaves.dial.value = 1
     b.params.seed.dial.value = 1; b.params.octaves.dial.value = 5
     // At least one sample should differ — single-octave is just
@@ -497,7 +497,7 @@ describe('fbm', () => {
   })
 
   it('output spans a meaningful fraction of [-1, 1] over many samples', () => {
-    const inst = instantiate(fbm)
+    const inst = fbm()
     inst.params.seed.dial.value = 1
     inst.params.rate.dial.value = 1
     inst.params.octaves.dial.value = 4
@@ -512,7 +512,7 @@ describe('fbm', () => {
   })
 
   it('position is continuous across a live rate change (no teleport)', () => {
-    const s = instantiate(fbm)
+    const s = fbm()
     s.params.seed.dial.value = 1
     s.params.rate.dial.value = 1
     s.params.octaves.dial.value = 4
@@ -529,7 +529,7 @@ describe('fbm', () => {
 
 describe('brown', () => {
   it('produces values inside [-1, 1]', () => {
-    const inst = instantiate(brown)
+    const inst = brown()
     inst.params.rate.dial.value = 5
     for (let i = 0; i < 200; i++) {
       const v = sampleSource(inst, { dt: 1 / 60 })
@@ -539,8 +539,8 @@ describe('brown', () => {
   })
 
   it('two instances with same seed produce same walk', () => {
-    const a = instantiate(brown)
-    const b = instantiate(brown)
+    const a = brown()
+    const b = brown()
     a.params.seed.dial.value = 42
     b.params.seed.dial.value = 42
     for (let i = 0; i < 50; i++) {
@@ -551,8 +551,8 @@ describe('brown', () => {
   })
 
   it('two instances accumulate independently', () => {
-    const a = instantiate(brown)
-    const b = instantiate(brown)
+    const a = brown()
+    const b = brown()
     for (let i = 0; i < 100; i++) sampleSource(a, { dt: 1 / 60 })
     // b at sample 1 should not match a at sample 101
     const va = sampleSource(a, { dt: 1 / 60 })
