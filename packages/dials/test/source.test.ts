@@ -179,6 +179,14 @@ describe('def(args)', () => {
     expect(freq.modDepth).toBe(f.modDepth)
   })
 
+  it('a dial with a construction-time mod keeps the prototype meta and the inner mod', () => {
+    const s = sine({ freq: dial(1, { mod: sine({ freq: 0.5 }) }) })
+    const freq = s.params.freq
+    expect(freq.dial.meta).toMatchObject({ min: 0.01, max: 20, scale: 'log' })
+    expect(freq.attached?.def).toBe(sine)
+    expect(freq.attached?.params['freq']?.dial.value).toBe(0.5)
+  })
+
   it('meta fields on the passed slot win over the prototype', () => {
     const s = sine({ freq: dial(5, { max: 100, unit: 'rad/s' }) })
     expect(s.params.freq.dial.meta).toMatchObject({

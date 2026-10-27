@@ -9,15 +9,33 @@
  * The type tag is what the registry uses to decide which sources can
  * be attached. For numbers it's `'number'`; for anything else the
  * caller declares the tag they want to identify the type by.
+ *
+ * Either can start modulated: `dial(1, { min: 0, max: 2, mod: sine(), depth: 0.3 })`.
  */
 
-import type { Dial, DialMeta, Slot } from './core'
+import type { Dial, DialMeta, ModMode, Slot, Source } from './core'
+import { attach, setDepth, setMode } from './attach'
+
+/** Construction-time modulation state for a dial. */
+export interface ModInit<T> {
+  /** A source instance to attach. */
+  mod?: Source<any, T>
+  /** Modulation depth. Applied after `mod`, so an explicit 0 survives attach. */
+  depth?: number
+  /** Modulation mode. */
+  mode?: ModMode
+  /** Glide time constant, seconds. */
+  glide?: number
+}
+
+/** The options `dial` / `typedDial` take: display meta plus initial modulation state. */
+export type DialOptions<T> = DialMeta<T> & ModInit<T>
 
 /**
  * Numeric dial — the common case. Type tag is always `'number'`.
  */
-export function dial(value: number, meta: DialMeta<number> = {}): Slot<number> {
-  return slotFromDial<number>('number', { kind: 'dial', value, initial: value, meta })
+export function dial(value: number, opts: DialOptions<number> = {}): Slot<number> {
+  return buildSlot('number', value, opts)
 }
 
 /**
@@ -29,14 +47,34 @@ export function dial(value: number, meta: DialMeta<number> = {}): Slot<number> {
 export function typedDial<T>(
   type: string,
   value: T,
-  meta: DialMeta<T> = {},
+  opts: DialOptions<T> = {},
 ): Slot<T> {
-  return slotFromDial<T>(type, { kind: 'dial', value, initial: value, meta })
+  return buildSlot(type, value, opts)
 }
 
 /**
- * Internal: wrap a fresh `Dial<T>` in a slot with no source attached.
- * Exported because `defineSource` builds slots the same way.
+ * Split the options into code-owned meta (stored on the dial, shared by
+ * clones — never holds a live source) and slot state, then apply the
+ * state: mode and glide, then the attachment, then depth.
+ */
+function buildSlot<T>(type: string, value: T, opts: DialOptions<T>): Slot<T> {
+  const { mod, depth, mode, glide, ...meta } = opts
+  const slot = slotFromDial<T>(type, { kind: 'dial', value, initial: value, meta })
+  if (mode !== undefined) setMode(slot, mode)
+  if (glide !== undefined) setGlide(slot, glide)
+  if (mod) {
+    if (meta.modulatable === false) {
+      throw new Error('dials: cannot give `mod` to a dial with modulatable: false')
+    }
+    attach(slot, mod)
+  }
+  if (depth !== undefined) setDepth(slot, depth)
+  return slot
+}
+
+/**
+ * Wrap a fresh `Dial<T>` in a slot with no source attached and default
+ * slot state.
  */
 export function slotFromDial<T>(type: string, dial: Dial<T>): Slot<T> {
   return {
