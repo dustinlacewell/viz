@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react'
+import { scrubStep, startScrub, type ScrubState } from './scrub-step'
 
 /**
  * One chip in a scrub row. `key` identifies the item to the parent
@@ -54,7 +55,8 @@ type DragMode = 'primary' | 'alt' | null
  * A horizontal row of screen chips with drag-to-scrub. Press on any
  * chip and slide left/right to sweep through the row; the row
  * tracks the pointer globally so leaving the row vertically doesn't
- * drop the scrub. Tap (no drag) selects the chip pressed.
+ * drop the scrub. Tap (no drag) selects the chip pressed; a drag
+ * selects the chip it started on and every chip it crosses.
  *
  * Optionally supports a secondary (right-button) selection mode via
  * `onAltSelect` — same drag-scrub mechanics, distinct callback. The
@@ -76,8 +78,7 @@ export function ScrubChipRow<K extends string>({
 }: ScrubChipRowProps<K>) {
   const rowRef = useRef<HTMLDivElement | null>(null)
   const dragModeRef = useRef<DragMode>(null)
-  const movedRef = useRef(false)
-  const lastKeyRef = useRef<K | null>(null)
+  const scrubRef = useRef<ScrubState<K> | null>(null)
 
   // Latest callbacks in refs so the window-level listeners stay
   // stable across renders — re-binding `pointermove` every render
@@ -95,14 +96,14 @@ export function ScrubChipRow<K extends string>({
     if (disabled) return
     const onMove = (e: PointerEvent) => {
       const mode = dragModeRef.current
-      if (!mode) return
+      const scrub = scrubRef.current
+      if (!mode || !scrub) return
       const k = keyForX<K>(rowRef.current, e.clientX, edgeBehavior)
       if (k == null) return
-      if (k === lastKeyRef.current) return
-      movedRef.current = true
-      lastKeyRef.current = k
+      const step = scrubStep(scrub, k)
+      scrubRef.current = step.state
       const cb = mode === 'alt' ? onAltSelectRef.current : onSelectRef.current
-      cb?.(k)
+      for (const key of step.fire) cb?.(key)
     }
     const onUp = () => {
       dragModeRef.current = null
@@ -128,8 +129,7 @@ export function ScrubChipRow<K extends string>({
       e.currentTarget.releasePointerCapture(e.pointerId)
     }
     dragModeRef.current = mode
-    movedRef.current = false
-    lastKeyRef.current = k
+    scrubRef.current = startScrub(k)
   }
 
   const handlePointerUp = (e: React.PointerEvent<HTMLButtonElement>, k: K) => {
@@ -137,7 +137,7 @@ export function ScrubChipRow<K extends string>({
     const mode = dragModeRef.current
     if (mode === 'primary' && e.button !== 0) return
     if (mode === 'alt' && e.button !== 2) return
-    if (movedRef.current) return
+    if (scrubRef.current?.moved) return
     if (mode === 'alt') (onAltTap ?? onAltSelect)?.(k)
     else (onTap ?? onSelect)(k)
   }
