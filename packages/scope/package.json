@@ -3,6 +3,11 @@
   "version": "0.0.1",
   "description": "Oscilloscope signal modeling \u2014 waves, sweeps, bursts. Plain TypeScript; pair with @ldlework/crt for rendering.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dustinlacewell/lightherder.git",
+    "directory": "packages/scope"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -19,6 +24,7 @@
     "README.md"
   ],
   "scripts": {
+    "prepublishOnly": "pnpm build",
     "build": "node scripts/gen-shaders.mjs && tsc",
     "typecheck": "node scripts/gen-shaders.mjs && tsc --noEmit",
     "clean": "rimraf dist"

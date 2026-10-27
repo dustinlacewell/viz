@@ -3,6 +3,11 @@
   "version": "0.1.0",
   "description": "WebGL2 substrate — programs, textures, framebuffers, geometry, pass orchestration, camera, dynamic vertex buffers.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dustinlacewell/lightherder.git",
+    "directory": "packages/gl"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -30,6 +35,7 @@
     "src"
   ],
   "scripts": {
+    "prepublishOnly": "pnpm build",
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "clean": "rimraf dist"

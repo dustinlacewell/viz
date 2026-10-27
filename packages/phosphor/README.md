@@ -43,12 +43,29 @@ Colour math is OKLCH so perceptual brightness stays constant across hues.
 ## Primitives
 
 - `Panel` — raised chrome plate (the chassis everything else mounts on)
-- `Display` — chrome Lip + black Bezel + dark Screen (header / footer / readout slots)
+- `Display` — dark OLED glass. Raised on its own chrome chassis by default, or
+  recessed into a `Panel` (`raised={false}`). Black bezel ring on by default
+  (`bezel={false}` for a single chamfer). Padding is the standard 16px screen
+  margin; `padding={0}` is full-bleed. Also `color`, `fill`, `cursor`,
+  `screenStyle`, `screenClassName`.
 - `PushButton` — three-layer pushable button
 - `Modal` — backdrop + frame, designed to host a `Display` as the dialog
 - `LeverSwitch` — two-position 3D rocker
-- `SegmentedDisplay` — bare embedded screen with DSEG7 segmented digits
+- `SegmentedDisplay` — small recessed glass (`.screen-embedded`) with DSEG7 segmented digits
+- `SegmentedSurface` — the glass and glow of `SegmentedDisplay`, holding any markup
 - `ScrubChipRow` — horizontal screen-chip row with drag-to-scrub selection
 - `ChipToggle` — on-screen lit/unlit chip
-- `HueStrip` — 360° OKLCH hue picker (bare embedded screen)
+- `IndexStrip` — row of numbered chips on glass, with chrome action tiles
+- `HueStrip` — 360° OKLCH hue picker on `.screen-embedded` glass
 - `CodeBlock` — recessed code panel with theme-tracking syntax highlighting
+- `Knob` — rotary knob with an optional baseline, modulation band and glide bar
+- `ArcGauge` — small draggable arc with a readout
+- `Slider` — linear or log slider on a recessed track
+- `NumberField` — recessed numeric field; clamps to `min`/`max` on commit
+- `Dropdown` — chrome select
+- `Tabs` — tab row with arrow-key navigation
+- `IconPicker` — glyph key that opens a grid of options, with hover cards
+- `HelpTooltip` — "?" dot with a hover/focus popover
+- `SidePanel` — panel docked to a window edge, slid in and out by its tab
+- `useScreenPointer` — the mouse on the enclosing `Display` (with `cursor`),
+  for content that draws its own pointer

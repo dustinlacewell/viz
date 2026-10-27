@@ -3,6 +3,11 @@
   "version": "0.0.1",
   "description": "Physically-grounded CRT phosphor display renderer for WebGL2 \u2014 beam-deposit accumulator, stretched-exponential persistence, halation, tonemap. Optional React surface at ./react.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dustinlacewell/lightherder.git",
+    "directory": "packages/crt"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -24,6 +29,7 @@
     "README.md"
   ],
   "scripts": {
+    "prepublishOnly": "pnpm build",
     "build": "node scripts/gen-shaders.mjs && tsc",
     "typecheck": "node scripts/gen-shaders.mjs && tsc --noEmit",
     "test": "node scripts/gen-shaders.mjs && vitest run",

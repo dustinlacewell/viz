@@ -2,6 +2,12 @@
   "name": "@ldlework/dials",
   "version": "0.0.1",
   "description": "A parameter machine: dials whose values can be driven by nested modulation sources.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dustinlacewell/lightherder.git",
+    "directory": "packages/dials"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -17,6 +23,7 @@
   },
   "files": ["dist", "src", "README.md"],
   "scripts": {
+    "prepublishOnly": "pnpm build",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

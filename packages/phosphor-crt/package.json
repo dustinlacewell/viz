@@ -3,7 +3,15 @@
   "version": "0.0.1",
   "description": "Put a @ldlework/crt phosphor renderer behind a @ldlework/phosphor screen. The screen's HTML stays on top; the cursor is drawn into the phosphor.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dustinlacewell/lightherder.git",
+    "directory": "packages/phosphor-crt"
+  },
   "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -20,6 +28,7 @@
     "README.md"
   ],
   "scripts": {
+    "prepublishOnly": "pnpm build",
     "build": "tsc -p tsconfig.build.json && node scripts/copy-styles.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
