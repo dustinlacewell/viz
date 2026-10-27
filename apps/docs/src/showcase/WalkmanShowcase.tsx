@@ -48,12 +48,12 @@ export function WalkmanShowcase() {
         </div>
       </EmbeddedScreen>
 
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 32 }}>
+      <div style={EVEN_ROW}>
         <ArcGauge value={bass} range={[-12, 12]} step={1} defaultValue={0} label="bass" format={formatDb} onChange={setBass} />
         <ArcGauge value={treble} range={[-12, 12]} step={1} defaultValue={0} label="treble" format={formatDb} onChange={setTreble} />
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div style={EVEN_ROW}>
         <PushButton aria-label="Shuffle" selected={player.shuffle} onClick={() => dispatch({ type: 'shuffle' })}>
           <Shuffle {...LINE_ICON} />
         </PushButton>
@@ -70,7 +70,6 @@ export function WalkmanShowcase() {
         <PushButton aria-label="Next" onClick={() => dispatch({ type: 'next', rand: Math.random() })}>
           <SkipForward {...SOLID_ICON} />
         </PushButton>
-        <div style={{ flex: 1 }} />
         <Knob
           value={volume}
           baseline={volume}
@@ -243,6 +242,7 @@ const LINE_ICON = { size: 16, strokeWidth: 2.5 } as const
 /* Pulled up and down so the brand sits centred in the band between
    the panel's top edge and the screen (~14px each side). */
 const BRAND: CSSProperties = { fontSize: 11, letterSpacing: '0.2em', lineHeight: 1, margin: '-8px 0 -6px' }
+const EVEN_ROW: CSSProperties = { display: 'flex', alignItems: 'center', justifyContent: 'space-evenly' }
 const TITLE: CSSProperties = { fontSize: '1.1rem' }
 const ARTIST: CSSProperties = { color: 'var(--theme-lit)', marginTop: 4 }
 const TIMES: CSSProperties = { fontSize: '0.7rem' }
