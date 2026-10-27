@@ -349,7 +349,9 @@
    Unlit: phantom outline with the letterforms barely visible,
    the way an unlit LCD segment still casts a faint shadow on glass.
    Both states reserve identical box dimensions so the layout never
-   shifts when state toggles. */
+   shifts when state toggles.
+   On a <span> it is a static status readout. On a <button> it is a
+   control: only button chips get the hand cursor and hover states. */
 .screen-chip {
   padding: 0.1rem 0.4rem;
   border-radius: 3px;
@@ -358,7 +360,6 @@
   background: transparent;
   font: inherit;
   font-weight: inherit;
-  cursor: pointer;
   pointer-events: auto;
   transition:
     color 200ms ease,
@@ -419,15 +420,19 @@
   border-color: oklch(0.78 0.16 calc(var(--theme-hue) + 140) / 0.3);
 }
 
+button.screen-chip {
+  cursor: pointer;
+}
+
 @media (hover: hover) {
-  .screen-chip[data-lit='alt']:hover {
+  button.screen-chip[data-lit='alt']:hover {
     color: oklch(0.92 0.2 calc(var(--theme-hue) + 140));
   }
-  .screen-chip[data-lit='false']:hover {
+  button.screen-chip[data-lit='false']:hover {
     color: oklch(0.78 0.1 var(--theme-hue) / 0.55);
     border-color: oklch(0.78 0.1 var(--theme-hue) / 0.3);
   }
-  .screen-chip[data-lit='true']:hover {
+  button.screen-chip[data-lit='true']:hover {
     color: var(--theme-lit-bright);
   }
 }
@@ -443,7 +448,7 @@
 }
 
 @media (hover: hover) {
-  .screen-chip:disabled:hover {
+  button.screen-chip:disabled:hover {
     color: oklch(0.78 0.04 var(--theme-hue) / 0.18);
     border-color: oklch(0.78 0.04 var(--theme-hue) / 0.08);
   }
