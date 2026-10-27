@@ -108,15 +108,6 @@
   --chrome-screen-rim-color: #000;
   --chrome-screen-rim-thickness: 12px;
 
-  /* Inset shadows applied to the screen face itself, providing the
-     subtle "this is recessed into the panel" depth cue. The chamfer
-     is in the rim (above); these are just gentle interior shading.
-     Bottom catch derives from --display-color so it co-tints with
-     the rest of the screen interface family. */
-  --chrome-screen-recess-shadow:
-    inset 0 2px 6px rgb(0 0 0 / 0.6),
-    inset 0 -1px 0 color-mix(in oklch, var(--display-color) 18%, transparent);
-
   /*
    * ===== Per-display emitted color =====
    *
@@ -133,34 +124,15 @@
    * color="oklch(0.86 0.20 145)" sets --display-color on its wrapper
    * and the body fill, rim catch, glyph color, and glow all switch to
    * green regardless of the theme hue.
+   *
+   * The tokens derived from it live in the "Display-color family"
+   * rule at the end of this file, so they re-resolve per display.
    */
   --display-color: var(--theme-lit);
 
-  /* Screen-body tints derived from the display's emitted color. Mostly
-     black, with a small amount of the emitted color blended in to read
-     as the unlit screen catching residual self-bloom. Different blend
-     amounts at center vs edge give the radial spill its depth cue. */
-  --chrome-screen-body-center: color-mix(in oklch, var(--display-color) 12%, #0a0a0a);
-  --chrome-screen-body-edge: color-mix(in oklch, var(--display-color) 5%, #050505);
-
-  /*
-   * Screen-seam light treatment — the colors used at the seam
-   * between the black bezel and the luminous screen body. Consumed
-   * by the lip/bezel/embedded-screen recipes below so the shared
-   * tone reads from one source of truth.
-   *
-   *   --chrome-screen-rim-catch   bright thin catch right at the seam
-   *                               (the chrome's rolled inner lip
-   *                               catching emitted light)
-   *   --chrome-screen-haze        very faint ambient wash a few
-   *                               units past the seam
-   *   --chrome-screen-seam-dark   the manufactured-dark hairline on
-   *                               the OPPOSITE side of the seam
-   *                               (where chrome rolls down into the
-   *                               margin, in shadow from the screen)
-   */
-  --chrome-screen-rim-catch: color-mix(in oklch, var(--display-color) 55%, transparent);
-  --chrome-screen-haze: color-mix(in oklch, var(--display-color) 8%, transparent);
+  /* The manufactured-dark hairline on the far side of the screen
+     seam (where chrome rolls down into the margin, in shadow from
+     the screen). Not tinted, so it stays here. */
   --chrome-screen-seam-dark: rgb(0 0 0 / 0.5);
 
   /*
@@ -220,29 +192,10 @@
    *                    box-shadow
    *                    (--embedded-chamfer)
    *
-   * Tweak any recipe to retune the whole family in one place; tweak
-   * the color tokens above to retune just the tones.
+   * The tinted recipes (--spill, --bezel-rim, --lip-catch, --lip-haze,
+   * --embedded-chamfer) live in the "Display-color family" rule at the
+   * end of this file; the untinted ones stay here.
    */
-
-  /* Screen — back panel + Spill (display-color-tinted bloom from
-     holographic content onto the unlit back). The radial is the
-     bloom itself, derived from the screen body tints (which
-     themselves chain off --display-color). The additive linear at
-     top-left is the ambient lift (slightly brighter where overhead
-     room light grazes the upper-left of the back panel) — kept
-     subtle so it reads as a hint of glass, not a glare washing out
-     the corner. */
-  --spill:
-    linear-gradient(
-      135deg,
-      color-mix(in oklch, var(--display-color) 10%, transparent) 0%,
-      transparent 18%
-    ),
-    radial-gradient(
-      ellipse at 50% 45%,
-      var(--chrome-screen-body-center) 0%,
-      var(--chrome-screen-body-edge) 100%
-    );
 
   /* Screen — gentle interior depth shading. NOT rim-light; just an
      inset-top shadow selling "this surface is recessed into its host."
@@ -250,41 +203,9 @@
      the Bezel (--bezel-rim). */
   --recess: inset 0 2px 6px rgb(0 0 0 / 0.6);
 
-  /* Bezel — the inner-edge rim-light at the bezel↔screen interface,
-     painted by the Bezel onto its own inner edge. A faint display-
-     color-tinted hairline at the bottom of the bezel's inset, catching
-     emitted light from the screen sitting inside it. */
-  --bezel-rim: inset 0 -1px 0 color-mix(in oklch, var(--display-color) 18%, transparent);
-
-  /* Lip — outer chamfer Catch + manufactured Lip↔Bezel Seam-dark +
-     ambient Haze that washes the surrounding chrome from screen-light.
-     Conceptually these are properties of the Lip (the chrome around
-     the bezel) catching emitted screen-light. Physically they're
-     painted as OUTSET box-shadows on the .bezel element because the
-     bezel's box edge IS the bezel↔chrome seam — outsets from the
-     bezel land precisely on the chrome face we want to tint. */
-  --lip-catch: 0 1px 2px 0 var(--chrome-screen-rim-catch);
+  /* Lip — the manufactured Lip↔Bezel Seam-dark. Its tinted siblings
+     (--lip-catch, --lip-haze) are in the Display-color family rule. */
   --lip-seam:  0 -1px 0 var(--chrome-screen-seam-dark);
-  --lip-haze:  0 0 16px 2px var(--chrome-screen-haze);
-
-  /* EmbeddedScreen — the four-shadow chamfer stack for a Screen
-     mounted bare on a Panel (no Bezel, no Lip). Collapses all four
-     interface effects into one box-shadow on the screen element
-     itself:
-       1. inset top   — recess depth (same role as --recess)
-       2. inset bot   — inner highlight (same role as --bezel-rim,
-                        scaled brighter because there's no separate
-                        bezel to share the rim with)
-       3. outer 1px   — manufactured-black hairline (the chamfer's
-                        machined seam where the screen meets the
-                        surrounding chrome — same role as --lip-seam)
-       4. outer 1px   — outer catch on the surrounding chrome
-                        (same role as --lip-catch) */
-  --embedded-chamfer:
-    inset 0 2px 4px rgb(0 0 0 / 0.55),
-    inset 0 -1px 0 var(--chrome-screen-rim-catch),
-    0 0 0 1px rgb(0 0 0 / 0.6),
-    0 1px 1px var(--chrome-screen-rim-catch);
 
   /* Bezel default thickness. Override per-instance for thin bezels
      (HueStrip uses a slim variant) or thick (Display defaults to the
@@ -392,4 +313,93 @@
   --chrome-scrollbar-thumb-glow:
     0 0 4px var(--theme-lit-glow),
     inset 0 1px 0 rgb(255 255 255 / 0.08);
+}
+
+/*
+ * ===== Display-color family =====
+ *
+ * Every token tinted by --display-color. A custom property resolves
+ * its var() references on the element that declares it, and children
+ * inherit the resolved value. Declared only on :root, these would
+ * always use the root --display-color, and a display that sets its
+ * own color would get a re-tinted glyph but a theme-tinted rim,
+ * spill and glow. So they are declared again on every element that
+ * paints them, and re-resolve against that element's --display-color.
+ *
+ * A new primitive that paints one of these tokens adds its selector
+ * here.
+ */
+:root,
+.screen,
+.screen-embedded,
+.bezel,
+.chrome-numberfield {
+  /* Screen-body tints. Mostly black, with a small amount of the
+     emitted color blended in to read as the unlit screen catching
+     residual self-bloom. Different blend amounts at center vs edge
+     give the radial spill its depth cue. */
+  --chrome-screen-body-center: color-mix(in oklch, var(--display-color) 12%, #0a0a0a);
+  --chrome-screen-body-edge: color-mix(in oklch, var(--display-color) 5%, #050505);
+
+  /* Screen-seam light, consumed by the lip/bezel/embedded recipes:
+       --chrome-screen-rim-catch   bright thin catch right at the seam
+                                   (the chrome's rolled inner lip
+                                   catching emitted light)
+       --chrome-screen-haze        very faint ambient wash a few
+                                   units past the seam */
+  --chrome-screen-rim-catch: color-mix(in oklch, var(--display-color) 55%, transparent);
+  --chrome-screen-haze: color-mix(in oklch, var(--display-color) 8%, transparent);
+
+  /* Screen — back panel + Spill (display-color-tinted bloom from
+     holographic content onto the unlit back). The radial is the
+     bloom itself, from the body tints above. The additive linear at
+     top-left is the ambient lift (slightly brighter where overhead
+     room light grazes the upper-left of the back panel) — kept
+     subtle so it reads as a hint of glass, not a glare washing out
+     the corner. */
+  --spill:
+    linear-gradient(
+      135deg,
+      color-mix(in oklch, var(--display-color) 10%, transparent) 0%,
+      transparent 18%
+    ),
+    radial-gradient(
+      ellipse at 50% 45%,
+      var(--chrome-screen-body-center) 0%,
+      var(--chrome-screen-body-edge) 100%
+    );
+
+  /* Bezel — the inner-edge rim-light at the bezel↔screen interface,
+     painted by the Bezel onto its own inner edge. A faint display-
+     color-tinted hairline at the bottom of the bezel's inset, catching
+     emitted light from the screen sitting inside it. */
+  --bezel-rim: inset 0 -1px 0 color-mix(in oklch, var(--display-color) 18%, transparent);
+
+  /* Lip — outer chamfer Catch + ambient Haze that washes the
+     surrounding chrome from screen-light. Conceptually properties of
+     the Lip (the chrome around the bezel). Physically painted as
+     OUTSET box-shadows on the .bezel element because the bezel's box
+     edge IS the bezel↔chrome seam — outsets from the bezel land
+     precisely on the chrome face we want to tint. */
+  --lip-catch: 0 1px 2px 0 var(--chrome-screen-rim-catch);
+  --lip-haze:  0 0 16px 2px var(--chrome-screen-haze);
+
+  /* EmbeddedScreen — the four-shadow chamfer stack for a Screen
+     mounted bare on a Panel (no Bezel, no Lip). Collapses all four
+     interface effects into one box-shadow on the screen element
+     itself:
+       1. inset top   — recess depth (same role as --recess)
+       2. inset bot   — inner highlight (same role as --bezel-rim,
+                        scaled brighter because there's no separate
+                        bezel to share the rim with)
+       3. outer 1px   — manufactured-black hairline (the chamfer's
+                        machined seam where the screen meets the
+                        surrounding chrome — same role as --lip-seam)
+       4. outer 1px   — outer catch on the surrounding chrome
+                        (same role as --lip-catch) */
+  --embedded-chamfer:
+    inset 0 2px 4px rgb(0 0 0 / 0.55),
+    inset 0 -1px 0 var(--chrome-screen-rim-catch),
+    0 0 0 1px rgb(0 0 0 / 0.6),
+    0 1px 1px var(--chrome-screen-rim-catch);
 }
