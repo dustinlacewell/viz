@@ -5,6 +5,7 @@ on:
     branches: [master]
     paths:
       - "apps/viz-site/**"
+      - "apps/docs/**"
       - "packages/**"
       - "pnpm-lock.yaml"
       - ".github/workflows/deploy-viz.yml"
@@ -31,6 +32,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter "@ldlework/viz-site..." build
+      - run: pnpm --filter @ldlework/phosphor-docs exec storybook build -o ../viz-site/dist/storybook
       - uses: actions/upload-pages-artifact@v3
         with:
           path: apps/viz-site/dist

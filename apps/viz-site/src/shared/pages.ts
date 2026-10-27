@@ -58,3 +58,11 @@ export const NAV_PAGES: readonly SitePage[] = [HOME_PAGE, ...PACKAGE_PAGES]
 export function pageHref(page: SitePage): string {
   return `${import.meta.env.BASE_URL}${page.path}`
 }
+
+/**
+ * The phosphor Storybook. The deploy build copies it to `storybook/`;
+ * in dev it runs on its own server (`wm storybook`).
+ */
+export const STORYBOOK_HREF = import.meta.env.DEV
+  ? 'http://localhost:6006/'
+  : `${import.meta.env.BASE_URL}storybook/`

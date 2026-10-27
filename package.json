@@ -5,7 +5,7 @@
   "scripts": {
     "build": "pnpm -r run build",
     "typecheck": "pnpm run build && pnpm -r run typecheck",
-    "dev": "pnpm --filter @ldlework/viz-site run dev",
+    "dev": "pnpm --parallel --filter @ldlework/viz-site --filter @ldlework/phosphor-docs run dev",
     "storybook": "pnpm --filter @ldlework/phosphor-docs run storybook"
   },
   "packageManager": "pnpm@9.12.0",

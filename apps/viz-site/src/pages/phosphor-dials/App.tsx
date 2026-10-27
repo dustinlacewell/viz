@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { dial, read, sine } from '@ldlework/dials'
 import { Panel as DialsPanel } from '@ldlework/dials/react'
 import { CodeBlock, Panel as ChromePanel } from '@ldlework/phosphor'
+import { STORYBOOK_HREF } from '../../shared/pages'
 import { dialPanelComponents } from '@ldlework/phosphor-dials'
 
 /*
@@ -129,7 +130,7 @@ function Hero() {
         <div className="site-links">
           <a href="https://www.npmjs.com/package/@ldlework/phosphor-dials" target="_blank" rel="noreferrer">npm</a>
           <a href="https://github.com/ldlework/phosphor" target="_blank" rel="noreferrer">GitHub</a>
-          <a href="./storybook/">Storybook</a>
+          <a href={STORYBOOK_HREF}>Storybook</a>
         </div>
       </div>
     </section>
@@ -186,7 +187,7 @@ function Footer() {
     <footer className="site-footer">
       <div className="site-footer-links">
         <a href="https://github.com/ldlework/phosphor" target="_blank" rel="noreferrer">GitHub</a>
-        <a href="./storybook/">Storybook</a>
+        <a href={STORYBOOK_HREF}>Storybook</a>
         <a href="https://www.npmjs.com/package/@ldlework/phosphor-dials" target="_blank" rel="noreferrer">npm</a>
       </div>
       <div>phosphor-dials · MIT · @ldlework</div>

@@ -12,6 +12,7 @@ import {
   SegmentedDisplay,
   SegmentedSurface,
 } from '@ldlework/phosphor'
+import { STORYBOOK_HREF } from '../../shared/pages'
 import { HeroScope } from '../../shared/scope'
 import { DemoRow } from './components/DemoRow'
 import { LabeledDisplay } from './components/LabeledDisplay'
@@ -82,7 +83,7 @@ function Hero() {
         </p>
         <div className="site-links">
           <a href="https://github.com/ldlework/phosphor" target="_blank" rel="noreferrer">GitHub</a>
-          <a href="./storybook/">Storybook</a>
+          <a href={STORYBOOK_HREF}>Storybook</a>
         </div>
       </div>
     </section>
@@ -800,7 +801,7 @@ function Footer() {
     <footer className="site-footer">
       <div className="site-footer-links">
         <a href="https://github.com/ldlework/phosphor" target="_blank" rel="noreferrer">GitHub</a>
-        <a href="./storybook/">Storybook</a>
+        <a href={STORYBOOK_HREF}>Storybook</a>
         <a href="https://www.npmjs.com/package/@ldlework/phosphor" target="_blank" rel="noreferrer">npm</a>
       </div>
       <div>Phosphor · MIT · @ldlework</div>

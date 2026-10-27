@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 import { CrtSurface } from '@ldlework/crt/react'
 import { CodeBlock, Display, Tabs } from '@ldlework/phosphor'
+import { STORYBOOK_HREF } from '../../shared/pages'
 import {
   StampPass,
   PHOSPHOR_P31, PHOSPHOR_P7, PHOSPHOR_P39, PHOSPHOR_BEAUTY,
@@ -172,7 +173,7 @@ export function App() {
           <div className="site-links">
             <a href="https://www.npmjs.com/package/@ldlework/crt" target="_blank" rel="noreferrer">npm</a>
             <a href="https://github.com/ldlework/phosphor" target="_blank" rel="noreferrer">GitHub</a>
-            <a href="./storybook/">Storybook</a>
+            <a href={STORYBOOK_HREF}>Storybook</a>
           </div>
         </div>
       </section>
@@ -248,7 +249,7 @@ function Scanner() {
       <footer className="site-footer">
         <div className="site-footer-links">
           <a href="https://github.com/ldlework/phosphor" target="_blank" rel="noreferrer">GitHub</a>
-          <a href="./storybook/">Storybook</a>
+          <a href={STORYBOOK_HREF}>Storybook</a>
           <a href="https://www.npmjs.com/package/@ldlework/crt" target="_blank" rel="noreferrer">npm</a>
         </div>
         <div>crt · MIT · @ldlework</div>
