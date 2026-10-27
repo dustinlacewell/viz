@@ -18,23 +18,24 @@
  * safe.
  */
 
-import type { ModMode, Slot, Source, SourceDef } from './core'
+import type { ModMode, Slot, Source } from './core'
 import { eraseSource } from './source'
 
 /** Default modulation half-width in knob-travel space. */
 export const DEFAULT_DEPTH = 0.15
 
 /**
- * Attach an existing source instance to a slot. The mode is slot-level
- * (`slot.modMode`) and untouched here. If the slot's `modDepth` is
- * still `0`, seed it to `DEFAULT_DEPTH` so a bare attach visibly
- * modulates; an already pre-set depth is left alone. Returns the slot
- * so calls can chain in tests / fluent builders.
+ * Attach a source instance to a slot — typically a fresh one,
+ * `attach(slot, sine())`. The mode is slot-level (`slot.modMode`) and
+ * untouched here. If the slot's `modDepth` is still `0`, seed it to
+ * `DEFAULT_DEPTH` so a bare attach visibly modulates; an already
+ * pre-set depth is left alone. Returns the source (not the slot) so
+ * callers can reach its sub-slots directly.
  */
 export function attach<P extends Record<string, unknown>, T>(
   slot: Slot<T>,
   source: Source<P, T>,
-): Slot<T> {
+): Source<P, T> {
   if (source.def.outType !== slot.outType) {
     throw new Error(
       `dials: cannot attach source "${source.def.name}" returning ${source.def.outType} ` +
@@ -43,32 +44,7 @@ export function attach<P extends Record<string, unknown>, T>(
   }
   if (slot.modDepth === 0) slot.modDepth = DEFAULT_DEPTH
   slot.attached = eraseSource(source)
-  return slot
-}
-
-/**
- * Convenience: instantiate a def and attach in one step. The common
- * panel action — user picks "lfo" from the picker, this is what runs.
- * The mode is slot-level (`slot.modMode`) and untouched here. If the
- * slot's `modDepth` is still `0`, seed it to `DEFAULT_DEPTH` so a bare
- * attach visibly modulates; an already pre-set depth is left alone.
- * Returns the instantiated source (not the slot) so callers can reach
- * its fresh sub-slots directly.
- */
-export function attachFrom<P extends Record<string, unknown>, T>(
-  slot: Slot<T>,
-  def: SourceDef<P, T>,
-): Source<P, T> {
-  if (def.outType !== slot.outType) {
-    throw new Error(
-      `dials: cannot attach source "${def.name}" returning ${def.outType} ` +
-        `to slot of type ${slot.outType}`,
-    )
-  }
-  if (slot.modDepth === 0) slot.modDepth = DEFAULT_DEPTH
-  const src = def()
-  slot.attached = eraseSource(src)
-  return src
+  return source
 }
 
 /**

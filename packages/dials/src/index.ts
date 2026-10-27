@@ -58,7 +58,6 @@ export type { SourceSpec } from './source'
 
 export {
   attach,
-  attachFrom,
   detach,
   setDepth,
   setMode,

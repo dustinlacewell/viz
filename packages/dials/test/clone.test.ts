@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
-  attachFrom,
+  attach,
   dial,
   cloneSlot,
   sampleSlot,
@@ -48,7 +48,7 @@ describe('cloneSlot()', () => {
 
   it('re-instantiates attached sources so clones never share body state', () => {
     const s = dial(0, { min: -1, max: 1 })
-    attachFrom(s, sine)
+    attach(s, sine())
     const c = cloneSlot(s)
     expect(c.attached).not.toBe(s.attached)
     expect(c.attached!.def).toBe(s.attached!.def)
@@ -60,7 +60,7 @@ describe('cloneSlot()', () => {
 
   it('carries sub-slot state through the attached tree', () => {
     const s = dial(0, { min: -1, max: 1 })
-    const src = attachFrom(s, sine)
+    const src = attach(s, sine())
     src.params.freq.dial.value = 4.2
     setGlide(src.params.freq as never, 0.7)
     const c = cloneSlot(s)

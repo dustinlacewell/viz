@@ -21,7 +21,7 @@
  */
 
 import type { Dials, ModMode, Slot } from './core'
-import { attachFrom, detach } from './attach'
+import { attach, detach } from './attach'
 import { setDial } from './dial'
 import { getSource } from './source'
 
@@ -152,7 +152,7 @@ function applySlotSnap(
           `Call registerSource(${snap.attached.name}) before fromJSON().`,
       )
     }
-    const source = attachFrom(slot, def)
+    const source = attach(slot, def())
     for (const k in source.params) {
       const childSnap = snap.attached.params[k]
       if (childSnap) {

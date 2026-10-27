@@ -16,7 +16,7 @@
 
 import { createContext, useContext, type ComponentType, type ReactNode } from 'react'
 import type { ModMode, Slot } from '../core'
-import { attachFrom, detach, setDepth, setMode } from '../attach'
+import { attach, detach, setDepth, setMode } from '../attach'
 import { setDial, setGlide } from '../dial'
 import { sourcesForType } from '../source'
 
@@ -269,7 +269,7 @@ export const defaultSlotActions: SlotActions = {
     if (sourceName === current) return
     detach(slot)
     const def = sourcesForType(slot.outType).find((d) => d.name === sourceName)
-    if (def) attachFrom(slot, def)
+    if (def) attach(slot, def())
   },
   setDepth: (_path, slot, depth) => setDepth(slot, depth),
   setMode: (_path, slot, mode) => setMode(slot, mode),

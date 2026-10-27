@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
-  attachFrom,
+  attach,
   cloneSlot,
   defineSource,
   dial,
@@ -168,7 +168,7 @@ describe('rebaseSlot()', () => {
 
   it('recurses through an attached source\'s sub-slots', () => {
     const s = dial(0, { min: -1, max: 1 })
-    const src = attachFrom(s, sine)
+    const src = attach(s, sine())
     src.params.freq.dial.value = 4.2
     rebaseSlot(s)
     expect(src.params.freq.dial.initial).toBe(4.2)

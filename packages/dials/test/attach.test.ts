@@ -1,7 +1,6 @@
 import { describe, expect, expectTypeOf, it } from 'vitest'
 import {
   attach,
-  attachFrom,
   DEFAULT_DEPTH,
   defineSource,
   detach,
@@ -76,44 +75,31 @@ describe('attach()', () => {
     expect(() => attach(s, rgbBlack() as never)).toThrow(/outType|number|rgb/i)
   })
 
-  it('returns the slot for chaining', () => {
+  it('leaves the slot unattached on outType mismatch', () => {
     const s = dial(0)
-    expect(attach(s, k1())).toBe(s)
-  })
-})
-
-describe('attachFrom()', () => {
-  it('instantiates + attaches in one call, returning the source', () => {
-    const s = dial(7)
-    const src = attachFrom(s, k1)
-    expect(s.attached).toBe(src)
-    expect(s.modDepth).toBe(DEFAULT_DEPTH)
+    expect(() => attach(s, rgbBlack() as never)).toThrow()
+    expect(s.attached).toBeNull()
+    expect(s.modDepth).toBe(0)
   })
 
-  it('respects a pre-set modDepth (does not re-seed)', () => {
-    const s = dial(7)
-    setDepth(s, 0.25)
-    attachFrom(s, k1)
-    expect(s.modDepth).toBe(0.25)
-  })
-
-  it('throws on outType mismatch before instantiating', () => {
+  it('returns the source', () => {
     const s = dial(0)
-    expect(() => attachFrom(s, rgbBlack as never)).toThrow()
+    const src = k1()
+    expect(attach(s, src)).toBe(src)
   })
 })
 
 describe('setDepth()', () => {
   it('writes the depth onto the slot', () => {
     const s = dial(0)
-    attachFrom(s, k1)
+    attach(s, k1())
     setDepth(s, 0.7)
     expect(s.modDepth).toBe(0.7)
   })
 
   it('clamps into [0, 1]', () => {
     const s = dial(0)
-    attachFrom(s, k1)
+    attach(s, k1())
     setDepth(s, -3)
     expect(s.modDepth).toBe(0)
     setDepth(s, 42)
@@ -129,11 +115,11 @@ describe('setDepth()', () => {
 
   it('survives detach then reattach', () => {
     const s = dial(0)
-    attachFrom(s, k1)
+    attach(s, k1())
     setDepth(s, 0.6)
     detach(s)
     expect(s.modDepth).toBe(0.6)
-    attachFrom(s, k1)
+    attach(s, k1())
     // Reattach must not re-seed over the surviving width.
     expect(s.modDepth).toBe(0.6)
   })
@@ -149,13 +135,13 @@ describe('mode', () => {
     attach(s, uni())
     expect(s.modMode).toBe('center')
     const t = dial(0)
-    attachFrom(t, uni)
+    attach(t, uni())
     expect(t.modMode).toBe('center')
   })
 
   it('setMode writes the mode onto the slot', () => {
     const s = dial(0)
-    attachFrom(s, k1)
+    attach(s, k1())
     setMode(s, 'down')
     expect(s.modMode).toBe('down')
   })
@@ -171,11 +157,11 @@ describe('mode', () => {
     const s = dial(0)
     setMode(s, 'down')
     setDepth(s, 0.6)
-    attachFrom(s, k1)
+    attach(s, k1())
     detach(s)
     expect(s.modMode).toBe('down')
     expect(s.modDepth).toBe(0.6)
-    attachFrom(s, k1)
+    attach(s, k1())
     expect(s.modMode).toBe('down')
     expect(s.modDepth).toBe(0.6)
   })
@@ -208,18 +194,13 @@ describe('detach()', () => {
   })
 })
 
-describe('attachFrom() typing', () => {
-  it('takes a stdlib def without a cast and returns a typed source', () => {
+describe('attach() typing', () => {
+  it('takes a stdlib instance without a cast and returns it typed', () => {
     const s = dial(0.5, { min: 0, max: 1 })
-    const src = attachFrom(s, sine)
+    const src = attach(s, sine())
     expectTypeOf(src.params.freq).toEqualTypeOf<Slot<number>>()
     expectTypeOf(src.params.phase).toEqualTypeOf<Slot<number>>()
     expect(s.attached).toBe(src)
-  })
-
-  it('attach() takes a typed instance without a cast', () => {
-    const s = dial(0.5, { min: 0, max: 1 })
-    expect(attach(s, sine())).toBe(s)
   })
 })
 
