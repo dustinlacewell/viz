@@ -7,8 +7,8 @@ export function App() {
   return (
     <div className="site">
       <Hero />
-      <DemoSection />
       <InstallSection />
+      <DemoSection />
       <Footer />
     </div>
   )

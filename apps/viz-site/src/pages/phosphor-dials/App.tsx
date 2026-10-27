@@ -57,8 +57,8 @@ export function App() {
   return (
     <div className="site">
       <Hero />
-      <DemoSection canvasRef={canvasRef} />
       <InstallSection />
+      <DemoSection canvasRef={canvasRef} />
       <Footer />
     </div>
   )

@@ -13,7 +13,6 @@ import {
   SegmentedSurface,
 } from '@ldlework/phosphor'
 import { HeroScope } from '../../shared/scope'
-import { ScopeHero } from '../../shared/ScopeHero'
 import { DemoRow } from './components/DemoRow'
 import { LabeledDisplay } from './components/LabeledDisplay'
 import { WeatherGlyph, type WeatherIcon } from './components/WeatherGlyph'
@@ -49,9 +48,9 @@ export function App() {
   return (
     <div className="site">
       <Hero />
+      <InstallSection />
       <FeaturesSection />
       <PrimitivesSection />
-      <InstallSection />
       <Footer />
     </div>
   )
@@ -63,47 +62,23 @@ export function App() {
 
 function Hero() {
   return (
-    <ScopeHero
-      wordmark="PHOSPHOR"
-      tagline={
-        <>
-          A React design system from{' '}
-          <a
-            href="https://ldlework.com"
-            target="_blank"
-            rel="noreferrer"
-            className="site-hero-tagline-link"
-          >
-            ldlework
-          </a>
-        </>
-      }
-    >
-      <button
-        type="button"
-        className="screen-chip site-hero-cta-chip"
-        data-lit="true"
-        onClick={() =>
-          document
-            .getElementById('primitives')
-            ?.scrollIntoView({ behavior: 'smooth' })
-        }
-      >
-        Browse
-      </button>
-      <button
-        type="button"
-        className="screen-chip site-hero-cta-chip"
-        data-lit="true"
-        onClick={() =>
-          document
-            .getElementById('install')
-            ?.scrollIntoView({ behavior: 'smooth' })
-        }
-      >
-        Install
-      </button>
-    </ScopeHero>
+    <section className="site-section site-hero">
+      <div className="site-container">
+        <p className="site-eyebrow">phosphor</p>
+        <h1 className="site-h1">A React design system.</h1>
+        <p className="site-prose site-hero-desc">
+          Components modeled after hi-fi gear: chrome panels, glass screens, push buttons. One CSS variable sets the
+          hue of all of them.
+        </p>
+        <div className="site-links">
+          <a href="https://www.npmjs.com/package/@ldlework/phosphor" target="_blank" rel="noreferrer">npm</a>
+          <a href="https://github.com/ldlework/phosphor" target="_blank" rel="noreferrer">GitHub</a>
+          <a href="./storybook/">Storybook</a>
+          <a href="#install">Install</a>
+          <a href="#primitives">Primitives</a>
+        </div>
+      </div>
+    </section>
   )
 }
 

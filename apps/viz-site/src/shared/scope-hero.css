@@ -2,7 +2,7 @@
  * Scope hero — see ScopeHero.tsx
  * ============================================================ */
 
-.site-hero {
+.scope-hero {
   position: relative;
   display: grid;
   place-items: center;
@@ -14,10 +14,10 @@
 }
 
 @media (max-width: 600px) {
-  .site-hero { padding: 24px 14px; }
+  .scope-hero { padding: 24px 14px; }
 }
 
-.site-hero-stage {
+.scope-hero-stage {
   position: relative;
   /* Fill the grid track's content area; the section's padding is
      what determines the page margin. A max keeps the OLED from
@@ -35,7 +35,7 @@
    (absolute, bled to the bezel) and the wordmark (in flow, centred).
    Since .screen has no default padding, the wrapper sits flush with
    the bezel — its inner padding is its own choice. */
-.site-hero-screen {
+.scope-hero-screen {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -51,7 +51,7 @@
   border-radius: 4px;
 }
 
-.site-hero-cta {
+.scope-hero-cta {
   position: relative;
   z-index: 1;
   display: flex;
@@ -63,16 +63,7 @@
   text-transform: uppercase;
 }
 
-/* Hero CTA chips override the default chip glow rung — they sit on
-   a busy screen (oscilloscope + wordmark bloom right next to them)
-   so they need a stronger halo than chips on a quiet readout. */
-.site-hero-cta-chip {
-  --screen-chip-glow-lit: var(--chrome-glow-md);
-  padding: 0.25rem 0.7rem;
-  font-size: 0.78rem;
-}
-
-.site-hero-scope {
+.scope-hero-scope {
   position: absolute;
   inset: 0;
   /* Bumped from 0.55 — the trace needs to read clearly behind the
@@ -81,7 +72,7 @@
   pointer-events: none;
 }
 
-.site-hero-wordmark {
+.scope-hero-wordmark {
   position: relative;
   z-index: 1;
   font-family: var(--font-mono);
@@ -115,7 +106,7 @@
 /* On-glass tagline inside the OLED. Reads as a faint emitted-light
    subtitle under the wordmark — same family as the chip rows but
    smaller, dimmer, with the glow scale's lowest rung. */
-.site-hero-tagline {
+.scope-hero-tagline {
   position: relative;
   z-index: 1;
   text-align: center;
@@ -128,7 +119,7 @@
   opacity: 0.78;
 }
 
-.site-hero-tagline-link {
+.scope-hero-tagline-link {
   /* The brand name is the only fully-lit element in the line. */
   color: var(--theme-lit);
   text-shadow: var(--chrome-glow-sm);
@@ -136,7 +127,7 @@
   transition: color 200ms ease, text-shadow 200ms ease;
 }
 
-.site-hero-tagline-link:hover {
+.scope-hero-tagline-link:hover {
   color: var(--theme-lit-bright);
   text-shadow: var(--chrome-glow-md);
 }

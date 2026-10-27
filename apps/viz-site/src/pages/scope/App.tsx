@@ -18,9 +18,9 @@ export function App() {
   return (
     <div className="site">
       <Hero />
+      <InstallSection />
       <PlaygroundSection />
       <InTheBoxSection />
-      <InstallSection />
       <Footer />
     </div>
   )

@@ -1,36 +1,9 @@
 /*
- * Site-level layout + typography. The libraries bring the chrome and
- * glass (phosphor) and the dial tree (phosphor-dials); this file brings
- * the surrounding page furniture — background, type scale, section
- * rhythm — hue-locked to phosphor's --theme-hue so the page and the
- * chassis live in one OKLCH world.
+ * The dials page's own rules. Shared package-page layout lives in
+ * ../../shared/package-page.css.
  */
 
-.site,
-.site-container,
-.site-section {
-  min-width: 0;
-}
-
 /* ── Page rhythm ─────────────────────────────────────────────────── */
-
-.site {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.site-section {
-  width: 100%;
-  padding: 48px 24px;
-}
-
-@media (max-width: 600px) {
-  .site-section { padding: 36px 14px; }
-}
-
-/* Back-to-back sections share one gap, not two paddings. */
-.site-section + .site-section { padding-top: 0; }
 
 .site-container {
   max-width: 980px;
@@ -41,67 +14,9 @@
 
 /* ── Type scale ──────────────────────────────────────────────────── */
 
-.site-eyebrow {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--theme-lit);
-  text-shadow: 0 0 4px var(--theme-lit-glow);
-  margin: 0 0 12px 0;
-}
-
-.site-h1 {
-  font-size: 2.1rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  line-height: 1.15;
-  margin: 0 0 18px 0;
-  max-width: 22ch;
-  color: var(--site-fg);
-}
-
-.site-h2 {
-  font-size: 1.7rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  margin: 0 0 12px 0;
-  color: var(--site-fg);
-}
-
 .site-prose {
   color: var(--site-fg-dim);
   max-width: 62ch;
-}
-
-.site-prose code {
-  font-family: var(--font-mono);
-  font-size: 0.92em;
-  background: oklch(0.78 0.04 var(--theme-hue) / 0.06);
-  padding: 1px 6px;
-  border-radius: 4px;
-  color: var(--theme-lit-bright);
-}
-
-/* ── Hero ────────────────────────────────────────────────────────── */
-
-.site-hero {
-  padding-top: 72px;
-  padding-bottom: 24px;
-}
-
-.site-hero-desc {
-  margin-top: 0;
-}
-
-.site-links {
-  display: flex;
-  gap: 24px;
-  margin-top: 24px;
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
-  letter-spacing: 0.06em;
 }
 
 /* ── Demo + install ──────────────────────────────────────────────── */
@@ -118,25 +33,4 @@
 .signal-trace {
   aspect-ratio: 16 / 9;
   width: 100%;
-}
-
-/* ── Footer ──────────────────────────────────────────────────────── */
-
-.site-footer {
-  margin-top: auto;
-  padding: 48px 24px;
-  text-align: center;
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--site-fg-faint);
-  border-top: 1px solid var(--site-rule);
-}
-
-.site-footer-links {
-  display: flex;
-  justify-content: center;
-  gap: 24px;
-  margin-bottom: 8px;
 }

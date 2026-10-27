@@ -177,38 +177,6 @@ export function App() {
         </div>
       </section>
 
-      <section className="site-section" id="demo">
-        <div className="site-container">
-          <h2 className="site-h2">Live demo</h2>
-          <p className="site-prose site-demo-hint">
-            Move the mouse over the screen — the cursor becomes the phosphor,
-            trailing a soft comet tail (crt's own <code>StampPass</code>). Away
-            from the screen it idles in an orbiting ring. Pick a coating with
-            the tabs.
-          </p>
-          <Display fill className="demo-display">
-            <div
-              className="demo-stage"
-              ref={canvasElRef}
-              onPointerMove={onPointerMove}
-              onPointerLeave={onPointerLeave}
-            >
-              <CrtSurface passes={passes} stage={stage} presetFn={presetFn} {...active.preset} />
-            </div>
-          </Display>
-          <div className="demo-presets">
-            <Tabs
-              tabs={PRESETS.map((p, i) => ({ key: String(i), label: p.name.replace('PHOSPHOR_', '') }))}
-              active={String(presetIndex)}
-              onSelect={(k) => setPresetIndex(Number(k))}
-            />
-            <p className="site-prose demo-preset-char">
-              <code>{active.name}</code> — {active.char}
-            </p>
-          </div>
-        </div>
-      </section>
-
       <section className="site-section" id="install">
         <div className="site-container site-container--narrow">
           <h2 className="site-h2">Install</h2>
@@ -242,6 +210,38 @@ function Scanner() {
   return <CrtSurface passes={passes} stage={stage} {...PHOSPHOR_P31} />
 }`}
           />
+        </div>
+      </section>
+
+      <section className="site-section" id="demo">
+        <div className="site-container">
+          <h2 className="site-h2">Live demo</h2>
+          <p className="site-prose site-demo-hint">
+            Move the mouse over the screen — the cursor becomes the phosphor,
+            trailing a soft comet tail (crt's own <code>StampPass</code>). Away
+            from the screen it idles in an orbiting ring. Pick a coating with
+            the tabs.
+          </p>
+          <Display fill className="demo-display">
+            <div
+              className="demo-stage"
+              ref={canvasElRef}
+              onPointerMove={onPointerMove}
+              onPointerLeave={onPointerLeave}
+            >
+              <CrtSurface passes={passes} stage={stage} presetFn={presetFn} {...active.preset} />
+            </div>
+          </Display>
+          <div className="demo-presets">
+            <Tabs
+              tabs={PRESETS.map((p, i) => ({ key: String(i), label: p.name.replace('PHOSPHOR_', '') }))}
+              active={String(presetIndex)}
+              onSelect={(k) => setPresetIndex(Number(k))}
+            />
+            <p className="site-prose demo-preset-char">
+              <code>{active.name}</code> — {active.char}
+            </p>
+          </div>
         </div>
       </section>
 

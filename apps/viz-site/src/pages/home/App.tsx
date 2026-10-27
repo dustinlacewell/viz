@@ -14,7 +14,7 @@ export function App() {
               href="https://ldlework.com"
               target="_blank"
               rel="noreferrer"
-              className="site-hero-tagline-link"
+              className="scope-hero-tagline-link"
             >
               ldlework
             </a>
