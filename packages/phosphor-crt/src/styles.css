@@ -1,0 +1,20 @@
+/* ============================================================
+ * .crt-screen — the CRT renderer behind a screen's HTML.
+ *
+ * The host screen becomes a stacking context, so z-index -1 puts
+ * the renderer above the glass background and below the content.
+ * It takes no pointer events: the content above it gets the clicks.
+ * ============================================================ */
+
+:has(> .crt-screen) {
+  isolation: isolate;
+}
+
+.crt-screen {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}

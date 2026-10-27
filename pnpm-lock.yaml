@@ -29,6 +29,9 @@ importers:
       '@ldlework/phosphor':
         specifier: workspace:*
         version: link:../../packages/phosphor
+      '@ldlework/phosphor-crt':
+        specifier: workspace:*
+        version: link:../../packages/phosphor-crt
       '@ldlework/phosphor-dials':
         specifier: workspace:*
         version: link:../../packages/phosphor-dials
@@ -247,6 +250,33 @@ importers:
       vite-plugin-dts:
         specifier: ^4.3.0
         version: 4.5.4(rollup@4.62.2)(typescript@5.9.3)(vite@5.4.21(lightningcss@1.32.0))
+      vitest:
+        specifier: ^2.1.0
+        version: 2.1.9(lightningcss@1.32.0)
+
+  packages/phosphor-crt:
+    devDependencies:
+      '@ldlework/crt':
+        specifier: workspace:*
+        version: link:../crt
+      '@ldlework/phosphor':
+        specifier: workspace:*
+        version: link:../phosphor
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.17
+      react:
+        specifier: ^19.0.0
+        version: 19.2.7
+      rimraf:
+        specifier: ^6.0.1
+        version: 6.1.3
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.0
+        version: 2.1.9(lightningcss@1.32.0)
 
   packages/phosphor-dials:
     devDependencies:

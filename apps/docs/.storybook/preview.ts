@@ -1,5 +1,6 @@
 import type { Preview } from '@storybook/react'
 import '@ldlework/phosphor/styles.css'
+import '@ldlework/phosphor-crt/styles.css'
 import './preview.css'
 
 const preview: Preview = {

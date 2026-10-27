@@ -13,6 +13,7 @@
     "@ldlework/crt": "workspace:*",
     "@ldlework/dials": "workspace:*",
     "@ldlework/phosphor": "workspace:*",
+    "@ldlework/phosphor-crt": "workspace:*",
     "@ldlework/phosphor-dials": "workspace:*",
     "@ldlework/scope": "workspace:*",
     "lucide-react": "^1.62.0",

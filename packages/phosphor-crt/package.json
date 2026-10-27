@@ -1,0 +1,42 @@
+{
+  "name": "@ldlework/phosphor-crt",
+  "version": "0.0.1",
+  "description": "Put a @ldlework/crt phosphor renderer behind a @ldlework/phosphor screen. The screen's HTML stays on top; the cursor is drawn into the phosphor.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && node scripts/copy-styles.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "clean": "rimraf dist"
+  },
+  "peerDependencies": {
+    "@ldlework/crt": "*",
+    "@ldlework/phosphor": "*",
+    "react": "^18.0.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "@ldlework/crt": "workspace:*",
+    "@ldlework/phosphor": "workspace:*",
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.0"
+  }
+}
