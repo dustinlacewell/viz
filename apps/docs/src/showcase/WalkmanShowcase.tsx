@@ -28,6 +28,7 @@ export function WalkmanShowcase() {
             <span className="screen-row-label">
               Track {pad2(player.index + 1)} / {pad2(TRACKS.length)}
             </span>
+            <span className="screen-chip" data-lit={player.shuffle ? 'true' : 'false'}>Shuffle</span>
             <span className="screen-row-readout">{player.playing ? 'Playing' : 'Paused'}</span>
           </div>
           <div>
