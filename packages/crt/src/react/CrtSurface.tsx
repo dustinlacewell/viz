@@ -66,8 +66,15 @@ export function CrtSurface(props: CrtSurfaceProps) {
     fit() // sync once before the first rAF
 
     const loop = startRenderLoop({ canvas, pipeline, getProps })
+    propsRef.current.onRunningChange?.(true)
+
+    // A lost context draws nothing until remount; report it as stopped.
+    const onContextLost = () => propsRef.current.onRunningChange?.(false)
+    canvas.addEventListener('webglcontextlost', onContextLost)
 
     return () => {
+      canvas.removeEventListener('webglcontextlost', onContextLost)
+      propsRef.current.onRunningChange?.(false)
       loop.stop()
       observer.disconnect()
       pipeline.dispose()

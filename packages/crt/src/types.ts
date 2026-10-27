@@ -106,6 +106,13 @@ export interface CrtSurfaceProps extends CrtPreset {
    * segment batch, set a stamp list, etc.
    */
   stage?: (t: number, dt: number) => void
+  /**
+   * Called with `true` once the pipeline is built and drawing, and with
+   * `false` when it stops: on unmount, or when the GL context is lost.
+   * Never called when WebGL2 is unavailable or the pipeline fails to
+   * build, so "not yet true" means "nothing on screen".
+   */
+  onRunningChange?: (running: boolean) => void
   className?: string
   style?: CSSProperties
 }
