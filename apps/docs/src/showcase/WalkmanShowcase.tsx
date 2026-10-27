@@ -54,22 +54,24 @@ export function WalkmanShowcase() {
       </div>
 
       <div style={EVEN_ROW}>
-        <PushButton aria-label="Shuffle" selected={player.shuffle} onClick={() => dispatch({ type: 'shuffle' })}>
-          <Shuffle {...LINE_ICON} />
-        </PushButton>
-        <PushButton aria-label="Previous" onClick={() => dispatch({ type: 'prev' })}>
-          <SkipBack {...SOLID_ICON} />
-        </PushButton>
-        <PushButton
-          aria-label={player.playing ? 'Pause' : 'Play'}
-          selected={player.playing}
-          onClick={() => dispatch({ type: 'toggle' })}
-        >
-          {player.playing ? <Pause {...SOLID_ICON} /> : <Play {...SOLID_ICON} />}
-        </PushButton>
-        <PushButton aria-label="Next" onClick={() => dispatch({ type: 'next', rand: Math.random() })}>
-          <SkipForward {...SOLID_ICON} />
-        </PushButton>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <PushButton aria-label="Shuffle" selected={player.shuffle} onClick={() => dispatch({ type: 'shuffle' })}>
+            <Shuffle {...LINE_ICON} />
+          </PushButton>
+          <PushButton aria-label="Previous" onClick={() => dispatch({ type: 'prev' })}>
+            <SkipBack {...SOLID_ICON} />
+          </PushButton>
+          <PushButton
+            aria-label={player.playing ? 'Pause' : 'Play'}
+            selected={player.playing}
+            onClick={() => dispatch({ type: 'toggle' })}
+          >
+            {player.playing ? <Pause {...SOLID_ICON} /> : <Play {...SOLID_ICON} />}
+          </PushButton>
+          <PushButton aria-label="Next" onClick={() => dispatch({ type: 'next', rand: Math.random() })}>
+            <SkipForward {...SOLID_ICON} />
+          </PushButton>
+        </div>
         <Knob
           value={volume}
           baseline={volume}
