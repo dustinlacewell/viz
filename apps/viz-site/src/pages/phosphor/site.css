@@ -101,6 +101,27 @@
   min-width: 4rem;
 }
 
+/* A control label with a HelpTooltip dot after the text. */
+.site-help-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Label and readout above a Slider, at either end of one line. */
+.site-caption {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* IndexStrip demo: phosphor ships no CSS for chip state; the host
+   says what `muted` looks like. */
+.site-indexstrip [data-chip-state='muted'] { opacity: 0.45; }
+
 /* ============================================================
  * Weather glyph
  *
@@ -353,10 +374,12 @@
    narrow to host an OLED demo *next to* a paragraph of prose — the
    text wraps to 3 lines and the demo gets squashed below its
    minimum, so stacking reads better. */
+/* Every second row puts its demo on the right. Rows are the only
+   <div> siblings in the listing, so the count is by row position. */
 @media (min-width: 720px) {
   .site-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; }
-  .site-row[data-side='right'] .site-row-demo { order: 2; }
-  .site-row[data-side='right'] .site-row-text { order: 1; }
+  .site-row:nth-of-type(even) .site-row-demo { order: 2; }
+  .site-row:nth-of-type(even) .site-row-text { order: 1; }
 }
 
 .site-row-demo {
