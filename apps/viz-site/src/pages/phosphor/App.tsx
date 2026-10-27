@@ -44,6 +44,15 @@ function useSharedHue() {
   return [hue, set] as const
 }
 
+/* Inset between the glass edge and on-glass content. Display's screen
+   padding defaults to 0 (full-bleed is the library default), so every
+   example Display with content on the glass opts in to the same inset. */
+const SCREEN_INSET = 16
+
+/* Glass laid out as a flex column, so on-glass content can claim the
+   height a `fill` Display gives it. */
+const GLASS_COLUMN = { display: 'flex', flexDirection: 'column' } as const
+
 export function App() {
   return (
     <div className="site">
@@ -123,7 +132,7 @@ function MetaphorDemo() {
       {/* The OLED on top of the chassis displays the current hue;
           the recessed-glass HueStrip is a chassis-mounted control
           below it. Same Panel hosts both — that's the metaphor. */}
-      <Display>
+      <Display padding={SCREEN_INSET}>
         <div className="screen-row">
           <span className="screen-row-label">Hue</span>
           <span className="screen-row-readout">
@@ -339,10 +348,15 @@ function DisplayDemo() {
   return (
     <Display
       style={{ width: '100%', height: '100%', boxSizing: 'border-box' }}
-      /* The scope bleeds to the screen edge; the chip rows need
+      /* `fill` stretches the bezel + glass to the chassis height the
+         grid cell gives it; without it the glass stays content-height
+         and the chrome below it grows with the row.
+         The scope bleeds to the screen edge; the chip rows need
          a small inset so they don't kiss the chamfer. We split:
          the scope is absolutely positioned to fill the bare screen,
          and the rows sit in a padded sibling wrapper. */
+      fill
+      screenStyle={GLASS_COLUMN}
     >
       <div
         style={{
@@ -369,9 +383,9 @@ function DisplayDemo() {
           position: 'relative',
           display: 'flex',
           flexDirection: 'column',
-          height: '100%',
+          flex: 1,
           gap: 8,
-          padding: 16,
+          padding: SCREEN_INSET,
           justifyContent: 'flex-end',
           pointerEvents: 'none',
         }}
@@ -427,7 +441,7 @@ function ModalDemo() {
         <PushButton onClick={() => setOpen(true)}>Open dialog</PushButton>
       </Panel>
       <Modal open={open} onClose={() => setOpen(false)} ariaLabel="Confirm">
-        <Display>
+        <Display padding={SCREEN_INSET}>
           {/* Title on glass — lit-pixel typography, no chip pretense. */}
           <div className="site-modal-title">Confirm action</div>
           <p className="site-modal-body">
@@ -640,12 +654,12 @@ const NOTES: ReadonlyArray<Note> = ['C', 'D', 'E', 'F', 'G', 'A', 'B']
 
 /* Layout for "Display fills the Panel, content centered on glass":
    the Panel is a flex parent, `<Display fill>` stretches the chassis
-   + bezel + screen to claim the available space, and screenStyle adds
-   the flex-column-center layout for the on-glass content. */
+   + bezel + screen to claim the available space, and screenStyle
+   centres the on-glass content on both axes. */
 const CENTER_ON_GLASS = {
-  display: 'flex',
-  flexDirection: 'column',
+  ...GLASS_COLUMN,
   justifyContent: 'center',
+  alignItems: 'center',
 } as const
 
 function ScrubChipDemo() {
@@ -660,7 +674,7 @@ function ScrubChipDemo() {
         display: 'flex',
       }}
     >
-      <Display fill screenStyle={CENTER_ON_GLASS}>
+      <Display fill padding={SCREEN_INSET} screenStyle={CENTER_ON_GLASS}>
         <ScrubChipRow<Note>
           items={NOTES.map((n) => ({ key: n, lit: n === picked, content: n }))}
           onSelect={(k) => setPicked(k)}
@@ -682,7 +696,7 @@ function ChipToggleDemo() {
         display: 'flex',
       }}
     >
-      <Display fill screenStyle={CENTER_ON_GLASS}>
+      <Display fill padding={SCREEN_INSET} screenStyle={CENTER_ON_GLASS}>
         <div
           className="screen-chip-row"
           style={{ justifyContent: 'center' }}

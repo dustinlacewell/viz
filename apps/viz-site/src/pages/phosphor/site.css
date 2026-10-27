@@ -135,6 +135,9 @@
 .labeled-display-label {
   font-family: var(--font-mono);
   font-size: 0.7rem;
+  /* No half-leading: the 6px gap alone spaces label from display,
+     and the label's top edge sits on the panel padding. */
+  line-height: 1;
   letter-spacing: 0.18em;
   text-transform: uppercase;
 }
@@ -189,6 +192,10 @@
      the weather grid claims the full surface width regardless. */
   width: 100%;
   box-sizing: border-box;
+  /* Spacing comes from the declared gaps only. Inherited 1.55 leading
+     put ~6px of half-leading under the DSEG numerals (which have no
+     descent) on the bottom row, and only ~2px above the top label. */
+  line-height: 1;
   /* Establish a container so child clamps can size off the surface
      width, not the page width. The numerals and labels inside shrink
      in lockstep with how much room the surface actually has. */
@@ -260,7 +267,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 2px;
+  gap: 6px;
 }
 
 .weather-surface-readout-row {
@@ -368,6 +375,11 @@
   flex-direction: column;
   gap: 12px;
 }
+
+/* Flex items' margins do not collapse: a trailing <p> margin would
+   make the text cell, and so the stretched demo panel beside it,
+   taller than the text. */
+.site-row-text > :last-child { margin-bottom: 0; }
 
 .site-row-title {
   font-family: var(--font-mono);
