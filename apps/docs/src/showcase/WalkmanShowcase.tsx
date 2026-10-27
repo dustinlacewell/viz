@@ -22,7 +22,7 @@ export function WalkmanShowcase() {
   return (
     <Panel style={{ padding: 20, width: 380, display: 'flex', flexDirection: 'column', gap: 20 }}>
       <span className="chrome-emboss" style={BRAND}>PHOSPHOR · PM-1</span>
-      <EmbeddedScreen padding={16}>
+      <EmbeddedScreen bezel padding={16}>
         <div className="screen-rows">
           <div className="screen-row">
             <span className="screen-row-label">

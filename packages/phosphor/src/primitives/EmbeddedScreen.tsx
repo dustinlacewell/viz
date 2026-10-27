@@ -14,31 +14,55 @@ interface EmbeddedScreenProps extends HTMLAttributes<HTMLDivElement> {
    * accent). Pass a color to hue-lock this screen regardless of theme.
    */
   color?: string
+  /**
+   * Frame the glass in the black Bezel ring, as a Display does. Off,
+   * the glass meets the chrome directly through a single chamfer —
+   * right for small readouts; on suits a main screen.
+   */
+  bezel?: boolean
 }
 
 /**
- * A screen recessed straight into its host Panel — no Lip, no Bezel.
+ * A screen recessed straight into its host Panel — no raised Lip.
  * Use it when a screen sits on a device face beside other controls;
  * use Display when the screen is a chassis of its own.
  *
- * Built on `.screen-embedded`, which carries the Screen's spill and a
- * single chamfer recipe for the glass↔chrome interface. Any on-glass
- * content class (`.screen-row`, `.screen-chip`, …) works inside it.
+ * Bare, it is `.screen-embedded`: the Screen's spill plus one chamfer
+ * recipe for the glass↔chrome interface. With `bezel`, it is a Bezel
+ * around a Screen, whose outset rim effects land on the host chrome.
+ * Any on-glass content class (`.screen-row`, `.screen-chip`, …) works
+ * inside either.
  */
 export function EmbeddedScreen({
   padding,
   color,
+  bezel = false,
   className = '',
   style,
+  children,
   ...rest
 }: EmbeddedScreenProps) {
-  const mergedStyle: CSSProperties = {
-    ...(padding !== undefined ? { padding } : {}),
-    ...(color !== undefined ? { ['--display-color' as string]: color } : {}),
-    ...style,
+  const colorStyle: CSSProperties =
+    color !== undefined ? { ['--display-color' as string]: color } : {}
+  const paddingStyle: CSSProperties = padding !== undefined ? { padding } : {}
+
+  if (!bezel) {
+    return (
+      <div
+        {...rest}
+        style={{ ...paddingStyle, ...colorStyle, ...style }}
+        className={`screen-embedded ${className}`}
+      >
+        {children}
+      </div>
+    )
   }
   return (
-    <div {...rest} style={mergedStyle} className={`screen-embedded ${className}`} />
+    <div {...rest} style={{ ...colorStyle, ...style }} className={`bezel ${className}`}>
+      <div className="screen" style={{ flex: 1, ...paddingStyle }}>
+        {children}
+      </div>
+    </div>
   )
 }
 

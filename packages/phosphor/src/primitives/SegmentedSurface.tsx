@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react'
 import { EmbeddedScreen, type EmbeddedScreenProps } from './EmbeddedScreen'
 
-interface SegmentedSurfaceProps extends Omit<EmbeddedScreenProps, 'padding' | 'color'> {
+interface SegmentedSurfaceProps extends Omit<EmbeddedScreenProps, 'padding' | 'color' | 'bezel'> {
   /**
    * The lit-segment content (foreground). Anything you can render in
    * React — segmented digits, weather glyphs, an inline SVG, multiple
