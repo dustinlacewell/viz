@@ -341,7 +341,7 @@ const NOISE_OPTIONS = [
 type NoiseKey = (typeof NOISE_OPTIONS)[number]['key']
 
 function DisplayDemo() {
-  const [freq, setFreq] = useState<FreqKey>('med')
+  const [freq, setFreq] = useState<FreqKey>('slow')
   const [noise, setNoise] = useState<NoiseKey>('low')
   const freqMul = FREQ_OPTIONS.find((o) => o.key === freq)?.mul ?? 1
   const noiseVal = NOISE_OPTIONS.find((o) => o.key === noise)?.n ?? 0
