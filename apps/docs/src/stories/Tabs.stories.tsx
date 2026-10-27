@@ -1,36 +1,48 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import { useState } from 'react'
-import { Tabs, Panel } from '@ldlework/phosphor'
+import { Tabs, Panel, type TabItem } from '@ldlework/phosphor'
 
+/**
+ * A row of PushButtons where one is selected. The selected tab stays
+ * down with a lit label. The host shows the content for that tab.
+ */
 const meta: Meta<typeof Tabs> = {
   title: 'Primitives/Tabs',
   component: Tabs,
 }
 export default meta
 
-const TAB_ITEMS = [
-  { key: 'screen', label: 'Screen' },
-  { key: 'waves', label: 'Waves' },
-  { key: 'noise', label: 'Noise' },
+const PAGES: TabItem[] = [
+  { key: 'osc', label: 'Osc' },
+  { key: 'filter', label: 'Filter' },
+  { key: 'amp', label: 'Amp' },
 ]
 
+/**
+ * The base tab row. Click a tab to select it. It goes down, and the
+ * tab that was selected comes back up.
+ */
 export const Default: StoryObj<typeof Tabs> = {
-  render: () => {
-    const [active, setActive] = useState('waves')
+  render: function Render() {
+    const [active, setActive] = useState('filter')
     return (
-      <Panel style={{ padding: 20, width: 320 }}>
-        <Tabs tabs={TAB_ITEMS} active={active} onSelect={setActive} />
+      <Panel style={{ padding: 20 }}>
+        <Tabs tabs={PAGES} active={active} onSelect={setActive} />
       </Panel>
     )
   },
 }
 
-export const WithDisabledTab: StoryObj<typeof Tabs> = {
-  render: () => {
-    const [active, setActive] = useState('screen')
-    const tabs = [...TAB_ITEMS.slice(0, 2), { key: 'locked', label: 'Locked', disabled: true }]
+/**
+ * `disabled` on a tab item dims that tab and blocks it. Click Osc or
+ * Filter to select them. Click Amp. It stays up and is not selected.
+ */
+export const DisabledTab: StoryObj<typeof Tabs> = {
+  render: function Render() {
+    const [active, setActive] = useState('osc')
+    const tabs = PAGES.map((tab) => (tab.key === 'amp' ? { ...tab, disabled: true } : tab))
     return (
-      <Panel style={{ padding: 20, width: 320 }}>
+      <Panel style={{ padding: 20 }}>
         <Tabs tabs={tabs} active={active} onSelect={setActive} />
       </Panel>
     )

@@ -8,28 +8,17 @@ const meta: Meta<typeof HelpTooltip> = {
 export default meta
 
 /**
- * Hover or focus the "?" glyph to open the popover. It's portaled to
- * `document.body`, so it escapes this panel's own stacking/overflow —
- * try it near the edge of the preview frame.
+ * A "?" dot beside a control label. `title` and `description` fill the
+ * popover. Hover the dot, or Tab to it, to open the popover. Move away
+ * or Tab on to close it.
  */
 export const Default: StoryObj<typeof HelpTooltip> = {
   render: () => (
-    <Panel style={{ padding: 20, width: 280, display: 'flex', alignItems: 'center', gap: 8 }}>
+    <Panel style={{ padding: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
       <span className="chrome-emboss">Beam intensity</span>
       <HelpTooltip
         title="Beam intensity"
-        description="Scales how brightly the trace deposits into the phosphor accumulator each frame."
-      />
-    </Panel>
-  ),
-}
-
-export const NearViewportEdge: StoryObj<typeof HelpTooltip> = {
-  render: () => (
-    <Panel style={{ padding: 20, width: 280, textAlign: 'right' }}>
-      <HelpTooltip
-        title="Flip behavior"
-        description="When there isn't enough room below the trigger, the popover flips above it. Horizontal position clamps to the viewport."
+        description="How brightly the trace burns into the phosphor each frame."
       />
     </Panel>
   ),

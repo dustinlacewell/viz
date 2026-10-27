@@ -1,58 +1,61 @@
 import type { Meta, StoryObj } from '@storybook/react'
+import type { ReactNode } from 'react'
 import { Panel, SegmentedSurface } from '@ldlework/phosphor'
 
+/**
+ * The bare two-layer glass that `SegmentedDisplay` is built on. Its
+ * `lit` and `ghost` slots take any React node, not only text in the
+ * segment font. For text, and for `color` and `ghostOffset`, see
+ * SegmentedDisplay.
+ */
 const meta: Meta<typeof SegmentedSurface> = {
   title: 'Primitives/SegmentedSurface',
   component: SegmentedSurface,
 }
 export default meta
 
+/** A small mono tag beside segment digits, baseline-aligned. */
+function TaggedReading({ tag, digits, tagHidden }: { tag: string; digits: ReactNode; tagHidden?: boolean }) {
+  return (
+    <span style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+      <span
+        style={{
+          fontFamily: 'var(--font-mono, monospace)',
+          fontSize: 12,
+          visibility: tagHidden ? 'hidden' : 'visible',
+        }}
+      >
+        {tag}
+      </span>
+      <span>{digits}</span>
+    </span>
+  )
+}
+
 /**
- * `SegmentedSurface` is the bare two-layer cutout `SegmentedDisplay`
- * is built on. Where `SegmentedDisplay` assumes "lit text + optional
- * ghost text" in the segment font, `lit`/`ghost` here accept any
- * ReactNode — mixed fonts, icons, arbitrary markup.
+ * `lit` takes markup. Here it mixes a mono REC tag with segment
+ * digits. Look at the two fonts on one glass.
  */
 export const MixedContent: StoryObj<typeof SegmentedSurface> = {
   render: () => (
     <Panel style={{ padding: 20 }}>
-      <SegmentedSurface
-        lit={
-          <span style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-            <span style={{ fontFamily: 'var(--font-mono, monospace)', fontSize: 12 }}>REC</span>
-            <span>03:14</span>
-          </span>
-        }
-      />
-    </Panel>
-  ),
-}
-
-export const WithGhost: StoryObj<typeof SegmentedSurface> = {
-  render: () => (
-    <Panel style={{ padding: 20 }}>
-      <SegmentedSurface lit="03:14" ghost="88:88" />
-    </Panel>
-  ),
-}
-
-export const GhostOffset: StoryObj<typeof SegmentedSurface> = {
-  render: () => (
-    <Panel style={{ padding: 20 }}>
-      <SegmentedSurface lit="-06.4" ghost="-88.8" ghostOffset={{ x: 2, y: 2 }} />
+      <SegmentedSurface lit={<TaggedReading tag="REC" digits="03:14" />} />
     </Panel>
   ),
 }
 
 /**
- * `color` hue-locks this display regardless of the surrounding theme
- * — e.g. a green clock that stays green on a blue-themed page.
+ * `ghost` takes markup too. It draws in the dim color behind `lit`.
+ * Here the ghost holds the REC tag and the lit layer leaves it out, so
+ * REC shows unlit: the tag is off. Look at REC beside the lit digits.
  */
-export const HueLocked: StoryObj<typeof SegmentedSurface> = {
+export const Ghost: StoryObj<typeof SegmentedSurface> = {
   render: () => (
-    <Panel style={{ padding: 20, display: 'flex', gap: 12 }}>
-      <SegmentedSurface lit="12:00" color="#33ff66" />
-      <SegmentedSurface lit="AM" color="#ff9933" />
+    <Panel style={{ padding: 20 }}>
+      <SegmentedSurface
+        lit={<TaggedReading tag="REC" digits="03:14" tagHidden />}
+        ghost={<TaggedReading tag="REC" digits="88:88" />}
+      />
     </Panel>
   ),
 }

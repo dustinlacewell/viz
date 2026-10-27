@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import { useEffect, useState } from 'react'
-import { HueStrip, Panel, SegmentedDisplay } from '@ldlework/phosphor'
+import { HueStrip, Panel } from '@ldlework/phosphor'
 
 const meta: Meta<typeof HueStrip> = {
   title: 'Primitives/HueStrip',
@@ -8,26 +8,36 @@ const meta: Meta<typeof HueStrip> = {
 }
 export default meta
 
+const THEME_HUE = 82
+
 /**
- * The HueStrip drives the global `--theme-hue` CSS variable. Dragging
- * re-skins every chrome primitive across the whole page in real time
- * — open another primitive's story in a second tab while you drag.
+ * A hue slider. The strip only reports the hue. This story writes it
+ * to the page's `--theme-hue`, so the panel and every other chrome
+ * part take the new hue. Drag along the strip, or click a point on it.
+ * Or click the strip, then press the left and right arrows for 1°
+ * steps, or Page Up and Page Down for 10° steps.
  */
 export const Default: StoryObj<typeof HueStrip> = {
-  render: () => {
-    const [hue, setHue] = useState(82)
-    useEffect(() => {
-      document.documentElement.style.setProperty('--theme-hue', String(hue))
-    }, [hue])
+  render: function Render() {
+    const [hue, setHue] = useState(THEME_HUE)
+    useThemeHue(hue)
     return (
-      <Panel style={{ padding: 20, width: 360, display: 'flex', alignItems: 'center', gap: 14 }}>
-        <SegmentedDisplay style={{ minWidth: '5ch' }}>
-          {Math.round(hue).toString().padStart(3, '0')}
-        </SegmentedDisplay>
-        <div style={{ flex: 1 }}>
-          <HueStrip hue={hue} onChange={setHue} />
-        </div>
+      <Panel style={{ padding: 20, width: 360 }}>
+        <HueStrip hue={hue} onChange={setHue} />
       </Panel>
     )
   },
+}
+
+/** Write `hue` to the page's `--theme-hue`; put the default back on unmount. */
+function useThemeHue(hue: number) {
+  useEffect(() => {
+    document.documentElement.style.setProperty('--theme-hue', String(hue))
+  }, [hue])
+  useEffect(
+    () => () => {
+      document.documentElement.style.removeProperty('--theme-hue')
+    },
+    [],
+  )
 }

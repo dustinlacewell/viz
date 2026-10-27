@@ -36,42 +36,50 @@ const CSS_EXAMPLE = `/* The whole palette derives from one variable. */
 
 const BASH_EXAMPLE = `pnpm add @ldlework/phosphor`
 
-export const TSX: StoryObj<typeof CodeBlock> = {
+/**
+ * Highlighted source on its own screen. Look at the token colors:
+ * keywords, strings, tags and comments each take a different shade of
+ * the theme hue.
+ */
+export const Default: StoryObj<typeof CodeBlock> = {
+  render: () => <CodeBlock lang="tsx" code={TSX_EXAMPLE} style={{ width: 520 }} />,
+}
+
+/**
+ * `lang` picks the grammar. Top: `css`, with selectors and property
+ * names. Bottom: `bash`, a one-line install command.
+ */
+export const Lang: StoryObj<typeof CodeBlock> = {
   render: () => (
-    <CodeBlock lang="tsx" code={TSX_EXAMPLE} style={{ width: 520 }} />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, width: 520 }}>
+      <CodeBlock lang="css" code={CSS_EXAMPLE} />
+      <CodeBlock lang="bash" code={BASH_EXAMPLE} />
+    </div>
   ),
 }
 
-/** CSS source — keywords, selectors, property names, and comments
- *  all derive their colors from the same --theme-hue, so the
- *  highlighting re-tints with the rest of the page. */
-export const CSS: StoryObj<typeof CodeBlock> = {
-  render: () => (
-    <CodeBlock lang="css" code={CSS_EXAMPLE} style={{ width: 520 }} />
-  ),
-}
+const THEME_HUE = 82
 
-/** Shell — the bash grammar handles commands, flags, and strings.
- *  Short snippets like install commands work fine without ceremony. */
-export const Bash: StoryObj<typeof CodeBlock> = {
-  render: () => (
-    <CodeBlock lang="bash" code={BASH_EXAMPLE} style={{ width: 520 }} />
-  ),
-}
-
-/** Live theme tracking. Every token color derives from --theme-hue
- *  via OKLCH, so dragging the HueStrip re-tints every keyword,
- *  string, and comment in lockstep with the rest of the chassis. */
+/**
+ * Every token color derives from `--theme-hue`. The HueStrip here
+ * writes that variable for the page. Drag along the strip: the code
+ * re-tints with the chrome.
+ */
 export const HueTracking: StoryObj<typeof CodeBlock> = {
-  render: () => {
-    const [hue, setHue] = useState(82)
+  render: function Render() {
+    const [hue, setHue] = useState(THEME_HUE)
     useEffect(() => {
       document.documentElement.style.setProperty('--theme-hue', String(hue))
     }, [hue])
+    useEffect(
+      () => () => {
+        document.documentElement.style.removeProperty('--theme-hue')
+      },
+      [],
+    )
     return (
-      <Panel style={{ padding: 20, width: 560 }}>
+      <Panel style={{ padding: 20, width: 560, display: 'flex', flexDirection: 'column', gap: 16 }}>
         <CodeBlock lang="tsx" code={TSX_EXAMPLE} />
-        <div style={{ height: 14 }} />
         <HueStrip hue={hue} onChange={setHue} />
       </Panel>
     )

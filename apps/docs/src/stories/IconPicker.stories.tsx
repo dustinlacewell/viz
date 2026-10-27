@@ -1,8 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import { useState } from 'react'
-import { IconPicker, Panel, type IconPickerOption } from '@ldlework/phosphor'
+import { IconPicker, Knob, Panel, type IconPickerOption } from '@ldlework/phosphor'
 import { noneIcon, sourceIcon } from '@ldlework/phosphor-dials'
 
+/**
+ * A small chrome key that shows the current option's glyph. Click it to
+ * open a grid of glyphs. For options told apart by shape, not by name.
+ */
 const meta: Meta<typeof IconPicker> = {
   title: 'Primitives/IconPicker',
   component: IconPicker,
@@ -27,72 +31,77 @@ const SOURCE_NAMES = [
   'gate', 'phaseGate',
 ]
 
-const options: IconPickerOption[] = [
-  { value: '', label: 'none', icon: noneIcon },
-  ...SOURCE_NAMES.map((name) => ({
-    value: name,
-    label: name,
-    icon: sourceIcon(name),
-  })),
+const NONE: IconPickerOption = { value: '', label: 'none', icon: noneIcon }
+
+const SOURCES: IconPickerOption[] = [
+  NONE,
+  ...SOURCE_NAMES.map((name) => ({ value: name, label: name, icon: sourceIcon(name) })),
 ]
 
+/** The four periodic waves, each with one line on its shape. */
+const WAVES: [string, string][] = [
+  ['sine', 'Smooth, even swing.'],
+  ['tri', 'Straight ramps up and down.'],
+  ['saw', 'Ramps up, then drops.'],
+  ['square', 'Jumps between high and low.'],
+]
+
+function waveOption([name]: [string, string]): IconPickerOption {
+  return { value: name, label: name, icon: sourceIcon(name) }
+}
+
 /**
- * Compact icon selector: a small square chrome trigger showing the
- * current option's glyph; clicking opens a popover grid of glyph
- * cells (Escape or outside-click dismisses). For option sets told
- * apart by shape rather than name — here, the full set of waveform
- * glyphs `phosphor-dials` draws for dials' stdlib sources, so this
- * story doubles as the glyph gallery.
+ * `options` fills the grid, here with every modulation source glyph.
+ * Click the key to open the grid. Click a glyph to pick it; the key
+ * shows it and the grid closes. Press Escape or click outside to close
+ * the grid with no change.
  */
 export const Default: StoryObj<typeof IconPicker> = {
-  render: () => {
+  render: function Render() {
     const [value, setValue] = useState('sine')
     return (
-      <Panel style={{ padding: 20, minWidth: 220 }}>
-        <IconPicker
-          value={value}
-          options={options}
-          onChange={setValue}
-          label="Modulation source"
-        />
+      <Panel style={{ padding: 20 }}>
+        <IconPicker value={value} options={SOURCES} onChange={setValue} label="Modulation source" />
       </Panel>
     )
   },
 }
 
 /**
- * Hover popups. `hoverContent` puts a HoverCard on the closed trigger
- * (suppressed while the popover is open); `option.hover` parks a card
- * flush beside the popover while that cell is hovered/focused — the
- * card never covers the grid, and only one shows at a time. Cells
- * carrying `hover` drop their native title tooltip so the two never
- * double up. Content is arbitrary — `<strong>` + `<span>` render in
- * the HelpTooltip title/body treatment.
+ * `option.hint` adds a line to the cell's native tooltip, after the
+ * label. Open the grid and rest the pointer on a glyph to read it.
  */
-export const WithHoverCards: StoryObj<typeof IconPicker> = {
-  render: () => {
+export const Hint: StoryObj<typeof IconPicker> = {
+  render: function Render() {
     const [value, setValue] = useState('sine')
-    const hoverOptions: IconPickerOption[] = options.map((o) => ({
-      ...o,
-      hover: (
-        <>
-          <strong>{o.label || 'none'}</strong>
-          <span>Selects the {o.label || 'none'} option.</span>
-        </>
-      ),
-    }))
+    const options = [NONE, ...WAVES.map((w) => ({ ...waveOption(w), hint: w[1] }))]
     return (
-      <Panel style={{ padding: 20, minWidth: 220 }}>
+      <Panel style={{ padding: 20 }}>
+        <IconPicker value={value} options={options} onChange={setValue} label="Modulation source" />
+      </Panel>
+    )
+  },
+}
+
+/**
+ * `hoverContent` puts a card on the closed key that says what the
+ * picker sets. Hover the key to see it. Click the key: the card goes
+ * away while the grid is open.
+ */
+export const HoverContent: StoryObj<typeof IconPicker> = {
+  render: function Render() {
+    const [value, setValue] = useState('sine')
+    return (
+      <Panel style={{ padding: 20 }}>
         <IconPicker
           value={value}
-          options={hoverOptions}
+          options={[NONE, ...WAVES.map(waveOption)]}
           onChange={setValue}
           label="Modulation source"
           hoverContent={
             <>
               <strong>Modulation source</strong>
-              <span>Hover the closed trigger for this explainer; open the
-              grid and hover cells for per-option cards.</span>
+              <span>The wave that moves this control.</span>
             </>
           }
         />
@@ -102,37 +111,142 @@ export const WithHoverCards: StoryObj<typeof IconPicker> = {
 }
 
 /**
- * The `footer` slot: auxiliary controls pinned below the grid, fenced
- * off by a hairline rule. Footer clicks don't close the popover (it
- * dismisses only on option select, outside-click, or Escape), so it's
- * a place for related knobs the host wants at hand while picking —
- * here a live count of how many times the footer button was pressed.
- * `phosphor-dials`' attach control uses it for the modulation-mode
- * segment.
+ * `option.hover` gives a cell a card. The card sits beside the grid, so
+ * it never covers a glyph. Open the grid and hover each glyph. The
+ * cell's native tooltip is off when it has a card.
  */
-export const WithFooter: StoryObj<typeof IconPicker> = {
-  render: () => {
+export const OptionHover: StoryObj<typeof IconPicker> = {
+  render: function Render() {
     const [value, setValue] = useState('sine')
-    const [count, setCount] = useState(0)
+    const options = [
+      NONE,
+      ...WAVES.map((w) => ({
+        ...waveOption(w),
+        hover: (
+          <>
+            <strong>{w[0]}</strong>
+            <span>{w[1]}</span>
+          </>
+        ),
+      })),
+    ]
     return (
-      <Panel style={{ padding: 20, minWidth: 220 }}>
+      <Panel style={{ padding: 20 }}>
+        <IconPicker value={value} options={options} onChange={setValue} label="Modulation source" />
+      </Panel>
+    )
+  },
+}
+
+const POLARITIES = [
+  ['uni', '+', 'Unipolar: swings above the value only'],
+  ['bi', '±', 'Bipolar: swings above and below the value'],
+] as const
+
+/**
+ * `footer` adds controls below the grid, here a polarity switch. Open
+ * the grid and click + or ±. The grid stays open, so you can set the
+ * polarity and then pick a glyph.
+ */
+export const Footer: StoryObj<typeof IconPicker> = {
+  render: function Render() {
+    const [value, setValue] = useState('sine')
+    const [polarity, setPolarity] = useState<string>('bi')
+    return (
+      <Panel style={{ padding: 20 }}>
         <IconPicker
           value={value}
-          options={options}
+          options={[NONE, ...WAVES.map(waveOption)]}
           onChange={setValue}
           label="Modulation source"
           footer={
-            <button
-              type="button"
-              className="chrome-iconpicker-cell"
-              style={{ width: '100%' }}
-              title="Stays open on click"
-              onClick={() => setCount((n) => n + 1)}
-            >
-              tapped {count}×
-            </button>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 4 }}>
+              {POLARITIES.map(([key, glyph, title]) => (
+                <button
+                  key={key}
+                  type="button"
+                  title={title}
+                  className={`chrome-iconpicker-cell ${key === polarity ? 'is-selected' : ''}`}
+                  onClick={() => setPolarity(key)}
+                >
+                  {glyph}
+                </button>
+              ))}
+            </div>
           }
         />
+      </Panel>
+    )
+  },
+}
+
+/**
+ * `align` sets where the grid sits against the key. Left: the default
+ * `end`, the grid's right edge meets the key's right edge. Right:
+ * `center`, the grid is centred under the key. Click each key to
+ * compare.
+ */
+export const Align: StoryObj<typeof IconPicker> = {
+  render: function Render() {
+    const [value, setValue] = useState('sine')
+    return (
+      <Panel style={{ padding: 20, display: 'flex', gap: 120 }}>
+        {(['end', 'center'] as const).map((align) => (
+          <div key={align} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span className="chrome-emboss" style={{ fontSize: 11 }}>
+              {align}
+            </span>
+            <IconPicker
+              value={value}
+              options={SOURCES}
+              onChange={setValue}
+              align={align}
+              label={`Modulation source, align ${align}`}
+            />
+          </div>
+        ))}
+      </Panel>
+    )
+  },
+}
+
+/**
+ * `hideTrigger` drops the key. The host holds `open` and opens the
+ * grid from its own control. Here the knob is that control, and
+ * `align="center"` hangs the grid under the knob. Right-click the
+ * knob to open the grid. Pick a glyph; the caption shows it.
+ */
+export const HideTrigger: StoryObj<typeof IconPicker> = {
+  render: function Render() {
+    const [value, setValue] = useState('sine')
+    const [open, setOpen] = useState(false)
+    const [amp, setAmp] = useState(0.5)
+    return (
+      <Panel style={{ padding: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+        <div style={{ position: 'relative' }}>
+          <Knob
+            value={amp}
+            baseline={amp}
+            range={[0, 1]}
+            label="amp"
+            onChangeBaseline={setAmp}
+            onRightClick={() => setOpen(true)}
+          />
+          <IconPicker
+            value={value}
+            options={SOURCES}
+            onChange={setValue}
+            open={open}
+            onOpenChange={setOpen}
+            hideTrigger
+            align="center"
+            label="Modulation source"
+            style={{ position: 'absolute', left: '50%', bottom: 0 }}
+          />
+        </div>
+        <div className="chrome-emboss" style={{ fontSize: 12 }}>
+          source {value || 'none'} · right-click the knob
+        </div>
       </Panel>
     )
   },
