@@ -155,6 +155,68 @@ describe('def()', () => {
   })
 })
 
+describe('def(args)', () => {
+  it('a plain value sets the param value and its reset target', () => {
+    const s = sine({ freq: 3 })
+    expect(s.params.freq.dial.value).toBe(3)
+    expect(s.params.freq.dial.initial).toBe(3)
+    expect(s.params.freq.dial.meta).toBe(sine.params.freq.dial.meta)
+    expect(s.params.phase.dial.value).toBe(0)
+    expect(sine.params.freq.dial.value).toBe(1)
+  })
+
+  it('a slot keeps the prototype meta and brings its own value and modulation', () => {
+    const f = dial(2)
+    attach(f, sine())
+    const s = sine({ freq: f })
+    const freq = s.params.freq
+    expect(freq).not.toBe(f)
+    expect(freq.dial.value).toBe(2)
+    expect(freq.dial.initial).toBe(2)
+    expect(freq.dial.meta).toMatchObject({ min: 0.01, max: 20, scale: 'log', unit: 'Hz' })
+    expect(freq.attached?.def).toBe(sine)
+    expect(freq.attached).not.toBe(f.attached)
+    expect(freq.modDepth).toBe(f.modDepth)
+  })
+
+  it('meta fields on the passed slot win over the prototype', () => {
+    const s = sine({ freq: dial(5, { max: 100, unit: 'rad/s' }) })
+    expect(s.params.freq.dial.meta).toMatchObject({
+      min: 0.01,
+      max: 100,
+      scale: 'log',
+      unit: 'rad/s',
+    })
+    expect(sine.params.freq.dial.meta.max).toBe(20)
+  })
+
+  it('two instances from the same args are independent', () => {
+    const f = dial(2)
+    attach(f, sine())
+    const args = { freq: f }
+    const a = sine(args)
+    const b = sine(args)
+    expect(a.params.freq).not.toBe(b.params.freq)
+    expect(a.params.freq.attached).not.toBe(b.params.freq.attached)
+    a.params.freq.dial.value = 9
+    expect(b.params.freq.dial.value).toBe(2)
+    expect(f.dial.value).toBe(2)
+  })
+
+  it('throws on a slot of the wrong outType', () => {
+    expect(() => sine({ freq: typedDial('text', 'x') as never })).toThrow(/sine.*freq/)
+  })
+
+  it('throws on an unknown param', () => {
+    expect(() => sine({ nope: 1 } as never)).toThrow(/sine.*nope/)
+  })
+
+  it('types args against the param types', () => {
+    // @ts-expect-error — freq is a number param
+    expect(() => sine({ freq: 'fast' })).not.toThrow()
+  })
+})
+
 describe('registry', () => {
   it('registers and retrieves by name', () => {
     clearRegistry()

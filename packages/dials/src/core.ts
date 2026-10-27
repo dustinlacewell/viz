@@ -130,12 +130,20 @@ export type Polarity = 'bipolar' | 'unipolar'
 export type ParamsOf<S> = { [K in keyof S]: SlotOut<S[K]> }
 
 /**
- * A source definition. Callable: `def()` builds a live `Source` with its
- * own fresh param slots (cloned from `params`) and, for stateful
- * sources, its own body closure.
+ * Per-instance param overrides for `def(args)`. A plain value replaces
+ * the param's value and its reset target; a slot is merged onto the
+ * param's prototype (its meta over the prototype's meta, its value and
+ * modulation state in place of the prototype's).
+ */
+export type ParamArgs<P> = { [K in keyof P]?: P[K] | Slot<P[K]> }
+
+/**
+ * A source definition. Callable: `def(args?)` builds a live `Source`
+ * with its own fresh param slots (cloned from `params`, then overridden
+ * by `args`) and, for stateful sources, its own body closure.
  */
 export interface SourceDef<Params extends Record<string, unknown>, Out> {
-  (): Source<Params, Out>
+  (args?: ParamArgs<Params>): Source<Params, Out>
   readonly kind: 'sourceDef'
   /** Globally unique name used for serialization and the picker. */
   readonly name: string

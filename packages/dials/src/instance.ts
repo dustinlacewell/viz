@@ -23,18 +23,81 @@
  * copied — they are sampler scratch, seeded fresh on first sample.
  */
 
-import type { Body, Slot, Source, SourceDef } from './core'
+import type { Body, ParamArgs, Slot, Source, SourceDef } from './core'
 
 /**
  * Build a live source from a def: every param slot is a deep clone of
- * the def's prototype, and a stateful def's `setup` runs once for this
- * instance. Each instance carries its own `_buf` (reused across samples
- * to avoid per-frame allocation) and `_keys` (cached param iteration).
+ * the def's prototype, overridden by `args`, and a stateful def's
+ * `setup` runs once for this instance. Each instance carries its own
+ * `_buf` (reused across samples to avoid per-frame allocation) and
+ * `_keys` (cached param iteration).
  */
 export function instantiate<P extends Record<string, unknown>, Out>(
   def: SourceDef<P, Out>,
+  args?: ParamArgs<P>,
 ): Source<P, Out> {
-  return makeSource(def, cloneParams(def.params))
+  const params = cloneParams(def.params)
+  if (args) applyArgs(def, params, args)
+  return makeSource(def, params)
+}
+
+/**
+ * Override fresh param clones from `args`. A plain value sets the
+ * param's value and reset target; a slot is merged onto the clone.
+ * Unknown keys throw; `undefined` entries are skipped.
+ */
+function applyArgs<P extends Record<string, unknown>>(
+  def: SourceDef<P, unknown>,
+  params: { [K in keyof P]: Slot<P[K]> },
+  args: ParamArgs<P>,
+): void {
+  for (const k in args) {
+    if (!Object.prototype.hasOwnProperty.call(params, k)) {
+      throw new Error(`dials: source "${def.name}" has no param "${k}"`)
+    }
+    const arg = args[k] as P[typeof k] | Slot<P[typeof k]> | undefined
+    if (arg === undefined) continue
+    params[k] = isSlot(arg)
+      ? mergeSlot(def.name, k, params[k], arg)
+      : withHome(params[k], arg)
+  }
+}
+
+function isSlot<T>(x: T | Slot<T>): x is Slot<T> {
+  return typeof x === 'object' && x !== null && (x as { kind?: unknown }).kind === 'slot'
+}
+
+/** A plain-value override: the value becomes both current value and reset target. */
+function withHome<T>(slot: Slot<T>, value: T): Slot<T> {
+  slot.dial.value = value
+  ;(slot.dial as { initial: T }).initial = value
+  return slot
+}
+
+/**
+ * A slot override, merged onto the prototype's clone: the passed meta
+ * wins field by field over the prototype's; value, reset target,
+ * attachment and modulation state come from the passed slot. The
+ * attachment is cloned, so the passed slot is never adopted.
+ */
+function mergeSlot<T>(
+  sourceName: string,
+  key: string,
+  proto: Slot<T>,
+  arg: Slot<T>,
+): Slot<T> {
+  if (arg.outType !== proto.outType) {
+    throw new Error(
+      `dials: source "${sourceName}" param "${key}" is ${proto.outType}, ` +
+        `not ${arg.outType}`,
+    )
+  }
+  const from = cloneSlot(arg)
+  return {
+    ...from,
+    outType: proto.outType,
+    dial: { ...from.dial, meta: { ...proto.dial.meta, ...arg.dial.meta } },
+  }
 }
 
 /** Deep-clone one slot and its entire attached-source subtree. */

@@ -3,8 +3,8 @@
  *
  * A *source* is a named recipe that turns N sub-parameters into one
  * output value. `defineSource` builds the definition — a callable:
- * `def()` builds a live `Source` (with its own fresh slots) ready to
- * attach.
+ * `def(args?)` builds a live `Source` (with its own fresh slots) ready
+ * to attach.
  *
  * The registry exists only so the panel's "attach modulator…" picker
  * can list candidates matching a slot's output type. The library
@@ -20,6 +20,7 @@
 import type {
   AnySourceDef,
   Body,
+  ParamArgs,
   ParamsOf,
   Polarity,
   Slot,
@@ -58,7 +59,8 @@ export type SourceSpec<S extends Record<string, Slot<any>>, Out> = {
 
 /**
  * Define a named source. The result is callable: `def()` creates an
- * instance. Body param types are inferred from `params`.
+ * instance, `def({ freq: 3 })` one with param overrides. Body param
+ * types are inferred from `params`.
  */
 export function defineSource<
   S extends Record<string, Slot<any>> = {},
@@ -68,8 +70,8 @@ export function defineSource<
   if (!spec.body === !spec.setup) {
     throw new Error(`dials: source "${spec.name}" needs exactly one of body / setup`)
   }
-  const def = function () {
-    return instantiate(def)
+  const def = function (args?: ParamArgs<P>) {
+    return instantiate(def, args)
   } as SourceDef<P, Out>
   Object.defineProperties(def, {
     kind: { value: 'sourceDef', enumerable: true },

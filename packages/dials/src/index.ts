@@ -35,6 +35,7 @@ export type {
   Dials,
   DialsOut,
   ModMode,
+  ParamArgs,
   ParamsOf,
   Polarity,
   Slot,
