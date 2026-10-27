@@ -10,6 +10,7 @@
 
 import { useEffect, useId, useRef, useState, type HTMLAttributes } from 'react'
 import { createPortal } from 'react-dom'
+import { placePopover, type PopoverPlacement } from './popover-place'
 
 interface HelpTooltipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'title'> {
   title: string
@@ -21,13 +22,6 @@ const POPOVER_WIDTH = 240
 const VIEWPORT_MARGIN = 6
 const TRIGGER_GAP = 6
 
-interface PopoverPos {
-  top: number
-  left: number
-  /** Did we end up flipping to render above the trigger? */
-  above: boolean
-}
-
 export function HelpTooltip({
   title,
   description,
@@ -37,7 +31,7 @@ export function HelpTooltip({
   const popoverId = useId()
   const triggerRef = useRef<HTMLSpanElement | null>(null)
   const [open, setOpen] = useState(false)
-  const [pos, setPos] = useState<PopoverPos | null>(null)
+  const [pos, setPos] = useState<PopoverPlacement | null>(null)
 
   // Recompute position whenever we open. Also reposition on scroll /
   // resize while open so the popover follows its trigger.
@@ -94,36 +88,21 @@ export function HelpTooltip({
 }
 
 /**
- * Place the popover below the trigger by default; flip above if it
- * would extend past the bottom edge. Horizontally clamp to the viewport
- * so we never paint outside the visible window.
+ * Below the trigger, flipping above near the bottom edge; right edges
+ * aligned (keeps the help icon visually "tethered" to its tooltip),
+ * clamped to the viewport.
  */
-function computePosition(trigger: DOMRect): PopoverPos {
-  const vw = window.innerWidth
-  const vh = window.innerHeight
-
-  // Default vertical placement: below the trigger.
+function computePosition(trigger: DOMRect): PopoverPlacement {
   // The actual popover height isn't known yet — we estimate ~5 lines
   // worth (~100px) for the flip decision. Once rendered, browser
   // clipping handles any remaining overflow.
   const estimatedH = 100
-  const belowTop = trigger.bottom + TRIGGER_GAP
-  const wantsAbove = belowTop + estimatedH + VIEWPORT_MARGIN > vh
-  const above = wantsAbove && trigger.top - TRIGGER_GAP - estimatedH > VIEWPORT_MARGIN
-  const top = above
-    ? trigger.top - TRIGGER_GAP - estimatedH
-    : belowTop
-
-  // Default horizontal: align the popover's right edge with the
-  // trigger's right edge — keeps the help icon visually "tethered"
-  // to its tooltip. Clamp so we don't paint past either side.
-  let left = trigger.right - POPOVER_WIDTH
-  if (left < VIEWPORT_MARGIN) left = VIEWPORT_MARGIN
-  if (left + POPOVER_WIDTH > vw - VIEWPORT_MARGIN) {
-    left = vw - VIEWPORT_MARGIN - POPOVER_WIDTH
-  }
-
-  return { top, left, above }
+  return placePopover(
+    trigger,
+    { width: POPOVER_WIDTH, height: estimatedH },
+    { width: window.innerWidth, height: window.innerHeight },
+    { gap: TRIGGER_GAP, margin: VIEWPORT_MARGIN },
+  )
 }
 
 export type { HelpTooltipProps }

@@ -5,10 +5,11 @@
  *
  * Unlike Dropdown (a restyled native <select> for text options), this
  * exists for option sets that are best told apart by shape — waveform
- * glyphs, pattern swatches. The popover is plain absolute positioning
- * inside the picker's own stacking context — no portal, no flip logic —
- * so it stays cheap; hosts with clipping ancestors should reach for
- * Dropdown instead.
+ * glyphs, pattern swatches. The popover is portaled to document.body
+ * (the HelpTooltip idiom) so no ancestor stacking context or clip can
+ * trap it: fixed-positioned from the picker root's rect, measured
+ * before paint, flipped above near the bottom edge, clamped to the
+ * viewport, and re-placed on scroll/resize while open.
  *
  * Hover popups: the trigger (via `hoverContent`) and each grid cell
  * (via `option.hover`) can carry a HoverCard — a portaled popup in the
@@ -18,8 +19,17 @@
  * rendered footer cells can get the same treatment.
  */
 
-import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react'
 import { createPortal } from 'react-dom'
+import { placePopover, type PopoverAlign, type PopoverPlacement } from './popover-place'
 
 interface IconPickerOption {
   value: string
@@ -48,7 +58,7 @@ interface IconPickerProps {
    * host wants at hand while the picker is open (e.g. a mode segment).
    * Footer clicks do NOT close the popover — it dismisses only on
    * option select, outside-click, or Escape, and the footer lives
-   * inside the popover so the outside-click handler already ignores it.
+   * inside the popover, which the outside-click handler counts as in.
    */
   footer?: ReactNode | undefined
   /**
@@ -76,6 +86,13 @@ interface IconPickerProps {
    * is the affordance.
    */
   hideTrigger?: boolean | undefined
+  /**
+   * Horizontal alignment of the popover against the picker root.
+   * `'end'` (default) right-aligns it with the trigger; `'center'`
+   * centers it — for a triggerless picker parked at a control's bottom
+   * center (e.g. under a knob dial).
+   */
+  align?: PopoverAlign | undefined
   className?: string
   style?: CSSProperties
 }
@@ -298,6 +315,10 @@ function computeCardPosition(
   return { top, right, placement: above ? 'above' : 'below' }
 }
 
+/** Popover offset below the picker root, and its viewport margin. */
+const POPOVER_GAP = 4
+const POPOVER_MARGIN = 6
+
 /**
  * Icon-grid picker in a chrome shell. The trigger is a small raised
  * chrome button carrying the current option's glyph (falling back to
@@ -314,11 +335,13 @@ export function IconPicker({
   open: openProp,
   onOpenChange,
   hideTrigger = false,
+  align = 'end',
   className = '',
   style,
 }: IconPickerProps) {
   const popoverId = useId()
   const rootRef = useRef<HTMLSpanElement | null>(null)
+  const popoverRef = useRef<HTMLDivElement | null>(null)
   // Controlled when `open` is supplied; otherwise track locally. A
   // single `setOpen` funnels both paths — it writes local state when
   // uncontrolled and always reports through `onOpenChange`.
@@ -330,13 +353,45 @@ export function IconPicker({
     onOpenChange?.(next)
   }
 
+  // Placement — measure the open popover before paint (it renders
+  // hidden until placed), then follow the root through scroll/resize.
+  const [pos, setPos] = useState<PopoverPlacement | null>(null)
+  useLayoutEffect(() => {
+    if (!open) return
+    const place = () => {
+      const root = rootRef.current
+      const pop = popoverRef.current
+      if (!root || !pop) return
+      setPos(
+        placePopover(
+          root.getBoundingClientRect(),
+          { width: pop.offsetWidth, height: pop.offsetHeight },
+          { width: window.innerWidth, height: window.innerHeight },
+          { align, gap: POPOVER_GAP, margin: POPOVER_MARGIN },
+        ),
+      )
+    }
+    place()
+    window.addEventListener('scroll', place, true)
+    window.addEventListener('resize', place)
+    return () => {
+      window.removeEventListener('scroll', place, true)
+      window.removeEventListener('resize', place)
+      setPos(null)
+    }
+  }, [open, align])
+
   // Dismissal — outside-click (capture-phase, so clicks that other
   // handlers swallow still close us) and Escape, wired only while open.
+  // The popover is portaled out of the root, so "inside" is either.
   useEffect(() => {
     if (!open) return
     const onPointerDown = (e: PointerEvent) => {
       const root = rootRef.current
-      if (root && !root.contains(e.target as Node)) setOpen(false)
+      const target = e.target as Node
+      if (!root || root.contains(target)) return
+      if (popoverRef.current?.contains(target)) return
+      setOpen(false)
     }
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(false)
@@ -376,59 +431,70 @@ export function IconPicker({
       ) : (
         trigger
       )}
-      {open ? (
-        <div
-          id={popoverId}
-          role="listbox"
-          aria-label={label}
-          className="chrome-iconpicker-popover"
-        >
-          {options.map((o) => {
-            const cell = (
-              <button
-                type="button"
-                role="option"
-                aria-selected={o.value === value}
-                className={`chrome-iconpicker-cell ${o.value === value ? 'is-selected' : ''}`}
-                // The hover card supersedes the native tooltip — never
-                // both at once.
-                title={
-                  o.hover !== undefined
-                    ? undefined
-                    : o.hint
-                      ? `${o.label} — ${o.hint}`
-                      : o.label
-                }
-                onClick={() => {
-                  onChange(o.value)
-                  setOpen(false)
-                }}
-              >
-                <span className="chrome-iconpicker-glyph" aria-hidden="true">
-                  {o.icon}
-                </span>
-              </button>
-            )
-            return o.hover !== undefined ? (
-              <HoverCard
-                key={o.value}
-                placement="side"
-                anchorSelector=".chrome-iconpicker-popover"
-                content={o.hover}
-              >
-                {cell}
-              </HoverCard>
-            ) : (
-              <span key={o.value} className="chrome-hovercard-host">
-                {cell}
-              </span>
-            )
-          })}
-          {footer ? (
-            <div className="chrome-iconpicker-footer">{footer}</div>
-          ) : null}
-        </div>
-      ) : null}
+      {open && typeof document !== 'undefined'
+        ? createPortal(
+            <div
+              ref={popoverRef}
+              id={popoverId}
+              role="listbox"
+              aria-label={label}
+              className="chrome-iconpicker-popover"
+              style={
+                pos
+                  ? { top: pos.top, left: pos.left }
+                  : { top: 0, left: 0, visibility: 'hidden' }
+              }
+            >
+              {options.map((o) => {
+                const cell = (
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={o.value === value}
+                    className={`chrome-iconpicker-cell ${o.value === value ? 'is-selected' : ''}`}
+                    // The hover card supersedes the native tooltip — never
+                    // both at once.
+                    title={
+                      o.hover !== undefined
+                        ? undefined
+                        : o.hint
+                          ? `${o.label} — ${o.hint}`
+                          : o.label
+                    }
+                    onClick={() => {
+                      onChange(o.value)
+                      setOpen(false)
+                    }}
+                  >
+                    <span className="chrome-iconpicker-glyph" aria-hidden="true">
+                      {o.icon}
+                    </span>
+                  </button>
+                )
+                // Cells live inside the portaled popover, so the side
+                // card's `closest()` anchor lookup still finds it.
+                return o.hover !== undefined ? (
+                  <HoverCard
+                    key={o.value}
+                    placement="side"
+                    anchorSelector=".chrome-iconpicker-popover"
+                    content={o.hover}
+                  >
+                    {cell}
+                  </HoverCard>
+                ) : (
+                  <span key={o.value} className="chrome-hovercard-host">
+                    {cell}
+                  </span>
+                )
+              })}
+              {footer ? (
+                <div className="chrome-iconpicker-footer">{footer}</div>
+              ) : null}
+            </div>,
+            document.body,
+          )
+        : null}
     </span>
   )
 }

@@ -124,6 +124,12 @@ const arcPath = (r: number, a0: number, a1: number) => {
 const clamp = (v: number, lo: number, hi: number) =>
   Math.min(hi, Math.max(lo, v))
 
+// True only when the event's DOM target sits inside the Knob's own element.
+// A portaled child of `tab` (e.g. a picker popover) bubbles through React,
+// not the DOM, so without this its clicks would drive the Knob's gestures.
+const ownsTarget = (e: React.SyntheticEvent) =>
+  e.currentTarget.contains(e.target as Node)
+
 /**
  * Round rotary dial over a 270° arc, herder-style: a dim unlit track,
  * a lit fill arc from the start angle to the current value, and a
@@ -252,6 +258,7 @@ export function Knob({
 
   const onDown = useCallback(
     (e: React.PointerEvent) => {
+      if (!ownsTarget(e)) return
       if (e.button === 2) {
         // SHIFT + right, with a glide handler wired, ARMS a lerp drag —
         // but only a drag past the threshold commits. Capture the pointer
@@ -373,6 +380,7 @@ export function Knob({
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
+      if (!ownsTarget(e)) return
       const dir =
         e.key === 'ArrowUp' || e.key === 'ArrowRight'
           ? 1
@@ -458,10 +466,12 @@ export function Knob({
       onPointerUp={onUp}
       onPointerCancel={onUp}
       onDoubleClick={(e) => {
+        if (!ownsTarget(e)) return
         e.stopPropagation()
         if (defaultValue !== undefined) setBaseline(defaultValue)
       }}
       onContextMenu={(e) => {
+        if (!ownsTarget(e)) return
         e.preventDefault()
         // A committed lerp drag owns this gesture — stop it reaching the
         // host's shift+right chord. A tap (flag false) lets it through.

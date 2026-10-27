@@ -5,8 +5,8 @@
  * as PushButton / Dropdown) carrying the current option's glyph in the
  * chrome label color.
  *
- * Popover: a chrome plate anchored below the trigger, right-aligned,
- * holding a grid of recessed glyph cells — each a tiny neutral well
+ * Popover: a chrome plate portaled to <body> and fixed-positioned
+ * below the trigger by IconPicker (right-aligned or centered), holding a grid of recessed glyph cells — each a tiny neutral well
  * (the chrome-help idiom) that lights in the theme accent when
  * selected. Glyphs are stroke-based SVGs inheriting `currentColor`,
  * so state changes are pure color/filter swaps.
@@ -75,11 +75,11 @@
 
 /* ----- Popover ----- */
 
+/* top/left come inline from the placement math. One below the hover
+   cards (help.css, 9999) so a side card never hides under its grid. */
 .chrome-iconpicker-popover {
-  position: absolute;
-  top: calc(100% + 4px);
-  right: 0;
-  z-index: 30;
+  position: fixed;
+  z-index: 9998;
   display: grid;
   grid-template-columns: repeat(5, 28px);
   gap: 4px;
