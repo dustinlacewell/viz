@@ -1,6 +1,7 @@
-import type { CSSProperties, HTMLAttributes, ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
+import { EmbeddedScreen, type EmbeddedScreenProps } from './EmbeddedScreen'
 
-interface SegmentedSurfaceProps extends HTMLAttributes<HTMLDivElement> {
+interface SegmentedSurfaceProps extends Omit<EmbeddedScreenProps, 'padding' | 'color'> {
   /**
    * The lit-segment content (foreground). Anything you can render in
    * React — segmented digits, weather glyphs, an inline SVG, multiple
@@ -37,13 +38,9 @@ interface SegmentedSurfaceProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 /**
- * The bare two-layer EmbeddedScreen cutout. A small piece of recessed
- * glass with a lit foreground and an optional ghost layer behind it.
- *
- * Built on `.screen-embedded` (Screen + own chamfer recipe) so it
- * brings its own chrome interface — meant to be mounted directly on
- * a Panel, not inside a Display. A chassis-level piece would use
- * Display instead.
+ * A two-layer EmbeddedScreen: a small piece of recessed glass with a
+ * lit foreground and an optional ghost layer behind it. Mounted
+ * directly on a Panel, not inside a Display.
  *
  * SegmentedDisplay is a text-specialised version of this; build your
  * own specialisations (weather glyphs, multi-font readouts, mixed
@@ -53,24 +50,15 @@ export function SegmentedSurface({
   lit,
   ghost,
   ghostOffset,
-  color,
   className = '',
-  style,
   ...rest
 }: SegmentedSurfaceProps) {
   const ghostStyle: CSSProperties | undefined =
     ghostOffset && (ghostOffset.x || ghostOffset.y)
       ? { transform: `translate(${ghostOffset.x ?? 0}px, ${ghostOffset.y ?? 0}px)` }
       : undefined
-  const mergedStyle: CSSProperties | undefined = color
-    ? ({ ['--display-color' as string]: color, ...style } as CSSProperties)
-    : style
   return (
-    <div
-      {...rest}
-      style={mergedStyle}
-      className={`screen-embedded segdisplay ${className}`}
-    >
+    <EmbeddedScreen {...rest} className={`segdisplay ${className}`}>
       {ghost !== undefined && (
         <div
           className="segdisplay-ghost"
@@ -81,7 +69,7 @@ export function SegmentedSurface({
         </div>
       )}
       <div className="segdisplay-lit">{lit}</div>
-    </div>
+    </EmbeddedScreen>
   )
 }
 

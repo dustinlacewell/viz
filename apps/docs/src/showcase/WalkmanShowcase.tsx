@@ -1,10 +1,11 @@
 import { useEffect, useReducer, useState, type CSSProperties, type MouseEvent } from 'react'
 import { Pause, Play, Shuffle, SkipBack, SkipForward } from 'lucide-react'
-import { ArcGauge, Display, Knob, Panel, PushButton } from '@ldlework/phosphor'
+import { ArcGauge, EmbeddedScreen, Knob, Panel, PushButton } from '@ldlework/phosphor'
 
 /**
- * A streaming player as a retro-future walkman. The glass shows the
- * track, a spectrum, and a seekable progress bar; the chassis carries
+ * A streaming player as a retro-future walkman. The screen is set
+ * into the chassis; it shows the track, a spectrum, and a seekable
+ * progress bar. The chassis also carries
  * the volume knob, bass/treble arcs, and the transport keys. The
  * spectrum follows volume and EQ, so every control visibly does
  * something.
@@ -20,7 +21,8 @@ export function WalkmanShowcase() {
 
   return (
     <Panel style={{ padding: 20, width: 380, display: 'flex', flexDirection: 'column', gap: 20 }}>
-      <Display padding={16} footer={<span className="chrome-emboss" style={BRAND}>PHOSPHOR · PM-1</span>}>
+      <span className="chrome-emboss" style={BRAND}>PHOSPHOR · PM-1</span>
+      <EmbeddedScreen padding={16}>
         <div className="screen-rows">
           <div className="screen-row">
             <span className="screen-row-label">
@@ -44,7 +46,7 @@ export function WalkmanShowcase() {
             </div>
           </div>
         </div>
-      </Display>
+      </EmbeddedScreen>
 
       <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
         <ArcGauge value={bass} range={[-12, 12]} step={1} defaultValue={0} label="bass" format={formatDb} onChange={setBass} />
@@ -237,7 +239,7 @@ function ProgressBar({ fraction, onSeek }: { fraction: number; onSeek: (f: numbe
 const SOLID_ICON = { size: 16, fill: 'currentColor', strokeWidth: 0 } as const
 const LINE_ICON = { size: 16, strokeWidth: 2.5 } as const
 
-const BRAND: CSSProperties = { fontSize: 11, letterSpacing: '0.2em' }
+const BRAND: CSSProperties = { fontSize: 11, letterSpacing: '0.2em', marginBottom: -8 }
 const TITLE: CSSProperties = { fontSize: '1.1rem' }
 const ARTIST: CSSProperties = { color: 'var(--theme-lit)', marginTop: 4 }
 const TIMES: CSSProperties = { fontSize: '0.7rem' }
