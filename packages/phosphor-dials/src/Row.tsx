@@ -6,15 +6,15 @@
  *   ┌─────────────────────────────────────────────┐
  *   │                 label  (?)                   │   centered caption
  *   │                                              │
- *   │                 ( knob )                     │   control, centered
- *   │                            [attach pick]     │   attach, bottom-right
+ *   │                 ( knob )     [attach pick]   │   control, centered;
+ *   │                                              │   attach, right of knob
  *   │     ▸ nested sub-panel for attached source   │   (recursive)
  *   └─────────────────────────────────────────────┘
  *
- * The label sits centered above the dial; the attach picker tucks into
- * the bottom-right corner of the control area so it never displaces the
- * title. Nested sub-panels indent left with a coloured rail so the
- * recursion is visually unambiguous.
+ * The label sits centered above the dial; the attach picker sits at the
+ * right edge of the control area, centered on the knob face, so it never
+ * displaces the title. Nested sub-panels indent left with a coloured
+ * rail so the recursion is visually unambiguous.
  */
 
 import { type ReactNode } from 'react'
@@ -31,10 +31,23 @@ import type { RowProps } from '@ldlework/dials/react'
  */
 export type Caption = 'above' | 'below'
 
-/** Build a Row bound to a caption placement (see `Caption`). */
-export function makeRow(caption: Caption): (props: RowProps) => ReactNode {
-  if (caption === 'above') return Row
-  return (props) => <Row {...props} caption="below" />
+/**
+ * Build a Row bound to a caption placement (see `Caption`) and the
+ * bundle's knob size, which the attach cell centers on. Returns the
+ * shared `Row` when both are default.
+ */
+export function makeRow(
+  caption: Caption,
+  knobSize?: number,
+): (props: RowProps) => ReactNode {
+  if (caption === 'above' && knobSize === undefined) return Row
+  return (props) => (
+    <Row
+      {...props}
+      caption={caption}
+      {...(knobSize !== undefined ? { knobSize } : {})}
+    />
+  )
 }
 
 export function Row({
@@ -46,7 +59,8 @@ export function Row({
   folded,
   onFold,
   caption = 'above',
-}: RowProps & { caption?: Caption }): ReactNode {
+  knobSize,
+}: RowProps & { caption?: Caption; knobSize?: number }): ReactNode {
   const below = caption === 'below'
   // A nested drawer (an attached source's sub-params) can be folded
   // away to keep deep modulation trees scannable. CONTROLLED: the state
@@ -107,7 +121,14 @@ export function Row({
         </div>
       ) : null}
       {control ? (
-        <div className="pd-row-control">
+        <div
+          className="pd-row-control"
+          style={
+            knobSize !== undefined
+              ? ({ '--pd-knob-size': `${knobSize}px` } as React.CSSProperties)
+              : undefined
+          }
+        >
           {below ? fold : null}
           {control}
           {attach ? <span className="pd-row-attach">{attach}</span> : null}

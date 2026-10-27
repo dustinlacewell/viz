@@ -151,6 +151,7 @@ export function AttachControl({
       open={hosted?.open}
       onOpenChange={hosted?.onOpenChange}
       hideTrigger={inDial}
+      align={inDial ? 'center' : 'end'}
       footer={<ModeFooter mode={mode} onPick={onMode} />}
       // `onPick` handles detach (null), no-op (same name), and
       // swap-to-fresh upstream — depth and mode live on the slot and

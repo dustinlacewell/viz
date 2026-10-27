@@ -2,12 +2,13 @@
  * Knob-backed numeric-slot editor for dials' Panel.
  *
  * Conforms phosphor's Knob to dials' `SliderProps` contract. With no
- * source attached this is value-only mode: the baseline mirrors the
- * value. While a source is attached (`attached` + `live` from the
- * contract), a rAF loop polls the slot's last-sample stash and the
- * knob rides the modulation: `value` = live sample, `baseline` = the
- * dial's own value, so the Knob's built-in mod-accent treatment for
- * `value !== baseline` lights up on its own. Polling reads the stash
+ * source attached and no glide this is value-only mode: the baseline
+ * mirrors the value. While a source is attached (`attached`) or glide
+ * is on (`glide > 0`), a rAF loop polls the slot's last-sample stash
+ * (`live`) and the knob rides the sample: `value` = live sample,
+ * `baseline` = the dial's own value, so the Knob's built-in mod-accent
+ * treatment for `value !== baseline` lights up on its own, and a glided
+ * needle eases toward the set point after a drag. Polling reads the stash
  * only — it never samples, so stateful sources are untouched. Drags,
  * wheel, and keys still edit the base dial via `onChange`, exactly as
  * in value-only mode.
@@ -126,12 +127,13 @@ export function KnobSlider({
     />
   ) : null
 
-  // Live poll — only while a source is attached. React bails out of
-  // re-rendering when the polled value is unchanged, so an unsampled
-  // (or static) stash costs one no-op state set per frame.
+  // Live poll — only while a source is attached or glide is on (the
+  // glided output trails the set point, so the stash is worth showing).
+  // React bails out of re-rendering when the polled value is unchanged,
+  // so an unsampled (or static) stash costs one no-op state set per frame.
   //
   // The poll reads `live` through a ref, and the rAF effect is keyed
-  // ONLY on `attached` — NOT on `live`'s identity. A host commonly
+  // ONLY on `sampled` — NOT on `live`'s identity. A host commonly
   // rebuilds the `live` accessor every render (a fresh closure per
   // render is the natural way to write one); keying the effect on it
   // would tear down and restart the rAF loop on every re-render,
@@ -140,10 +142,11 @@ export function KnobSlider({
   // and blips the sample — which reads as unrelated knobs jittering when
   // you touch any one of them. Holding `live` in a ref makes the loop
   // survive those re-renders untouched.
+  const sampled = attached || (glide ?? 0) > 0
   const liveRef = useRef(live)
   liveRef.current = live
   useEffect(() => {
-    if (!attached) {
+    if (!sampled) {
       setLiveSample(undefined)
       return
     }
@@ -152,9 +155,9 @@ export function KnobSlider({
       raf = requestAnimationFrame(tick)
     })
     return () => cancelAnimationFrame(raf)
-  }, [attached])
+  }, [sampled])
 
-  const riding = attached && liveSample !== undefined
+  const riding = sampled && liveSample !== undefined
   // Glide bar + gesture: the bar is a pure readout of the slot's glide
   // seconds normalized against the bundle's full-bar reference (0 draws
   // nothing). The gesture wires only when the Panel passed `onGlide` —

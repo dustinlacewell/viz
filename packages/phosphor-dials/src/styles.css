@@ -124,17 +124,25 @@
 }
 
 /*
- * Attach picker tucks into the bottom-right corner of the control area,
- * out of the title's way. Absolute against the relatively-positioned
- * control so the knob can center independently.
+ * Attach picker sits at the right edge of the control area, vertically
+ * centered on the knob face — the top `--pd-knob-size` px of the control
+ * (the Row sets it from the bundle's knob size; 56px is the default).
+ * Centering on the face, not the whole control, keeps it level with the
+ * dial when a caption or readout hangs below. Absolute against the
+ * relatively-positioned control so the knob can center independently.
  */
 .pd-row-attach {
   position: absolute;
   right: 0;
-  bottom: 0;
   display: inline-flex;
   gap: 4px;
   align-items: center;
+}
+
+/* Scoped to the control so the static bare variant gets no shift. */
+.pd-row-control > .pd-row-attach {
+  top: calc(var(--pd-knob-size, 56px) / 2);
+  transform: translateY(-50%);
 }
 
 /*
@@ -205,8 +213,9 @@
 
 /*
  * The triggerless picker anchor — zero-footprint, parked at the dial's
- * bottom center so its popover (position: absolute; top: 100%) drops
- * below the dial. Popover itself re-enables pointer events.
+ * bottom center. IconPicker portals its popover out and places it from
+ * this anchor's rect (`align="center"`), so it hangs centered below the
+ * dial.
  */
 .pd-attach-indial {
   position: absolute;
@@ -214,14 +223,6 @@
   bottom: 0;
   width: 0;
   height: 0;
-}
-
-.pd-attach-indial .chrome-iconpicker-popover {
-  pointer-events: auto;
-  /* Center the popover under the dial rather than right-aligning it. */
-  right: auto;
-  left: 50%;
-  transform: translateX(-50%);
 }
 
 /*
@@ -276,14 +277,19 @@
  */
 /*
  * Control area — a relative positioning context so the attach picker
- * can anchor to its bottom-right while the knob centers on its own.
- * Reserve a little right gutter so the corner picker never overlaps the
- * dial.
+ * can sit at its right edge, level with the knob face, while the knob
+ * centers on its own. Reserve a little right gutter so the picker never
+ * overlaps the dial.
  */
 .pd-row-control {
   position: relative;
   display: flex;
   justify-content: center;
+}
+
+/* The gutter: the picker trigger's 22px plus a 4px gap. */
+.pd-row-control:has(> .pd-row-attach) {
+  padding-right: 26px;
 }
 
 .pd-row-control [data-dials-number] {

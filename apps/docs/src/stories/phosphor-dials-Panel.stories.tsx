@@ -1,22 +1,14 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect } from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { dial, read, type Dials } from '@ldlework/dials'
-import {
-  Panel,
-  defaultSlotActions,
-  type SlotActions,
-  type SlotChromeProps,
-} from '@ldlework/dials/react'
+import { dial, read, sine, type Dials } from '@ldlework/dials'
+import { Panel } from '@ldlework/dials/react'
 import { dialPanelComponents, makeDialPanelComponents } from '@ldlework/phosphor-dials'
 import '@ldlework/phosphor-dials/styles.css'
 
 /**
- * `dialPanelComponents` conforms phosphor's primitives to dials'
- * `PanelComponents` contract — pass it to `<Panel components={...}>`
- * and the whole dial tree (row layout, heading, slider, number field,
- * dropdown, help tooltip) renders in the phosphor design language.
- * This is the composed, real-world usage of `phosphor-dials`' `Row`
- * and `Heading`, which have no meaningful appearance in isolation.
+ * `dialPanelComponents` renders a dials `Panel` with phosphor parts.
+ * Pass it to `<Panel components={...}>`. Each dial shows as a knob
+ * with its title above it.
  */
 const meta: Meta<typeof Panel> = {
   title: 'Phosphor-Dials/Panel',
@@ -30,37 +22,46 @@ const synthDials: Dials = {
   detune: dial(0, { min: -100, max: 100, unit: '¢', description: 'Pitch offset in cents.' }),
 }
 
+/**
+ * A panel of three dials. Drag a knob up or down to change its value.
+ * Hover a title to read what the dial does.
+ */
 export const Default: StoryObj<typeof Panel> = {
   render: () => (
     <Panel title="Synth" dials={synthDials} components={dialPanelComponents} />
   ),
 }
 
-const modDials: Dials = {
-  amp: dial(0.5, {
-    min: 0,
-    max: 1,
-    description: 'Attach a source and watch the knob ride it.',
-  }),
-}
-
 /**
- * Host-app usage pattern: the app samples its dials every frame via
- * `read(dials, { t, dt })` — that sampling is what fills each slot's
- * `lastSample` stash, which the knob polls to display the live
- * modulated value. The story runs that host loop itself.
+ * The host samples its dials every frame with `read(dials, { t, dt })`.
+ * That sample is the live value the knob shows. Stories that move on
+ * their own run that frame loop with this hook.
  */
-function LiveModulationPanel() {
+function useSampleLoop(...dials: Dials[]) {
   useEffect(() => {
     let last = performance.now()
     let raf = requestAnimationFrame(function tick(now: number) {
       const dt = (now - last) / 1000
       last = now
-      read(modDials, { t: now / 1000, dt })
+      for (const d of dials) read(d, { t: now / 1000, dt })
       raf = requestAnimationFrame(tick)
     })
     return () => cancelAnimationFrame(raf)
-  }, [])
+  }, dials)
+}
+
+const modDials: Dials = {
+  amp: dial(0.5, {
+    min: 0,
+    max: 1,
+    mod: sine({ freq: 0.5 }),
+    depth: 0.3,
+    description: 'Output level, swung by a sine.',
+  }),
+}
+
+function LiveModulationPanel() {
+  useSampleLoop(modDials)
   return (
     <Panel
       title="Modulatable"
@@ -71,156 +72,27 @@ function LiveModulationPanel() {
 }
 
 /**
- * The attach picker (top-right of each row) is a compact glyph button
- * opening a grid of waveform icons — one per registered stdlib source
- * for that slot's type. Attach `sine` to `amp` — the
- * row expands into a nested sub-panel for the source's own
- * (themselves modulatable) params, and the knob rides the additive
- * output `base + depth·signal`: the white band shows the modulation
- * envelope around the user's value, right-drag on the knob sets the
- * depth (band width), and left-dragging the knob slides the whole
- * envelope with the base value. Depth lives on the slot, so right-drag
- * works before any source is attached — pre-arming the white envelope
- * band (it reads as "armed"), which the source then drives through once
- * attached. The picker popover always carries a footer — a three-option
- * segment (center ± / up + / down −) selecting the modulation mode,
- * reshaping the envelope to swing both ways, only above, or only below
- * the base. Because mode is slot-level, the shape can be pre-set before
- * any source is attached, alongside the pre-armable depth.
- *
- * The picker also carries hover popups throughout: the closed trigger
- * explains modulation, each source cell shows the source's name and
- * one-liner plus a live sparkline preview actually running a private
- * instance of that source, and each mode cell gets a one-line card.
+ * Modulation. `amp` starts with a sine attached, so the knob moves on
+ * its own. The white band is the range the sine swings through.
+ * Right-drag the knob up or down to widen or narrow the band. Left-drag
+ * moves the set point and the band with it. Right-click the knob to
+ * open the picker: pick another source, or set the mode (both ways,
+ * up, down) in its footer. The sine's own dials sit in the nested panel
+ * below, and they modulate the same way.
  */
 export const WithModulation: StoryObj<typeof Panel> = {
   render: () => <LiveModulationPanel />,
 }
 
-// ─── Consumer seams (Phase 1 extension points) ───────────────────────
-//
-// The story below exercises the three seams a host app (herder) needs:
-// `actions` (mediated mutation), `liveOverride` (an external effective
-// value riding on top of the slot), and `SlotChrome` (per-slot app
-// adornment around the editor). It stands in for the herder integration
-// before that lands, so the seams are eyeball-able in isolation.
+/** Two panels side by side, tops aligned. */
+const PAIR = { display: 'flex', gap: 24, alignItems: 'flex-start' } as const
 
-const seamDials: Dials = {
-  zoom: dial(0.5, { min: 0, max: 1, description: 'Recursion zoom.' }),
-  rot: dial(0, { min: -1, max: 1, description: 'Recursion rotation.' }),
-}
+// ─── Bundle options ──────────────────────────────────────────────────
 
 /**
- * A per-slot chrome adornment: a small dot beside the knob whose title
- * shows the slot's path — proof the path threads through and that a host
- * can hang app UI around the editor without forking it.
+ * `knobSize` sets the knob diameter for the whole bundle. Here it is
+ * 40 px, for dense node UIs. Drag a knob up or down, as in Default.
  */
-function DotChrome({ path, children }: SlotChromeProps) {
-  return (
-    <div style={{ position: 'relative' }}>
-      {children}
-      <span
-        title={`slot path: ${path.join(' / ')}`}
-        style={{
-          position: 'absolute',
-          top: 0,
-          right: 0,
-          width: 7,
-          height: 7,
-          borderRadius: '50%',
-          background: 'var(--chrome-accent-mod, #6cf)',
-          boxShadow: '0 0 4px var(--chrome-accent-mod-glow, #6cf)',
-        }}
-      />
-    </div>
-  )
-}
-
-/**
- * Wires the three seams. `actions` logs each mutation to a running tape
- * (visible below the panel) and then applies the default in-place
- * mutation — the mediation is observable without changing behavior.
- * `liveOverride` rides `zoom` with a slow synthetic sine, so its knob
- * shows a moving "ridden" value with no source attached (the control-
- * port ride herder needs). `SlotChrome` hangs the DotChrome on each row.
- */
-function SeamPanel() {
-  const [tape, setTape] = useState<string[]>([])
-  const t = useRef(0)
-  useEffect(() => {
-    let raf = requestAnimationFrame(function tick() {
-      t.current += 0.02
-      raf = requestAnimationFrame(tick)
-    })
-    return () => cancelAnimationFrame(raf)
-  }, [])
-
-  const log = (msg: string) =>
-    setTape((tp) => [msg, ...tp].slice(0, 6))
-
-  const actions: Partial<SlotActions> = {
-    setValue: (path, slot, v) => {
-      log(`setValue ${path.join('/')} = ${Number(v).toFixed(3)}`)
-      defaultSlotActions.setValue(path, slot, v)
-    },
-    attach: (path, slot, name) => {
-      log(`attach ${path.join('/')} <- ${name ?? 'none'}`)
-      defaultSlotActions.attach(path, slot, name)
-    },
-    setDepth: (path, slot, d) => {
-      log(`depth ${path.join('/')} = ${d.toFixed(2)}`)
-      defaultSlotActions.setDepth(path, slot, d)
-    },
-    setMode: (path, slot, m) => {
-      log(`mode ${path.join('/')} = ${m}`)
-      defaultSlotActions.setMode(path, slot, m)
-    },
-  }
-
-  const liveOverride = (path: string[]) =>
-    path.length === 1 && path[0] === 'zoom'
-      ? () => 0.5 + 0.4 * Math.sin(t.current)
-      : undefined
-
-  return (
-    <div style={{ width: 260 }}>
-      <Panel
-        title="Seams"
-        id="demo"
-        dials={seamDials}
-        components={{ ...dialPanelComponents, SlotChrome: DotChrome }}
-        actions={actions}
-        liveOverride={liveOverride}
-      />
-      <pre
-        style={{
-          marginTop: 12,
-          padding: 8,
-          fontSize: 10,
-          lineHeight: 1.5,
-          minHeight: 90,
-          background: 'rgba(0,0,0,0.3)',
-          borderRadius: 4,
-          color: 'var(--chrome-text-muted, #9a9)',
-        }}
-      >
-        {tape.length ? tape.join('\n') : 'drag a knob, attach a source…'}
-      </pre>
-    </div>
-  )
-}
-
-/**
- * The consumer extension seams in isolation: mediated `actions` (each
- * mutation is logged then applied), a `liveOverride` riding `zoom`
- * externally, per-slot `SlotChrome` dots carrying the slot path, and a
- * smaller knob size via `makeDialPanelComponents({ knobSize })`.
- */
-export const ConsumerSeams: StoryObj<typeof Panel> = {
-  render: () => <SeamPanel />,
-}
-
-/** The knob-size factory: a tighter 40px bundle for dense node UIs. */
 export const SmallKnobs: StoryObj<typeof Panel> = {
   render: () => (
     <Panel
@@ -232,4 +104,77 @@ export const SmallKnobs: StoryObj<typeof Panel> = {
       components={makeDialPanelComponents({ knobSize: 40 })}
     />
   ),
+}
+
+const blurDials: Dials = {
+  radius: dial(4, { min: 0, max: 32, unit: 'px', description: 'Blur radius.' }),
+  mix: dial(1, { min: 0, max: 1, description: 'Wet / dry mix.' }),
+}
+
+const belowComponents = makeDialPanelComponents({ caption: 'below' })
+
+/**
+ * `caption: 'below'` drops the title above each knob. The knob draws
+ * its own label and value under its face, for dense node UIs. Drag a
+ * knob up or down and watch the value under it.
+ */
+export const CaptionBelow: StoryObj<typeof Panel> = {
+  render: () => <Panel title="Blur" dials={blurDials} components={belowComponents} />,
+}
+
+const filterDials = (): Dials => ({
+  cutoff: dial(0.5, { min: 0, max: 1, description: 'Filter cutoff.' }),
+  resonance: dial(0.2, { min: 0, max: 1, description: 'Filter resonance.' }),
+})
+const dialPlacedDials = filterDials()
+const rowPlacedDials = filterDials()
+const rowAttachComponents = makeDialPanelComponents({ attachPlacement: 'row' })
+
+/**
+ * `attachPlacement` sets where the modulation picker lives. `'dial'`,
+ * the default, has no button: a source glyph sits in the knob face, and
+ * a right-click on the knob opens the picker. `'row'` puts a glyph
+ * button to the right of the knob. Click it to open the picker.
+ */
+export const AttachPlacement: StoryObj<typeof Panel> = {
+  render: () => (
+    <div style={PAIR}>
+      <Panel title="dial" dials={dialPlacedDials} components={dialPanelComponents} />
+      <Panel title="row" dials={rowPlacedDials} components={rowAttachComponents} />
+    </div>
+  ),
+}
+
+const glideDials = (): Dials => ({
+  zoom: dial(0.5, {
+    min: 0,
+    max: 1,
+    glidable: true,
+    glide: 1.5,
+    description: 'Recursion zoom, glided 1.5 s.',
+  }),
+})
+const glideAt2 = glideDials()
+const glideAt3 = glideDials()
+const glideMax3Components = makeDialPanelComponents({ glideMax: 3 })
+
+function GlidePair() {
+  useSampleLoop(glideAt2, glideAt3)
+  return (
+    <div style={PAIR}>
+      <Panel title="max 2 s" dials={glideAt2} components={dialPanelComponents} />
+      <Panel title="max 3 s" dials={glideAt3} components={glideMax3Components} />
+    </div>
+  )
+}
+
+/**
+ * The bar under the knob shows the glide time against `glideMax`. Both
+ * slots glide 1.5 s. That is three quarters of a bar at the default
+ * 2 s, and half a bar at 3 s. Drag a knob. The needle eases to the new
+ * value over the glide time. SHIFT + right-drag a knob up or down to
+ * change its glide.
+ */
+export const GlideMax: StoryObj<typeof Panel> = {
+  render: () => <GlidePair />,
 }

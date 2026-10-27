@@ -24,7 +24,7 @@ import {
 import { type PanelComponents } from '@ldlework/dials/react'
 
 import { sizedKnobSlider } from './KnobSlider'
-import { Row, makeRow, type Caption } from './Row'
+import { makeRow, type Caption } from './Row'
 import { Heading } from './Heading'
 import { AttachControl } from './AttachControl'
 
@@ -50,7 +50,7 @@ export interface DialPanelOptions {
    * Where the modulation picker lives. `'dial'` (default) tucks the
    * picker glyph inside the knob face (center-bottom) and lets a
    * right-click on the dial open it; `'row'` keeps the standalone
-   * trigger in the row's corner. The knob, the Row, and the Panel's
+   * trigger to the right of the knob. The knob, the Row, and the Panel's
    * attach routing all key off this (via `sliderHostsAttach`).
    */
   attachPlacement?: 'dial' | 'row'
@@ -82,7 +82,7 @@ export function makeDialPanelComponents(
     NumberField,
     Dropdown,
     HelpTooltip,
-    Row: below ? makeRow('below') : Row,
+    Row: makeRow(below ? 'below' : 'above', opts.knobSize),
     Heading,
     // Icon-based source picker: glyph trigger + popover glyph grid — a
     // pure view over phosphor's IconPicker (dials binds the semantics).
@@ -92,7 +92,7 @@ export function makeDialPanelComponents(
     // consumer that still wants one.
     sliderShowsValue: true,
     // In 'dial' placement the Knob hosts the attach picker in its face
-    // and the Row drops its corner cell.
+    // and the Row drops its attach cell.
     sliderHostsAttach: opts.attachPlacement !== 'row',
   }
 }
