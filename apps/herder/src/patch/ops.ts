@@ -20,7 +20,7 @@
    rather than reinventing them. */
 
 import {
-  attachFrom, detach, getSource, setDepth, setDial, setMode,
+  attach, detach, getSource, setDepth, setDial, setMode,
   type Dials, type ModMode, type Slot, type SlotSnap,
 } from '@ldlework/dials';
 import { levelAt } from './drill';
@@ -223,7 +223,7 @@ function applyAttach(slot: Slot<unknown>, source: string | null): void {
   if (!source) { detach(slot); return; }
   if (slot.attached?.def.name === source) return;    // no-op re-attach
   const def = getSource(source);
-  if (def) { detach(slot); attachFrom(slot, def); }
+  if (def) { detach(slot); attach(slot, def()); }
 }
 
 /* a value crossing a ref boundary is instance-owned: it lands in the

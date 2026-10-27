@@ -23,7 +23,7 @@
  * trace of its raw output.
  */
 
-import { attachFrom, setDepth, type Source } from '@ldlework/dials'
+import { attach, setDepth, type AnySourceDef, type Source } from '@ldlework/dials'
 import { sine, tri, square } from '@ldlework/dials'
 
 /** Set a numeric param on the top-level preview instance by key. */
@@ -84,22 +84,19 @@ export interface DemoRecipe {
 }
 
 /**
- * Attach a stdlib source to a named sub-slot of the instance. `def` is
- * `any` because the concrete stdlib defs don't structurally satisfy the
- * erased `SourceDef<Record<string, unknown>, unknown>` under
- * exactOptionalPropertyTypes — the same reason `STDLIB` casts. The
- * runtime `outType` guard in `attachFrom` is the real safety net.
+ * Attach a stdlib source to a named sub-slot of the instance. The
+ * runtime `outType` guard in `attach` is the real safety net.
  */
 function drive(
   instance: Source<Record<string, unknown>, unknown>,
   key: string,
-  def: any,
+  def: AnySourceDef,
   depth: number,
   tune?: (src: Source<Record<string, unknown>, unknown>) => void,
 ): void {
   const slot = instance.params[key]
   if (!slot) return
-  const src = attachFrom(slot, def)
+  const src = attach(slot, def())
   setDepth(slot, depth)
   tune?.(src)
 }

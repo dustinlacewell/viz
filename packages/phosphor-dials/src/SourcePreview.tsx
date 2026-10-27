@@ -25,7 +25,7 @@
  */
 
 import { useEffect, useRef, type ReactNode } from 'react'
-import { instantiate, sampleSource, type SourceDef } from '@ldlework/dials'
+import { sampleSource, type SourceDef } from '@ldlework/dials'
 import {
   DEFAULT_TRACES,
   DEMO_RECIPES,
@@ -69,7 +69,7 @@ export function SourcePreview({
     // Private instance — never sample a slot-attached one. A recipe, if
     // present, wires demo oscillators into its inputs so a combinator
     // has something to combine.
-    const instance = instantiate(def)
+    const instance = def()
     const recipe = DEMO_RECIPES[def.name]
     recipe?.wire(instance)
     const traces: TraceSpec[] = recipe?.traces ?? DEFAULT_TRACES

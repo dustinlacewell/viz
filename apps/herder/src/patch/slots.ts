@@ -15,7 +15,7 @@
    in slot PATHS and in whole-tree snap overlays. */
 
 import {
-  adoptBody, attachFrom, cloneSlot, detach, fromJSON, getSource, rebaseSlot, setDepth, setDial, setMode, toJSON,
+  adoptBody, attach, cloneSlot, detach, fromJSON, getSource, rebaseSlot, setDepth, setDial, setMode, toJSON,
   type Dials, type DialsSnap, type Slot, type SlotSnap,
 } from '@ldlework/dials';
 import { slotFor, type ParamDef } from './params';
@@ -127,7 +127,7 @@ export function applySlotOp(
       if (!op.source) { detach(s); return; }
       if (s.attached?.def.name === op.source) return;
       const def = getSource(op.source);
-      if (def) { detach(s); attachFrom(s, def); }
+      if (def) { detach(s); attach(s, def()); }
       return;
     }
   }

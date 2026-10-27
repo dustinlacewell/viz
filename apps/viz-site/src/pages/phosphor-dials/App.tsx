@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { dial, read, attachFrom, setDepth, sine } from '@ldlework/dials'
+import { dial, read, sine } from '@ldlework/dials'
 import { Panel as DialsPanel } from '@ldlework/dials/react'
 import { CodeBlock, Panel as ChromePanel } from '@ldlework/phosphor'
 import { dialPanelComponents } from '@ldlework/phosphor-dials'
@@ -12,18 +12,20 @@ import { dialPanelComponents } from '@ldlework/phosphor-dials'
  *
  * `freq` starts pre-attached to a `sine` source so the page demonstrates
  * live modulation the moment it loads, instead of requiring the visitor
- * to discover the "↻ modulate…" picker themselves. Kept as a concretely-
- * typed object (not widened to `Dials`) so `synthDials.freq` stays
- * `Slot<number>` and attaches without an `any` cast.
+ * to discover the "↻ modulate…" picker themselves.
  */
 const synthDials = {
-  freq: dial(600, { min: 50, max: 3000, scale: 'log', description: 'Oscillator pitch, in Hz.' }),
+  freq: dial(600, {
+    min: 50,
+    max: 3000,
+    scale: 'log',
+    description: 'Oscillator pitch, in Hz.',
+    mod: sine({ freq: 0.15 }), // slow sweep, easy to watch
+    depth: 0.4,
+  }),
   amp: dial(0.5, { min: 0, max: 1, description: 'Output level, 0 to full.' }),
   detune: dial(0, { min: -100, max: 100, unit: '¢', description: 'Pitch offset in cents.' }),
 }
-const sineOnFreq = attachFrom(synthDials.freq, sine)
-sineOnFreq.params.freq.dial.value = 0.15 // slow sweep, easy to watch
-setDepth(synthDials.freq, 0.4)
 
 const INSTALL_SNIPPET = `import '@ldlework/phosphor/styles.css'
 import '@ldlework/phosphor-dials/styles.css'
