@@ -174,6 +174,15 @@ export function instantiate<P extends Record<string, unknown>, Out>(
 }
 
 /**
+ * The single point where a typed source instance is stored in its erased form (`Slot.attached`); sound because the sampler only ever calls `body` with the source's own `_buf`.
+ */
+export function eraseSource<P extends Record<string, unknown>, T>(
+  src: Source<P, T>,
+): Source<Record<string, unknown>, T> {
+  return src as unknown as Source<Record<string, unknown>, T>
+}
+
+/**
  * Per-tick guard for stateful bodies. A stateful source integrates its
  * closure state by `dt` inside the body — so it must run exactly once
  * per time tick, no matter how many slots ride it or how many times a

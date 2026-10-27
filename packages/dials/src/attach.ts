@@ -19,7 +19,7 @@
  */
 
 import type { ModMode, Slot, Source, SourceDef } from './core'
-import { instantiate } from './source'
+import { eraseSource, instantiate } from './source'
 
 /** Default modulation half-width in knob-travel space. */
 export const DEFAULT_DEPTH = 0.15
@@ -31,9 +31,9 @@ export const DEFAULT_DEPTH = 0.15
  * modulates; an already pre-set depth is left alone. Returns the slot
  * so calls can chain in tests / fluent builders.
  */
-export function attach<T>(
+export function attach<P extends Record<string, unknown>, T>(
   slot: Slot<T>,
-  source: Source<Record<string, unknown>, T>,
+  source: Source<P, T>,
 ): Slot<T> {
   if (source.def.outType !== slot.outType) {
     throw new Error(
@@ -42,7 +42,7 @@ export function attach<T>(
     )
   }
   if (slot.modDepth === 0) slot.modDepth = DEFAULT_DEPTH
-  slot.attached = source
+  slot.attached = eraseSource(source)
   return slot
 }
 
@@ -55,10 +55,10 @@ export function attach<T>(
  * Returns the instantiated source (not the slot) so callers can reach
  * its fresh sub-slots directly.
  */
-export function attachFrom<T>(
+export function attachFrom<P extends Record<string, unknown>, T>(
   slot: Slot<T>,
-  def: SourceDef<Record<string, unknown>, T>,
-): Source<Record<string, unknown>, T> {
+  def: SourceDef<P, T>,
+): Source<P, T> {
   if (def.outType !== slot.outType) {
     throw new Error(
       `dials: cannot attach source "${def.name}" returning ${def.outType} ` +
@@ -67,7 +67,7 @@ export function attachFrom<T>(
   }
   if (slot.modDepth === 0) slot.modDepth = DEFAULT_DEPTH
   const src = instantiate(def)
-  slot.attached = src
+  slot.attached = eraseSource(src)
   return src
 }
 

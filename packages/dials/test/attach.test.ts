@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, expectTypeOf, it } from 'vitest'
 import {
   attach,
   attachFrom,
@@ -10,7 +10,9 @@ import {
   sampleSlot,
   setDepth,
   setMode,
+  sine,
   typedDial,
+  type Slot,
 } from '../src'
 
 const k1 = defineSource({
@@ -209,6 +211,21 @@ describe('detach()', () => {
     detach(s)
     expect(s.dial.value).toBe(5)
     expect(s.attached).toBeNull()
+  })
+})
+
+describe('attachFrom() typing', () => {
+  it('takes a stdlib def without a cast and returns a typed source', () => {
+    const s = dial(0.5, { min: 0, max: 1 })
+    const src = attachFrom(s, sine)
+    expectTypeOf(src.params.freq).toEqualTypeOf<Slot<number>>()
+    expectTypeOf(src.params.phase).toEqualTypeOf<Slot<number>>()
+    expect(s.attached).toBe(src)
+  })
+
+  it('attach() takes a typed instance without a cast', () => {
+    const s = dial(0.5, { min: 0, max: 1 })
+    expect(attach(s, instantiate(sine))).toBe(s)
   })
 })
 
