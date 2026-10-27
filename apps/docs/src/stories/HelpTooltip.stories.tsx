@@ -14,8 +14,8 @@ export default meta
  */
 export const Default: StoryObj<typeof HelpTooltip> = {
   render: () => (
-    <Panel style={{ padding: 40, width: 280, display: 'flex', alignItems: 'center', gap: 8 }}>
-      <span>Beam intensity</span>
+    <Panel style={{ padding: 20, width: 280, display: 'flex', alignItems: 'center', gap: 8 }}>
+      <span className="chrome-emboss">Beam intensity</span>
       <HelpTooltip
         title="Beam intensity"
         description="Scales how brightly the trace deposits into the phosphor accumulator each frame."

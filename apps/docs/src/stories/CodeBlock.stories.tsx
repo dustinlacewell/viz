@@ -13,7 +13,7 @@ const TSX_EXAMPLE = `import { Display, ChipToggle } from '@ldlework/phosphor'
 export function PowerStrip({ on, onToggle }) {
   // The chip is width-stable so the row never resizes.
   return (
-    <Display>
+    <Display padding={16}>
       <ChipToggle
         value={on}
         onChange={onToggle}
@@ -56,18 +56,6 @@ export const CSS: StoryObj<typeof CodeBlock> = {
 export const Bash: StoryObj<typeof CodeBlock> = {
   render: () => (
     <CodeBlock lang="bash" code={BASH_EXAMPLE} style={{ width: 520 }} />
-  ),
-}
-
-/** CodeBlock brings its own chrome chassis (Lip · Bezel · Screen), so
- *  it works mounted bare on a Panel exactly the way a Display does —
- *  the two are interchangeable for "self-contained piece of hardware
- *  on the chassis." */
-export const OnAPanel: StoryObj<typeof CodeBlock> = {
-  render: () => (
-    <Panel style={{ padding: 20, width: 560 }}>
-      <CodeBlock lang="tsx" code={TSX_EXAMPLE} />
-    </Panel>
   ),
 }
 

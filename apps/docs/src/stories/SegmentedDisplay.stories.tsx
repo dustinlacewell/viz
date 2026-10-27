@@ -10,7 +10,7 @@ export default meta
 export const Green: StoryObj<typeof SegmentedDisplay> = {
   render: () => (
     <Panel style={{ padding: 20 }}>
-      <SegmentedDisplay>03:14</SegmentedDisplay>
+      <SegmentedDisplay color="oklch(0.85 0.18 145)">03:14</SegmentedDisplay>
     </Panel>
   ),
 }

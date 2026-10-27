@@ -9,16 +9,22 @@ const meta: Meta<typeof PushButton> = {
 export default meta
 
 export const Default: StoryObj<typeof PushButton> = {
-  render: () => <PushButton>Engage</PushButton>,
+  render: () => (
+    <Panel style={{ padding: 20 }}>
+      <PushButton>Engage</PushButton>
+    </Panel>
+  ),
 }
 
 export const Toggled: StoryObj<typeof PushButton> = {
   render: () => {
     const [on, setOn] = useState(false)
     return (
-      <PushButton selected={on} onClick={() => setOn((s) => !s)}>
-        {on ? 'On' : 'Off'}
-      </PushButton>
+      <Panel style={{ padding: 20 }}>
+        <PushButton selected={on} onClick={() => setOn((s) => !s)}>
+          {on ? 'On' : 'Off'}
+        </PushButton>
+      </Panel>
     )
   },
 }

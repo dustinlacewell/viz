@@ -9,7 +9,7 @@ export default meta
 
 export const Default: StoryObj<typeof Display> = {
   render: () => (
-    <Display>
+    <Display padding={16}>
       <div className="screen-chip-row">
         <span className="screen-chip" data-lit="true">ON AIR</span>
         <span className="screen-chip" data-lit="false">CUE</span>
@@ -22,6 +22,7 @@ export const Default: StoryObj<typeof Display> = {
 export const WithHeaderAndFooter: StoryObj<typeof Display> = {
   render: () => (
     <Display
+      padding={16}
       header={
         <>
           <SegmentedDisplay>00:42</SegmentedDisplay>

@@ -20,9 +20,8 @@ export function TapeDeckShowcase() {
 
   return (
     <Panel style={{ padding: 24, width: 640 }}>
-      <div style={{ display: 'flex', gap: 16, alignItems: 'stretch' }}>
         <Display
-          style={{ flex: 1 }}
+          padding={16}
           header={
             <>
               <SegmentedDisplay>00:42</SegmentedDisplay>
@@ -66,7 +65,6 @@ export function TapeDeckShowcase() {
             </span>
           </div>
         </Display>
-      </div>
 
       <div style={{ display: 'flex', gap: 12, marginTop: 18, alignItems: 'center' }}>
         <PushButton selected={transport === 'play'} onClick={() => setTransport('play')}>

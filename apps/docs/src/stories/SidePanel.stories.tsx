@@ -19,7 +19,7 @@ export const Default: StoryObj<typeof SidePanel> = {
     return (
       <div style={{ height: '80vh', position: 'relative' }}>
         <SidePanel open={open} onToggle={() => setOpen((o) => !o)}>
-          <Display>
+          <Display padding={16}>
             <div className="screen-row">
               <span className="screen-row-label">Tuning</span>
             </div>
@@ -36,7 +36,7 @@ export const DockedLeft: StoryObj<typeof SidePanel> = {
     return (
       <div style={{ height: '80vh', position: 'relative' }}>
         <SidePanel open={open} onToggle={() => setOpen((o) => !o)} side="left" width={280}>
-          <Display>
+          <Display padding={16}>
             <div className="screen-row">
               <span className="screen-row-label">Presets</span>
             </div>

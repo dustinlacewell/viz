@@ -21,7 +21,7 @@ export const Default: StoryObj<typeof HueStrip> = {
     }, [hue])
     return (
       <Panel style={{ padding: 20, width: 360 }}>
-        <Display>
+        <Display padding={16}>
           <div className="screen-row">
             <span className="screen-row-label">Hue</span>
             <span className="screen-row-readout">

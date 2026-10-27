@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import { useState } from 'react'
-import { Modal, Display, PushButton, ChipToggle } from '@ldlework/phosphor'
+import { Modal, Display, Panel, PushButton, ChipToggle } from '@ldlework/phosphor'
 
 const meta: Meta<typeof Modal> = {
   title: 'Primitives/Modal',
@@ -14,9 +14,11 @@ export const Default: StoryObj<typeof Modal> = {
     const [confirmed, setConfirmed] = useState(false)
     return (
       <>
-        <PushButton onClick={() => setOpen(true)}>Open dialog</PushButton>
+        <Panel style={{ padding: 20 }}>
+          <PushButton onClick={() => setOpen(true)}>Open dialog</PushButton>
+        </Panel>
         <Modal open={open} onClose={() => setOpen(false)} ariaLabel="Example">
-          <Display>
+          <Display padding={16}>
             <div className="screen-chip-row">
               <span className="screen-chip" data-lit="true">ARE YOU SURE?</span>
             </div>

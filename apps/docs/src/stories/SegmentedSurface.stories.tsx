@@ -19,7 +19,7 @@ export const MixedContent: StoryObj<typeof SegmentedSurface> = {
       <SegmentedSurface
         lit={
           <span style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-            <span style={{ fontFamily: 'inherit', fontSize: 12 }}>REC</span>
+            <span style={{ fontFamily: 'var(--font-mono, monospace)', fontSize: 12 }}>REC</span>
             <span>03:14</span>
           </span>
         }

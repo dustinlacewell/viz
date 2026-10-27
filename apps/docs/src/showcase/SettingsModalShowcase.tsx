@@ -4,7 +4,6 @@ import {
   HueStrip,
   Modal,
   Display,
-  Panel,
   PushButton,
 } from '@ldlework/phosphor'
 
@@ -15,10 +14,8 @@ const TABS: ReadonlyArray<{ key: TabKey; label: string }> = [
 ]
 
 /**
- * Settings modal showcase. A chassis Panel hosts an OLED for the
- * display readout and a recessed-glass HueStrip below it — the same
- * "chassis with mounted controls" metaphor every other Phosphor
- * composition uses.
+ * Settings modal showcase. A Display brings its own chassis; the
+ * Theme tab mounts a recessed-glass HueStrip on its footer strip.
  */
 export function SettingsModalShowcase() {
   const [open, setOpen] = useState(false)
@@ -34,8 +31,10 @@ export function SettingsModalShowcase() {
     <>
       <PushButton onClick={() => setOpen(true)}>Settings</PushButton>
       <Modal open={open} onClose={() => setOpen(false)} ariaLabel="Settings">
-        <Panel style={{ padding: 20 }}>
-          <Display>
+        <Display
+          padding={16}
+          footer={active === 'theme' && <HueStrip hue={hue} onChange={setHue} />}
+        >
             <div className="screen-chip-row">
               {TABS.map((t) => (
                 <button
@@ -73,15 +72,7 @@ export function SettingsModalShowcase() {
                 </div>
               )}
             </div>
-          </Display>
-
-          {active === 'theme' && (
-            <>
-              <div style={{ height: 14 }} />
-              <HueStrip hue={hue} onChange={setHue} />
-            </>
-          )}
-        </Panel>
+        </Display>
       </Modal>
     </>
   )

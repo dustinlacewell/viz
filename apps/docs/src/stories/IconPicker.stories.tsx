@@ -6,6 +6,15 @@ import { noneIcon, sourceIcon } from '@ldlework/phosphor-dials'
 const meta: Meta<typeof IconPicker> = {
   title: 'Primitives/IconPicker',
   component: IconPicker,
+  // The popover hangs below the trigger, outside the Panel. Reserve
+  // that room in the canvas, not as lopsided Panel padding.
+  decorators: [
+    (Story) => (
+      <div style={{ paddingBottom: 160 }}>
+        <Story />
+      </div>
+    ),
+  ],
 }
 export default meta
 
@@ -39,7 +48,7 @@ export const Default: StoryObj<typeof IconPicker> = {
   render: () => {
     const [value, setValue] = useState('sine')
     return (
-      <Panel style={{ padding: '20px 20px 180px', minWidth: 220 }}>
+      <Panel style={{ padding: 20, minWidth: 220 }}>
         <IconPicker
           value={value}
           options={options}
@@ -73,7 +82,7 @@ export const WithHoverCards: StoryObj<typeof IconPicker> = {
       ),
     }))
     return (
-      <Panel style={{ padding: '20px 20px 180px', minWidth: 220 }}>
+      <Panel style={{ padding: 20, minWidth: 220 }}>
         <IconPicker
           value={value}
           options={hoverOptions}
@@ -106,7 +115,7 @@ export const WithFooter: StoryObj<typeof IconPicker> = {
     const [value, setValue] = useState('sine')
     const [count, setCount] = useState(0)
     return (
-      <Panel style={{ padding: '20px 20px 180px', minWidth: 220 }}>
+      <Panel style={{ padding: 20, minWidth: 220 }}>
         <IconPicker
           value={value}
           options={options}

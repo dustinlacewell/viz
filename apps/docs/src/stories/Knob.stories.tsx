@@ -1,12 +1,21 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import { useEffect, useRef, useState } from 'react'
-import { Knob, Panel } from '@ldlework/phosphor'
+import { Knob, Panel, PushButton } from '@ldlework/phosphor'
 
 const meta: Meta<typeof Knob> = {
   title: 'Primitives/Knob',
   component: Knob,
 }
 export default meta
+
+/** Panel layout for a knob with one control or caption below it. */
+const STACK = {
+  padding: 20,
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: 12,
+} as const
 
 /**
  * The base dial: dim track, lit fill arc from the start angle to the
@@ -96,7 +105,7 @@ export const Glide: StoryObj<typeof Knob> = {
     const [v, setV] = useState(0.5)
     const [glide, setGlide] = useState(0.6)
     return (
-      <Panel style={{ padding: 20 }}>
+      <Panel style={STACK}>
         <Knob
           value={v}
           baseline={v}
@@ -107,7 +116,7 @@ export const Glide: StoryObj<typeof Knob> = {
           label="glide"
           onChangeBaseline={setV}
         />
-        <div style={{ marginTop: 12, fontSize: 12, opacity: 0.7 }}>
+        <div className="chrome-emboss" style={{ fontSize: 12 }}>
           shift + right-drag · glide {glide.toFixed(2)}
         </div>
       </Panel>
@@ -164,7 +173,7 @@ export const Modulated: StoryObj<typeof Knob> = {
       return () => cancelAnimationFrame(raf)
     }, [])
     return (
-      <Panel style={{ padding: 20 }}>
+      <Panel style={STACK}>
         <Knob
           value={value}
           baseline={baseline}
@@ -176,13 +185,9 @@ export const Modulated: StoryObj<typeof Knob> = {
           label="drift"
           onChangeBaseline={setBaseline}
         />
-        <button
-          type="button"
-          style={{ marginTop: 12 }}
-          onClick={() => setMode((m) => MODE_NEXT[m])}
-        >
+        <PushButton onClick={() => setMode((m) => MODE_NEXT[m])}>
           mode: {mode}
-        </button>
+        </PushButton>
       </Panel>
     )
   },
