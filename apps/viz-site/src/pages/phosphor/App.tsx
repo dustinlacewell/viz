@@ -335,7 +335,6 @@ const FREQ_OPTIONS = [
 ] as const
 type FreqKey = (typeof FREQ_OPTIONS)[number]['key']
 const NOISE_OPTIONS = [
-  { key: 'clean', label: 'Clean', n: 0 },
   { key: 'low', label: 'Lo', n: 0.06 },
   { key: 'high', label: 'Hi', n: 0.22 },
 ] as const
