@@ -42,7 +42,7 @@ const sample = pumper.step(wave, { t, dt })
 - `@ldlework/scope` — everything above, one entrypoint. No React
   subpath: the dials-wrapped parameter layer, hero preset persistence,
   and `<Scope>`/`<TuningPanel>` React composition live in the demo site
-  (`apps/phosphor-site`), not in this package — scope stays parameter-system-
+  (`apps/viz-site`, pages `/phosphor/` and `/scope/`), not in this package — scope stays parameter-system-
   and framework-agnostic so any host can drive it.
 
 ## Wiring a beam into crt

@@ -18,71 +18,6 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
 
-  apps/crt-site:
-    dependencies:
-      '@ldlework/crt':
-        specifier: workspace:*
-        version: link:../../packages/crt
-      '@ldlework/phosphor':
-        specifier: workspace:*
-        version: link:../../packages/phosphor
-      react:
-        specifier: ^19.0.0
-        version: 19.2.7
-      react-dom:
-        specifier: ^19.0.0
-        version: 19.2.7(react@19.2.7)
-    devDependencies:
-      '@types/react':
-        specifier: ^19.0.0
-        version: 19.2.17
-      '@types/react-dom':
-        specifier: ^19.0.0
-        version: 19.2.3(@types/react@19.2.17)
-      '@vitejs/plugin-react':
-        specifier: ^4.3.3
-        version: 4.7.0(vite@5.4.21(lightningcss@1.32.0))
-      typescript:
-        specifier: ^5.6.3
-        version: 5.9.3
-      vite:
-        specifier: ^5.4.10
-        version: 5.4.21(lightningcss@1.32.0)
-
-  apps/dials-site:
-    dependencies:
-      '@ldlework/dials':
-        specifier: workspace:*
-        version: link:../../packages/dials
-      '@ldlework/phosphor':
-        specifier: workspace:*
-        version: link:../../packages/phosphor
-      '@ldlework/phosphor-dials':
-        specifier: workspace:*
-        version: link:../../packages/phosphor-dials
-      react:
-        specifier: ^19.0.0
-        version: 19.2.7
-      react-dom:
-        specifier: ^19.0.0
-        version: 19.2.7(react@19.2.7)
-    devDependencies:
-      '@types/react':
-        specifier: ^19.0.0
-        version: 19.2.17
-      '@types/react-dom':
-        specifier: ^19.0.0
-        version: 19.2.3(@types/react@19.2.17)
-      '@vitejs/plugin-react':
-        specifier: ^4.3.3
-        version: 4.7.0(vite@5.4.21(lightningcss@1.32.0))
-      typescript:
-        specifier: ^5.6.3
-        version: 5.9.3
-      vite:
-        specifier: ^5.4.10
-        version: 5.4.21(lightningcss@1.32.0)
-
   apps/docs:
     dependencies:
       '@ldlework/crt':
@@ -178,41 +113,7 @@ importers:
         specifier: ^8.0.10
         version: 8.1.5(jiti@2.7.0)
 
-  apps/phosphor-dials-site:
-    dependencies:
-      '@ldlework/dials':
-        specifier: workspace:*
-        version: link:../../packages/dials
-      '@ldlework/phosphor':
-        specifier: workspace:*
-        version: link:../../packages/phosphor
-      '@ldlework/phosphor-dials':
-        specifier: workspace:*
-        version: link:../../packages/phosphor-dials
-      react:
-        specifier: ^19.0.0
-        version: 19.2.7
-      react-dom:
-        specifier: ^19.0.0
-        version: 19.2.7(react@19.2.7)
-    devDependencies:
-      '@types/react':
-        specifier: ^19.0.0
-        version: 19.2.17
-      '@types/react-dom':
-        specifier: ^19.0.0
-        version: 19.2.3(@types/react@19.2.17)
-      '@vitejs/plugin-react':
-        specifier: ^4.3.3
-        version: 4.7.0(vite@5.4.21(lightningcss@1.32.0))
-      typescript:
-        specifier: ^5.6.3
-        version: 5.9.3
-      vite:
-        specifier: ^5.4.10
-        version: 5.4.21(lightningcss@1.32.0)
-
-  apps/phosphor-site:
+  apps/viz-site:
     dependencies:
       '@fontsource/dseg-weather':
         specifier: ^5.2.5
@@ -223,6 +124,9 @@ importers:
       '@ldlework/dials':
         specifier: workspace:*
         version: link:../../packages/dials
+      '@ldlework/gl':
+        specifier: workspace:*
+        version: link:../../packages/gl
       '@ldlework/phosphor':
         specifier: workspace:*
         version: link:../../packages/phosphor
@@ -254,49 +158,6 @@ importers:
       lil-gui:
         specifier: ^0.21.0
         version: 0.21.0
-      typescript:
-        specifier: ^5.6.3
-        version: 5.9.3
-      vite:
-        specifier: ^5.4.10
-        version: 5.4.21(lightningcss@1.32.0)
-
-  apps/scope-site:
-    dependencies:
-      '@ldlework/crt':
-        specifier: workspace:*
-        version: link:../../packages/crt
-      '@ldlework/dials':
-        specifier: workspace:*
-        version: link:../../packages/dials
-      '@ldlework/gl':
-        specifier: workspace:*
-        version: link:../../packages/gl
-      '@ldlework/phosphor':
-        specifier: workspace:*
-        version: link:../../packages/phosphor
-      '@ldlework/phosphor-dials':
-        specifier: workspace:*
-        version: link:../../packages/phosphor-dials
-      '@ldlework/scope':
-        specifier: workspace:*
-        version: link:../../packages/scope
-      react:
-        specifier: ^19.0.0
-        version: 19.2.7
-      react-dom:
-        specifier: ^19.0.0
-        version: 19.2.7(react@19.2.7)
-    devDependencies:
-      '@types/react':
-        specifier: ^19.0.0
-        version: 19.2.17
-      '@types/react-dom':
-        specifier: ^19.0.0
-        version: 19.2.3(@types/react@19.2.17)
-      '@vitejs/plugin-react':
-        specifier: ^4.3.3
-        version: 4.7.0(vite@5.4.21(lightningcss@1.32.0))
       typescript:
         specifier: ^5.6.3
         version: 5.9.3

@@ -1,0 +1,100 @@
+import { resolve } from 'node:path'
+import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite'
+import { presetStore } from './vite-plugin-preset-store'
+
+// One multi-page site: `/` (home) plus one page per package —
+// /phosphor/, /dials/, /phosphor-dials/, /crt/, /scope/. Each page is its
+// own HTML entry under build.rollupOptions.input. Set the base via
+// VITE_BASE at build time.
+//
+// Resolve the workspace libraries (scope, crt, gl, dials, phosphor,
+// phosphor-dials) to their TS/CSS sources (not the built dist) so HMR
+// picks up library changes instantly in dev. The published packages
+// still consume from `dist/` — these aliases only affect this site.
+// More-specific subpaths (crt/react, dials/react, */styles.css) come
+// first: Vite matches aliases in array order.
+export default defineConfig({
+  base: process.env.VITE_BASE ?? '/',
+  plugins: [
+    react(),
+    // Dev-only: serves GET/POST /__preset/scope so the lil-gui overlay
+    // on the phosphor page can read and write the hero-scope preset JSON.
+    // Inactive in build.
+    presetStore({
+      endpoint: '/__preset/scope',
+      targetPath: resolve(__dirname, 'scope-preset.json'),
+    }),
+  ],
+  build: {
+    rollupOptions: {
+      input: {
+        home: resolve(__dirname, 'index.html'),
+        phosphor: resolve(__dirname, 'phosphor/index.html'),
+        dials: resolve(__dirname, 'dials/index.html'),
+        'phosphor-dials': resolve(__dirname, 'phosphor-dials/index.html'),
+        crt: resolve(__dirname, 'crt/index.html'),
+        scope: resolve(__dirname, 'scope/index.html'),
+      },
+    },
+  },
+  resolve: {
+    alias: [
+      {
+        find: '@ldlework/dials/react',
+        replacement: resolve(__dirname, '../../packages/dials/src/react/index.ts'),
+      },
+      {
+        find: '@ldlework/dials',
+        replacement: resolve(__dirname, '../../packages/dials/src/index.ts'),
+      },
+      {
+        find: '@ldlework/phosphor/styles.css',
+        replacement: resolve(__dirname, '../../packages/phosphor/src/styles/index.css'),
+      },
+      {
+        find: '@ldlework/phosphor',
+        replacement: resolve(__dirname, '../../packages/phosphor/src/index.ts'),
+      },
+      {
+        find: '@ldlework/phosphor-dials/styles.css',
+        replacement: resolve(__dirname, '../../packages/phosphor-dials/src/styles.css'),
+      },
+      {
+        find: '@ldlework/phosphor-dials',
+        replacement: resolve(__dirname, '../../packages/phosphor-dials/src/index.ts'),
+      },
+      {
+        find: '@ldlework/crt/react',
+        replacement: resolve(__dirname, '../../packages/crt/src/react/index.ts'),
+      },
+      {
+        find: '@ldlework/crt',
+        replacement: resolve(__dirname, '../../packages/crt/src/index.ts'),
+      },
+      {
+        find: '@ldlework/scope',
+        replacement: resolve(__dirname, '../../packages/scope/src/index.ts'),
+      },
+      // gl subpath entries (crt + scope import @ldlework/gl/substrate).
+      // These must precede the bare '@ldlework/gl' alias so the
+      // more-specific subpath wins — Vite matches aliases in array order.
+      {
+        find: '@ldlework/gl/substrate',
+        replacement: resolve(__dirname, '../../packages/gl/src/substrate/index.ts'),
+      },
+      {
+        find: '@ldlework/gl/camera',
+        replacement: resolve(__dirname, '../../packages/gl/src/camera/index.ts'),
+      },
+      {
+        find: '@ldlework/gl/dynamic-buffer',
+        replacement: resolve(__dirname, '../../packages/gl/src/dynamic-buffer/index.ts'),
+      },
+      {
+        find: '@ldlework/gl',
+        replacement: resolve(__dirname, '../../packages/gl/src/index.ts'),
+      },
+    ],
+  },
+})

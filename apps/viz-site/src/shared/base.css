@@ -1,0 +1,44 @@
+/*
+ * Base rules shared by every page: palette tokens, box-sizing reset,
+ * body, and the link style. Hue-locked to phosphor's --theme-hue, so
+ * each page imports '@ldlework/phosphor/styles.css' before this file.
+ * Per-page layout and type scale stay in each page's site.css.
+ */
+
+:root {
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+
+  /* Chroma is intentionally very low — the room is tinted, not coloured.
+     The lit pixels of the chassis carry the saturation. */
+  --site-bg: oklch(0.13 0.025 var(--theme-hue));
+  --site-fg: oklch(0.88 0.012 var(--theme-hue));
+  --site-fg-dim: oklch(0.68 0.018 var(--theme-hue));
+  --site-fg-faint: oklch(0.48 0.014 var(--theme-hue));
+  --site-rule: oklch(0.78 0.04 var(--theme-hue) / 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--site-bg);
+  color: var(--site-fg);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+a {
+  color: var(--theme-lit-bright);
+  text-decoration: none;
+  text-shadow: 0 0 4px var(--theme-lit-glow);
+}
+
+a:hover { color: var(--theme-lit); }

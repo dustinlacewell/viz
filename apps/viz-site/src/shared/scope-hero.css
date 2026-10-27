@@ -1,0 +1,142 @@
+/* ============================================================
+ * Scope hero — see ScopeHero.tsx
+ * ============================================================ */
+
+.site-hero {
+  position: relative;
+  display: grid;
+  place-items: center;
+  /* Padding here defines the side gutter for the stage — the stage
+     width is `100%` and fills the section content area exactly,
+     leaving 24px on each side. */
+  padding: 32px 24px;
+  overflow: hidden;
+}
+
+@media (max-width: 600px) {
+  .site-hero { padding: 24px 14px; }
+}
+
+.site-hero-stage {
+  position: relative;
+  /* Fill the grid track's content area; the section's padding is
+     what determines the page margin. A max keeps the OLED from
+     ballooning on very wide viewports. */
+  width: 100%;
+  max-width: 880px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+/* On-glass stack inside the Screen.
+   Holds two layers that exactly overlap the glass: the oscilloscope
+   (absolute, bled to the bezel) and the wordmark (in flow, centred).
+   Since .screen has no default padding, the wrapper sits flush with
+   the bezel — its inner padding is its own choice. */
+.site-hero-screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  height: clamp(220px, 32vw, 320px);
+  padding: 16px;
+  /* Clip everything to the screen rectangle — the wordmark glow and
+     the scope canvas both rely on this so they don't visually bleed
+     past the OLED glass into the chrome margin. */
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.site-hero-cta {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* Hero CTA chips override the default chip glow rung — they sit on
+   a busy screen (oscilloscope + wordmark bloom right next to them)
+   so they need a stronger halo than chips on a quiet readout. */
+.site-hero-cta-chip {
+  --screen-chip-glow-lit: var(--chrome-glow-md);
+  padding: 0.25rem 0.7rem;
+  font-size: 0.78rem;
+}
+
+.site-hero-scope {
+  position: absolute;
+  inset: 0;
+  /* Bumped from 0.55 — the trace needs to read clearly behind the
+     wordmark glow without competing with it. */
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.site-hero-wordmark {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-mono);
+  /* Sized to fit "PHOSPHOR" (8 chars + 7 letter-spacings) inside the
+     OLED at every viewport width. The OLED is min(880px, 100vw-32px)
+     wide, minus ~52px of bezel+padding ≈ available glass width. At
+     7.2vw font with 0.18em tracking the wordmark spans ~8.5em which
+     stays inside the glass from 320px through 880px+. */
+  font-size: clamp(1.6rem, 7.2vw, 4.6rem);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--theme-lit-bright);
+  /* Layered glow stack: a tight core flare that anchors the
+     letterforms against the scope behind them, then progressively
+     wider/softer halos that read as the emission of a real lit
+     display rather than an outline. The widest one (0 0 64px) is
+     where the marketing "this thing is glowing at you" lives. */
+  text-shadow:
+    0 0 2px var(--theme-lit-bright),
+    0 0 8px var(--theme-lit-edge),
+    0 0 18px var(--theme-lit-edge),
+    0 0 36px var(--theme-lit-glow),
+    0 0 64px var(--theme-lit-glow);
+  white-space: nowrap;
+  /* Offset the trailing letter-spacing so the run sits optically
+     centred (half a tracking unit shifted off the geometric centre). */
+  margin-left: 0.09em;
+}
+
+/* On-glass tagline inside the OLED. Reads as a faint emitted-light
+   subtitle under the wordmark — same family as the chip rows but
+   smaller, dimmer, with the glow scale's lowest rung. */
+.site-hero-tagline {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--theme-lit-bright);
+  text-shadow: var(--chrome-glow-xs);
+  opacity: 0.78;
+}
+
+.site-hero-tagline-link {
+  /* The brand name is the only fully-lit element in the line. */
+  color: var(--theme-lit);
+  text-shadow: var(--chrome-glow-sm);
+  text-decoration: none;
+  transition: color 200ms ease, text-shadow 200ms ease;
+}
+
+.site-hero-tagline-link:hover {
+  color: var(--theme-lit-bright);
+  text-shadow: var(--chrome-glow-md);
+}

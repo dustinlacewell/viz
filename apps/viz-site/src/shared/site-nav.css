@@ -1,0 +1,8 @@
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  padding: 12px 24px;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+}

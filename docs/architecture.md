@@ -35,7 +35,7 @@ design-system   phosphor        @ldlework/phosphor        chrome chassis, OLED g
                 phosphor-dials  @ldlework/phosphor-dials  phosphor-styled component set for the dials Panel
                             │        (depends on dials, phosphor)
 apps            docs           @ldlework/phosphor-docs   Storybook playground for phosphor
-                phosphor-site  @ldlework/phosphor-site   hero demo — composes scope + dials + crt + phosphor
+                viz-site       @ldlework/viz-site        multi-page demo site — /phosphor/, /dials/, /phosphor-dials/, /crt/, /scope/
 ```
 
 ## Package responsibilities

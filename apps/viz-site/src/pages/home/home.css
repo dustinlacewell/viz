@@ -1,0 +1,13 @@
+.home-list {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.home-desc {
+  color: var(--site-fg-dim);
+}
