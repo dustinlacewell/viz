@@ -1,4 +1,5 @@
 import { useId, type CSSProperties, type InputHTMLAttributes } from 'react'
+import { logPosition, logValue } from './log-scale'
 
 interface SliderProps
   extends Omit<
@@ -8,7 +9,11 @@ interface SliderProps
   value: number
   min: number
   max: number
-  /** Linear step (in user units). Defaults to (max - min) / 1000. */
+  /**
+   * Step in user units. Linear: the input's step, default
+   * (max - min) / 1000. Log: the output value snaps to it (the knob
+   * still moves smoothly); continuous when absent.
+   */
   step?: number
   /**
    * Mapping between slider position and value. `linear` is direct;
@@ -48,9 +53,7 @@ export function Slider({
   const linStep = step ?? (max - min) / 1000
 
   if (useLog) {
-    const logMin = Math.log(min)
-    const logMax = Math.log(max)
-    const pos = (Math.log(Math.max(value, min)) - logMin) / (logMax - logMin)
+    const pos = logPosition(value, min, max)
     return (
       <span
         className={`chrome-slider ${disabled ? 'is-disabled' : ''} ${className}`}
@@ -66,10 +69,7 @@ export function Slider({
           step={1 / 1000}
           value={pos}
           disabled={disabled}
-          onChange={(e) => {
-            const p = Number(e.target.value)
-            onChange(Math.exp(logMin + p * (logMax - logMin)))
-          }}
+          onChange={(e) => onChange(logValue(Number(e.target.value), min, max, step))}
         />
       </span>
     )

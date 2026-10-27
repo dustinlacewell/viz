@@ -298,8 +298,8 @@
   }
 }
 
+/* `data-pressed` only recesses the face (rules below); it does not light. */
 .chrome-button:not([disabled]):active,
-.chrome-button[data-pressed='true'],
 .chrome-button[data-selected='true'] {
   color: var(--chrome-button-label-active);
   text-shadow: var(--chrome-text-glow);

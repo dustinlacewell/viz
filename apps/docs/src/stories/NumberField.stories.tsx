@@ -44,7 +44,8 @@ export const Step: StoryObj<typeof NumberField> = {
 /**
  * `min` and `max` bound the arrow keys. Click the field, then hold the
  * up or down arrow key. The value stops at 1 and at 16. A typed value
- * is not limited.
+ * outside the range snaps to the nearest end when you press Enter or
+ * leave the field.
  */
 export const MinMax: StoryObj<typeof NumberField> = {
   render: () => (

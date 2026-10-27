@@ -1,5 +1,6 @@
 import { useCallback, useRef, type CSSProperties } from 'react'
 import { formatReadout } from './readout'
+import { stepDecimals } from './step-decimals'
 
 interface ArcGaugeProps {
   value: number
@@ -13,7 +14,9 @@ interface ArcGaugeProps {
   step?: number
   /** Double-click (and Home) reset to this. No-op when absent. */
   defaultValue?: number
-  /** Overrides the built-in readout heuristic. */
+  /** Overrides the built-in readout. The default prints as many
+   *  decimals as `step` has (max 4), or a magnitude heuristic when
+   *  `step` is absent. */
   format?: (v: number) => string
   /** Uppercase caption under the arc. */
   label?: string
@@ -80,7 +83,11 @@ export function ArcGauge({
     [onChange, step, min, max],
   )
 
-  const readout = format ? format(value) : formatReadout(value)
+  const readout = format
+    ? format(value)
+    : step
+      ? value.toFixed(stepDecimals(step))
+      : formatReadout(value)
   const t = max === min ? 0 : clamp((value - min) / (max - min), 0, 1)
   const aValue = A0 + t * (A1 - A0)
 
