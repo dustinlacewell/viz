@@ -7,7 +7,9 @@ import {
   fromJSON,
   rebaseSlot,
   sampleSlot,
+  getPos,
   setDial,
+  setPos,
   sine,
   toJSON,
   typedDial,
@@ -126,6 +128,34 @@ describe('typedDial()', () => {
     const s = typedDial<[number, number, number]>('rgb', [1, 0, 0])
     expect(s.outType).toBe('rgb')
     expect(s.dial.value).toEqual([1, 0, 0])
+  })
+})
+
+describe('setPos() / getPos()', () => {
+  it('maps 0..1 onto a linear range', () => {
+    const s = dial(0, { min: 10, max: 20 })
+    setPos(s, 0.5)
+    expect(s.dial.value).toBe(15)
+    expect(getPos(s)).toBe(0.5)
+  })
+
+  it('follows a log scale', () => {
+    const s = dial(1, { min: 1, max: 100, scale: 'log' })
+    setPos(s, 0.5)
+    expect(s.dial.value).toBeCloseTo(10)
+    expect(getPos(s)).toBeCloseTo(0.5)
+  })
+
+  it('clamps positions outside 0..1', () => {
+    const s = dial(0, { min: 0, max: 1 })
+    setPos(s, 2)
+    expect(s.dial.value).toBe(1)
+  })
+
+  it('throws when the dial has no range', () => {
+    const s = dial(0, { min: 0 })
+    expect(() => setPos(s, 0.5)).toThrow(/no min\/max range/)
+    expect(() => getPos(s)).toThrow(/no min\/max range/)
   })
 })
 

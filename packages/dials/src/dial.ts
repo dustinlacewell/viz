@@ -15,7 +15,7 @@
 
 import type { Dial, DialMeta, ModMode, Slot, Source } from './core'
 import { attach, setDepth, setMode } from './attach'
-import { clampToRange } from './space'
+import { clampToRange, fromPos, toPos, validRange, type RangeMeta } from './space'
 
 /** Construction-time modulation state for a dial. */
 export interface ModInit<T> {
@@ -90,12 +90,36 @@ export function slotFromDial<T>(type: string, dial: Dial<T>): Slot<T> {
 }
 
 /**
- * Set a dial's value. Equivalent to `slot.dial.value = v` but clamps
- * to `min`/`max` when both are defined and `T = number`. Use this
- * from the panel; the app should never need to call it directly.
+ * Set a dial's value, in the dial's own units. Equivalent to
+ * `slot.dial.value = v` but clamps to `min`/`max` when both are
+ * defined and `T = number`.
  */
 export function setDial<T>(slot: Slot<T>, value: T): void {
   slot.dial.value = clampToRange(slot.dial.meta, value)
+}
+
+/**
+ * Set a dial by its position in its range: 0 is `min`, 1 is `max`,
+ * following a log scale when the dial has one. Throws when the dial
+ * has no valid `min`/`max`.
+ */
+export function setPos(slot: Slot<number>, pos: number): void {
+  slot.dial.value = fromPos(rangeOf(slot), pos)
+}
+
+/**
+ * A dial's value as a position in its range, 0 to 1 — the inverse of
+ * `setPos`. Reads the base value, not the modulated one. Throws when
+ * the dial has no valid `min`/`max`.
+ */
+export function getPos(slot: Slot<number>): number {
+  return toPos(rangeOf(slot), slot.dial.value)
+}
+
+function rangeOf(slot: Slot<number>): RangeMeta {
+  const meta = slot.dial.meta
+  if (!validRange(meta)) throw new Error(`dials: dial "${meta.label ?? '?'}" has no min/max range`)
+  return meta
 }
 
 /**

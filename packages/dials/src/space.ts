@@ -37,7 +37,7 @@ export function clampToRange<T>(meta: RangeMeta, value: T): T {
   return value
 }
 
-function validRange(meta: RangeMeta): meta is { min: number; max: number; scale?: 'linear' | 'log' } {
+export function validRange(meta: RangeMeta): meta is { min: number; max: number; scale?: 'linear' | 'log' } {
   return (
     typeof meta.min === 'number' &&
     typeof meta.max === 'number' &&

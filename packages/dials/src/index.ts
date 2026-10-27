@@ -44,7 +44,7 @@ export type {
   SourceDef,
 } from './core'
 
-export { dial, typedDial, setDial, setGlide, rebaseSlot, slotFromDial } from './dial'
+export { dial, typedDial, setDial, setPos, getPos, setGlide, rebaseSlot, slotFromDial } from './dial'
 export type { DialOptions, ModInit } from './dial'
 
 export {

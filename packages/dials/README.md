@@ -189,7 +189,7 @@ output replaces the value.
 These are the calls the panel uses. Use them to build your own controls.
 
 ```ts
-import { attach, detach, setDepth, setMode, setDial, setGlide, sine } from '@ldlework/dials'
+import { attach, detach, setDepth, setMode, setDial, setPos, getPos, setGlide, sine } from '@ldlework/dials'
 
 const slot = params.amp
 
@@ -199,6 +199,8 @@ setDepth(slot, 0.25)                         // 0 to 1
 setMode(slot, 'up')                          // 'center' | 'up' | 'down'
 setGlide(slot, 0.2)                          // seconds
 setDial(slot, 0.8)                           // the value you set, clamped to min and max
+setPos(slot, 0.5)                            // 0 is min, 1 is max; follows a log scale
+getPos(slot)                                 // the value as 0 to 1
 detach(slot)                                 // the value you set stays
 ```
 
