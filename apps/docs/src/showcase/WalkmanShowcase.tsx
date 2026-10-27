@@ -20,7 +20,7 @@ export function WalkmanShowcase() {
   const bars = spectrum(player.playing ? t : null, volume / 100, bass, treble)
 
   return (
-    <Panel style={{ padding: 20, width: 400, display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <Panel style={{ padding: 20, width: 520, display: 'flex', flexDirection: 'column', gap: 20 }}>
       <span className="chrome-emboss" style={BRAND}>PHOSPHOR · PM-1</span>
       <EmbeddedScreen bezel padding={16}>
         <div className="screen-rows">
@@ -49,11 +49,6 @@ export function WalkmanShowcase() {
       </EmbeddedScreen>
 
       <div style={EVEN_ROW}>
-        <ArcGauge value={bass} range={[-12, 12]} step={1} defaultValue={0} label="bass" format={formatDb} onChange={setBass} />
-        <ArcGauge value={treble} range={[-12, 12]} step={1} defaultValue={0} label="treble" format={formatDb} onChange={setTreble} />
-      </div>
-
-      <div style={EVEN_ROW}>
         <div style={{ display: 'flex', gap: 12 }}>
           <PushButton aria-label="Shuffle" selected={player.shuffle} onClick={() => dispatch({ type: 'shuffle' })}>
             <Shuffle {...LINE_ICON} />
@@ -72,6 +67,8 @@ export function WalkmanShowcase() {
             <SkipForward {...SOLID_ICON} />
           </PushButton>
         </div>
+        <ArcGauge value={bass} range={[-12, 12]} step={1} defaultValue={0} label="bass" format={formatDb} onChange={setBass} />
+        <ArcGauge value={treble} range={[-12, 12]} step={1} defaultValue={0} label="treble" format={formatDb} onChange={setTreble} />
         <Knob
           value={volume}
           baseline={volume}
@@ -238,7 +235,8 @@ function ProgressBar({ fraction, onSeek }: { fraction: number; onSeek: (f: numbe
 
 // ─── Constants and formatting ────────────────────────────────────────
 
-const SOLID_ICON = { size: 16, fill: 'currentColor', strokeWidth: 0 } as const
+/* Filled and stroked: the skip icons draw their bar as a stroke. */
+const SOLID_ICON = { size: 16, fill: 'currentColor', strokeWidth: 2 } as const
 const LINE_ICON = { size: 16, strokeWidth: 2.5 } as const
 
 /* Pulled up and down so the brand sits centred in the band between
