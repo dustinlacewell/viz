@@ -41,3 +41,6 @@ yarn-error.log*
 # Per-user Claude Code settings (settings.json is shared)
 .claude/settings.local.json
 .claude/scheduled_tasks.lock
+
+# Local tool state
+.graphik/
