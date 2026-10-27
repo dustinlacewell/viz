@@ -71,6 +71,15 @@ describe('defineSource()', () => {
     expect(s.outType).toBe('string')
   })
 
+  it('requires outType only when the output is not a number', () => {
+    // @ts-expect-error — a string body needs an explicit outType
+    defineSource({ name: 'test.untagged', polarity: 'bipolar', body: () => 'x' })
+    // @ts-expect-error — a string setup body needs an explicit outType
+    defineSource({ name: 'test.untaggedSetup', polarity: 'bipolar', setup: () => () => 'x' })
+    const n = defineSource({ name: 'test.num', polarity: 'bipolar', body: () => 1 })
+    expect(n.outType).toBe('number')
+  })
+
   it('throws without a body or setup', () => {
     expect(() =>
       defineSource({ name: 'test.none', polarity: 'bipolar' } as never),
@@ -174,8 +183,7 @@ describe('def(args)', () => {
     expect(freq.dial.value).toBe(2)
     expect(freq.dial.initial).toBe(2)
     expect(freq.dial.meta).toMatchObject({ min: 0.01, max: 20, scale: 'log', unit: 'Hz' })
-    expect(freq.attached?.def).toBe(sine)
-    expect(freq.attached).not.toBe(f.attached)
+    expect(freq.attached).toBe(f.attached)
     expect(freq.modDepth).toBe(f.modDepth)
   })
 
@@ -198,14 +206,14 @@ describe('def(args)', () => {
     expect(sine.params.freq.dial.meta.max).toBe(20)
   })
 
-  it('two instances from the same args are independent', () => {
+  it('two instances from the same args have independent slots and share the passed source', () => {
     const f = dial(2)
     attach(f, sine())
     const args = { freq: f }
     const a = sine(args)
     const b = sine(args)
     expect(a.params.freq).not.toBe(b.params.freq)
-    expect(a.params.freq.attached).not.toBe(b.params.freq.attached)
+    expect(a.params.freq.attached).toBe(b.params.freq.attached)
     a.params.freq.dial.value = 9
     expect(b.params.freq.dial.value).toBe(2)
     expect(f.dial.value).toBe(2)
@@ -217,6 +225,40 @@ describe('def(args)', () => {
 
   it('throws on an unknown param', () => {
     expect(() => sine({ nope: 1 } as never)).toThrow(/sine.*nope/)
+  })
+
+  it('throws when a slot override brings a mod to a non-modulatable param', () => {
+    const locked = defineSource({
+      name: 'test.locked',
+      polarity: 'bipolar',
+      params: { a: dial(0, { modulatable: false }) },
+      body: ({ a }) => a,
+    })
+    expect(() => locked({ a: dial(0, { mod: sine() }) })).toThrow(/test\.locked.*"a"/)
+    expect(() => locked({ a: dial(1) })).not.toThrow()
+  })
+
+  it("adopts the passed slot's attached source by reference", () => {
+    const l = sine()
+    const a = sine({ freq: dial(1, { mod: l }) })
+    const b = sine({ freq: dial(1, { mod: l }) })
+    expect(a.params.freq.attached).toBe(l)
+    expect(b.params.freq.attached).toBe(l)
+  })
+
+  it("an undefined meta field in the override keeps the prototype's", () => {
+    const s = sine({ freq: dial(1, { min: undefined, max: 100 }) })
+    expect(s.params.freq.dial.meta.min).toBe(0.01)
+    expect(s.params.freq.dial.meta.max).toBe(100)
+  })
+
+  it('clamps override values and reset targets to the merged range', () => {
+    const plain = sine({ freq: 50 }).params.freq.dial
+    expect([plain.value, plain.initial]).toEqual([20, 20])
+    const slot = sine({ freq: dial(50) }).params.freq.dial
+    expect([slot.value, slot.initial]).toEqual([20, 20])
+    const widened = sine({ freq: dial(150, { max: 100 }) }).params.freq.dial
+    expect([widened.value, widened.initial]).toEqual([100, 100])
   })
 
   it('types args against the param types', () => {

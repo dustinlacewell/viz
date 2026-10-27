@@ -23,7 +23,8 @@
  * copied — they are sampler scratch, seeded fresh on first sample.
  */
 
-import type { Body, ParamArgs, Slot, Source, SourceDef } from './core'
+import type { Body, DialMeta, ParamArgs, Slot, Source, SourceDef } from './core'
+import { clampToRange } from './space'
 
 /**
  * Build a live source from a def: every param slot is a deep clone of
@@ -67,18 +68,24 @@ function isSlot<T>(x: T | Slot<T>): x is Slot<T> {
   return typeof x === 'object' && x !== null && (x as { kind?: unknown }).kind === 'slot'
 }
 
-/** A plain-value override: the value becomes both current value and reset target. */
+/**
+ * A plain-value override: the value, clamped to the param's range,
+ * becomes both current value and reset target.
+ */
 function withHome<T>(slot: Slot<T>, value: T): Slot<T> {
-  slot.dial.value = value
-  ;(slot.dial as { initial: T }).initial = value
+  const home = clampToRange(slot.dial.meta, value)
+  slot.dial.value = home
+  ;(slot.dial as { initial: T }).initial = home
   return slot
 }
 
 /**
  * A slot override, merged onto the prototype's clone: the passed meta
- * wins field by field over the prototype's; value, reset target,
- * attachment and modulation state come from the passed slot. The
- * attachment is cloned, so the passed slot is never adopted.
+ * wins field by field over the prototype's (`undefined` fields don't
+ * count); value and reset target come from the passed slot, clamped to
+ * the merged range; modulation state comes from the passed slot, and
+ * its attached source is adopted by reference — exactly as
+ * `dial(v, { mod })` adopts — so one LFO can drive several params.
  */
 function mergeSlot<T>(
   sourceName: string,
@@ -92,12 +99,34 @@ function mergeSlot<T>(
         `not ${arg.outType}`,
     )
   }
-  const from = cloneSlot(arg)
-  return {
-    ...from,
-    outType: proto.outType,
-    dial: { ...from.dial, meta: { ...proto.dial.meta, ...arg.dial.meta } },
+  const meta = mergeMeta(proto.dial.meta, arg.dial.meta)
+  if (meta.modulatable === false && arg.attached) {
+    throw new Error(
+      `dials: source "${sourceName}" param "${key}" is not modulatable — ` +
+        `cannot give it an attached source`,
+    )
   }
+  return {
+    kind: 'slot',
+    outType: proto.outType,
+    dial: {
+      kind: 'dial',
+      value: clampToRange(meta, arg.dial.value),
+      initial: clampToRange(meta, arg.dial.initial),
+      meta,
+    },
+    attached: arg.attached,
+    modDepth: arg.modDepth,
+    modMode: arg.modMode,
+    glide: arg.glide,
+  }
+}
+
+/** `over` wins field by field; its `undefined` fields leave `base`'s in place. */
+function mergeMeta<T>(base: DialMeta<T>, over: DialMeta<T>): DialMeta<T> {
+  const out: Record<string, unknown> = { ...base }
+  for (const [k, v] of Object.entries(over)) if (v !== undefined) out[k] = v
+  return out as DialMeta<T>
 }
 
 /** Deep-clone one slot and its entire attached-source subtree. */

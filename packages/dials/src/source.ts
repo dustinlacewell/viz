@@ -29,14 +29,15 @@ import type {
 } from './core'
 import { instantiate } from './instance'
 
-/** The spec `defineSource` takes. Exactly one of `body` / `setup`. */
+/**
+ * The spec `defineSource` takes. Exactly one of `body` / `setup`.
+ * `outType` may be omitted only when the body returns a number.
+ */
 export type SourceSpec<S extends Record<string, Slot<any>>, Out> = {
   /** Globally unique name. Used by serializer + attach picker. */
   name: string
   /** Optional human-readable description of the source's character. */
   description?: string
-  /** Output type tag — matches against `Slot.outType`. Default `'number'`. */
-  outType?: string
   /** Normalized emission contract: `'bipolar'` [-1,1] or `'unipolar'` [0,1]. */
   polarity: Polarity
   /** Prototype param slots, e.g. `{ freq: dial(1, { min: 0.01, max: 20 }) }`. */
@@ -55,7 +56,17 @@ export type SourceSpec<S extends Record<string, Slot<any>>, Out> = {
       setup: () => Body<ParamsOf<S>, Out>
       body?: never
     }
-)
+) &
+  OutTypeSpec<Out>
+
+/**
+ * Output type tag — matches against `Slot.outType`. Defaults to
+ * `'number'`, so it is required for any other output: a non-number
+ * source can never be silently tagged `'number'`.
+ */
+type OutTypeSpec<Out> = [Out] extends [number]
+  ? { outType?: string }
+  : { outType: string }
 
 /**
  * Define a named source. The result is callable: `def()` creates an

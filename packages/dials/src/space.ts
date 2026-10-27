@@ -21,6 +21,22 @@ export interface RangeMeta {
 const clamp = (v: number, lo: number, hi: number) =>
   Math.min(hi, Math.max(lo, v))
 
+/**
+ * Clamp a value into `[min, max]` when it is a number and both bounds
+ * are numbers; anything else passes through unchanged. The one clamp
+ * every value writer (setDial, param overrides) shares.
+ */
+export function clampToRange<T>(meta: RangeMeta, value: T): T {
+  if (
+    typeof value === 'number' &&
+    typeof meta.min === 'number' &&
+    typeof meta.max === 'number'
+  ) {
+    return Math.max(meta.min, Math.min(meta.max, value)) as T
+  }
+  return value
+}
+
 function validRange(meta: RangeMeta): meta is { min: number; max: number; scale?: 'linear' | 'log' } {
   return (
     typeof meta.min === 'number' &&

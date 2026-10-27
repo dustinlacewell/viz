@@ -264,6 +264,70 @@ describe('fromJSON()', () => {
   })
 })
 
+describe('fromJSON() patches attached sources in place', () => {
+  it('keeps code-declared param overrides on an attached source', () => {
+    const mk = () => ({
+      x: dial(0.5, {
+        min: 0,
+        max: 1,
+        mod: sine({ freq: dial(50, { max: 100 }), phase: 0.25 }),
+        depth: 1,
+      }),
+    })
+    const b = mk()
+    const kept = b.x.attached
+    fromJSON(b, toJSON(mk()))
+    expect(b.x.attached).toBe(kept)
+    const freq = b.x.attached!.params['freq']!
+    expect(freq.dial.value).toBe(50)
+    expect(freq.dial.meta.max).toBe(100)
+    expect(b.x.attached!.params['phase']!.dial.initial).toBe(0.25)
+  })
+
+  it('applies snapshot values to the kept instance', () => {
+    const d = { x: dial(0, { mod: sine({ freq: dial(50, { max: 100 }) }) }) }
+    fromJSON(d, {
+      x: {
+        value: 0,
+        depth: 0.4,
+        attached: { name: 'sine', params: { freq: { value: 70, depth: 0.2 } } },
+      },
+    } as unknown as DialsSnap)
+    expect(d.x.modDepth).toBe(0.4)
+    expect(d.x.attached!.params['freq']!.dial.value).toBe(70)
+    expect(d.x.attached!.params['freq']!.modDepth).toBe(0.2)
+  })
+
+  it('keeps a shared instance shared', () => {
+    const mk = () => {
+      const l = sine()
+      return { x: dial(0, { mod: l }), y: dial(0, { mod: l }) }
+    }
+    const a = mk()
+    a.x.attached!.params['freq']!.dial.value = 3
+    const b = mk()
+    fromJSON(b, toJSON(a))
+    expect(b.x.attached).toBe(b.y.attached)
+    expect(b.x.attached!.params['freq']!.dial.value).toBe(3)
+  })
+
+  it('creates a fresh instance when the snapshot names a different source', () => {
+    const d = { x: dial(0, { mod: sine() }) }
+    fromJSON(d, {
+      x: { value: 0, attached: { name: 'tri', params: {} } },
+    } as unknown as DialsSnap)
+    expect(d.x.attached!.def.name).toBe('tri')
+  })
+
+  it('round-trips a clamped plain-value override', () => {
+    const mk = () => ({ x: dial(0, { mod: sine({ freq: 50 }) }) })
+    const a = mk()
+    const b = mk()
+    fromJSON(b, toJSON(a))
+    expect(toJSON(b)).toEqual(toJSON(a))
+  })
+})
+
 describe('custom registered source', () => {
   it('round-trips when registered', () => {
     const custom = defineSource({

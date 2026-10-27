@@ -15,6 +15,7 @@
 
 import type { Dial, DialMeta, ModMode, Slot, Source } from './core'
 import { attach, setDepth, setMode } from './attach'
+import { clampToRange } from './space'
 
 /** Construction-time modulation state for a dial. */
 export interface ModInit<T> {
@@ -94,17 +95,7 @@ export function slotFromDial<T>(type: string, dial: Dial<T>): Slot<T> {
  * from the panel; the app should never need to call it directly.
  */
 export function setDial<T>(slot: Slot<T>, value: T): void {
-  const meta = slot.dial.meta as DialMeta<number>
-  if (
-    typeof value === 'number' &&
-    typeof meta.min === 'number' &&
-    typeof meta.max === 'number'
-  ) {
-    const clamped = Math.max(meta.min, Math.min(meta.max, value))
-    slot.dial.value = clamped as T
-    return
-  }
-  slot.dial.value = value
+  slot.dial.value = clampToRange(slot.dial.meta, value)
 }
 
 /**

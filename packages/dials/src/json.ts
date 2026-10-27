@@ -11,16 +11,18 @@
  *
  * Type tags and source defs are NOT serialized — they live in code
  * and the registry. The serialized form is intentionally a thin
- * *state* snapshot, not a self-describing program. On load we look up
- * the source def by name; if it's missing we throw, because silently
- * dropping a modulation chain would be worse than failing loudly.
+ * *state* snapshot, not a self-describing program. On load a slot
+ * already carrying the named source keeps it; otherwise we look up
+ * the source def by name, and if it's missing we throw, because
+ * silently dropping a modulation chain would be worse than failing
+ * loudly.
  *
  * `T` values are written through `JSON.stringify` as-is — numbers,
  * arrays, plain records all work. If you use a non-JSON-friendly
  * dial type, write your own (de)serializer pair.
  */
 
-import type { Dials, ModMode, Slot } from './core'
+import type { Dials, ModMode, Slot, Source } from './core'
 import { attach, detach } from './attach'
 import { setDial } from './dial'
 import { getSource } from './source'
@@ -109,7 +111,9 @@ export interface FromJSONOptions {
  * object with default slots, then call `fromJSON` to hydrate it.
  * Keys not present in the snapshot are left at their defaults;
  * snapshot keys not present on the object are silently ignored
- * (forward-compat).
+ * (forward-compat). Attached sources patch in place: a slot whose
+ * source already matches the snapshot's name keeps that instance and
+ * takes only its values (see `sourceFor`).
  */
 export function fromJSON(
   dials: Dials,
@@ -139,20 +143,13 @@ function applySlotSnap(
     return
   }
   if (snap.attached) {
-    const def = getSource(snap.attached.name)
-    if (!def) {
-      if (onMissing === 'drop') {
-        // Degrade: keep the value, lose the attachment, survive.
-        detach(slot)
-        applySlotLevel(slot, snap)
-        return
-      }
-      throw new Error(
-        `dials: cannot hydrate — source "${snap.attached.name}" is not registered. ` +
-          `Call registerSource(${snap.attached.name}) before fromJSON().`,
-      )
+    const source = sourceFor(slot, snap.attached, onMissing)
+    if (!source) {
+      // Degrade: keep the value, lose the attachment, survive.
+      detach(slot)
+      applySlotLevel(slot, snap)
+      return
     }
-    const source = attach(slot, def())
     for (const k in source.params) {
       const childSnap = snap.attached.params[k]
       if (childSnap) {
@@ -163,6 +160,30 @@ function applySlotSnap(
     detach(slot)
   }
   applySlotLevel(slot, snap)
+}
+
+/**
+ * The source a snapshot's values land on. A slot already carrying an
+ * instance of the named source keeps it — its params' meta, reset
+ * targets and structure are code-owned (a `sine({ freq: dial(50,
+ * { max: 100 }) })` override), and a shared instance stays shared;
+ * only the snapshot's values patch onto it. Otherwise a fresh instance
+ * of the registered def is attached. Returns `null` when the def is
+ * missing and `onMissing` is `'drop'`.
+ */
+function sourceFor(
+  slot: Slot<unknown>,
+  snap: SourceSnap,
+  onMissing: 'throw' | 'drop',
+): Source<Record<string, unknown>, unknown> | null {
+  if (slot.attached && slot.attached.def.name === snap.name) return slot.attached
+  const def = getSource(snap.name)
+  if (def) return attach(slot, def())
+  if (onMissing === 'drop') return null
+  throw new Error(
+    `dials: cannot hydrate — source "${snap.name}" is not registered. ` +
+      `Call registerSource(${snap.name}) before fromJSON().`,
+  )
 }
 
 /**
