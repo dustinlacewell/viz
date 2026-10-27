@@ -1,4 +1,5 @@
 import type { CSSProperties, HTMLAttributes, ReactNode } from 'react'
+import { ScreenCursor } from './ScreenCursor'
 
 interface DisplayProps extends HTMLAttributes<HTMLDivElement> {
   /** The content displayed on the screen. */
@@ -30,6 +31,12 @@ interface DisplayProps extends HTMLAttributes<HTMLDivElement> {
    * "on-glass content sits a bit in from the chamfer" look.
    */
   padding?: number | string
+  /**
+   * Draw a lit pointer on the glass and hide the system cursor over
+   * the screen. The drawn pointer copies the real mouse, so clicks
+   * work unchanged. Off by default.
+   */
+  cursor?: boolean
   /**
    * Stretch the Display to fill its parent. When `true`, the chassis
    * and the inner Bezel + Screen all claim `flex: 1` so the screen
@@ -87,6 +94,7 @@ export function Display({
   footer,
   readout,
   padding,
+  cursor = false,
   fill,
   screenStyle,
   screenClassName = '',
@@ -128,8 +136,10 @@ export function Display({
           className={`screen ${screenClassName}`}
           style={mergedScreenStyle}
         >
-          {readout}
-          {children}
+          <ScreenCursor enabled={cursor}>
+            {readout}
+            {children}
+          </ScreenCursor>
         </div>
       </div>
       {footer && <div className="display-footer">{footer}</div>}

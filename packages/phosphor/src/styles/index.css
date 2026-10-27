@@ -15,6 +15,7 @@
 @import './tokens.css';
 @import './chrome.css';
 @import './display.css';
+@import './screen-cursor.css';
 @import './modal.css';
 @import './codeblock.css';
 @import './slider.css';

@@ -1,4 +1,5 @@
 import type { CSSProperties, HTMLAttributes } from 'react'
+import { ScreenCursor } from './ScreenCursor'
 
 interface EmbeddedScreenProps extends HTMLAttributes<HTMLDivElement> {
   /**
@@ -20,6 +21,11 @@ interface EmbeddedScreenProps extends HTMLAttributes<HTMLDivElement> {
    * right for small readouts; on suits a main screen.
    */
   bezel?: boolean
+  /**
+   * Draw a lit pointer on the glass and hide the system cursor over
+   * it. Same contract as Display's `cursor`.
+   */
+  cursor?: boolean
 }
 
 /**
@@ -37,6 +43,7 @@ export function EmbeddedScreen({
   padding,
   color,
   bezel = false,
+  cursor = false,
   className = '',
   style,
   children,
@@ -53,14 +60,14 @@ export function EmbeddedScreen({
         style={{ ...paddingStyle, ...colorStyle, ...style }}
         className={`screen-embedded ${className}`}
       >
-        {children}
+        <ScreenCursor enabled={cursor}>{children}</ScreenCursor>
       </div>
     )
   }
   return (
     <div {...rest} style={{ ...colorStyle, ...style }} className={`bezel ${className}`}>
       <div className="screen" style={{ flex: 1, ...paddingStyle }}>
-        {children}
+        <ScreenCursor enabled={cursor}>{children}</ScreenCursor>
       </div>
     </div>
   )

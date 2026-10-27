@@ -1,0 +1,45 @@
+/* ============================================================
+ * .screen-cursor — a lit pointer drawn on the glass.
+ *
+ * The layer covers its screen and clips the pointer to the glass.
+ * It takes no pointer events, so the real (hidden) mouse still
+ * clicks the content below it. The pointer is emitted light: it
+ * takes the screen's own --display-color.
+ * ============================================================ */
+
+/* Hide the system pointer over any screen that hosts a ScreenCursor.
+   !important beats the cursor rules of controls on the glass. */
+:has(> .screen-cursor),
+:has(> .screen-cursor) * {
+  cursor: none !important;
+}
+
+.screen-cursor {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.screen-cursor[data-visible] {
+  opacity: 1;
+}
+
+/* Size and hotspot come from CURSOR_ARROW (cursor-arrow.ts). */
+.screen-cursor-pointer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: visible;
+  fill: color-mix(in oklch, var(--display-color) 25%, transparent);
+  stroke: var(--display-color);
+  stroke-width: 1;
+  stroke-linejoin: round;
+  filter:
+    drop-shadow(0 0 2px color-mix(in oklch, var(--display-color) 55%, transparent))
+    drop-shadow(0 0 6px color-mix(in oklch, var(--display-color) 35%, transparent));
+  will-change: transform;
+}
