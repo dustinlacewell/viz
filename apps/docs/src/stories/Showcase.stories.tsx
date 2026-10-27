@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import { SettingsModalShowcase } from '../showcase/SettingsModalShowcase'
-import { WalkmanShowcase } from '../showcase/WalkmanShowcase'
+import { WalkmanShowcase } from '../showcase/walkman/WalkmanShowcase'
 
 const meta: Meta = {
   title: 'Showcase',
