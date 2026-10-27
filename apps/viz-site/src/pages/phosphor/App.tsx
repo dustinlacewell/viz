@@ -81,11 +81,8 @@ function Hero() {
           hue of all of them.
         </p>
         <div className="site-links">
-          <a href="https://www.npmjs.com/package/@ldlework/phosphor" target="_blank" rel="noreferrer">npm</a>
           <a href="https://github.com/ldlework/phosphor" target="_blank" rel="noreferrer">GitHub</a>
           <a href="./storybook/">Storybook</a>
-          <a href="#install">Install</a>
-          <a href="#primitives">Primitives</a>
         </div>
       </div>
     </section>
