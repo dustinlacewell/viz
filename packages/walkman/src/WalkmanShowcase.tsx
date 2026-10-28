@@ -1,6 +1,6 @@
 import { useReducer, useRef, useState, type CSSProperties, type MouseEvent } from 'react'
 import { Pause, Play, Shuffle, SkipBack, SkipForward } from 'lucide-react'
-import { ArcGauge, ChipToggle, Display, Knob, Panel, PushButton } from '@ldlework/phosphor'
+import { ArcGauge, ChipToggle, Display, KeyBank, Knob, Panel, PushButton } from '@ldlework/phosphor'
 import { CrtScreen, useCrtRegion } from '@ldlework/phosphor-crt'
 import type { MeterMode } from './meter-beam'
 import { INITIAL_PLAYER, playerReducer, TRACKS } from './player'
@@ -32,7 +32,7 @@ export function WalkmanShowcase() {
   const meterCrt = useMeterCrt(meterInputs, meterRegion)
 
   return (
-    <Panel style={{ padding: 20, width: 520, display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <Panel style={{ padding: 20, width: '100%', maxWidth: 520, display: 'flex', flexDirection: 'column', gap: 20 }}>
       <span className="chrome-emboss" style={BRAND}>PHOSPHOR · PM-1</span>
       <Display raised={false}>
         <CrtScreen passes={meterCrt.passes} stage={meterCrt.stage} persistence={METER_PERSISTENCE} />
@@ -64,7 +64,7 @@ export function WalkmanShowcase() {
       </Display>
 
       <div style={EVEN_ROW}>
-        <div style={{ display: 'flex', gap: 12 }}>
+        <KeyBank>
           <PushButton aria-label="Shuffle" selected={player.shuffle} onClick={() => dispatch({ type: 'shuffle' })}>
             <Shuffle {...LINE_ICON} />
           </PushButton>
@@ -81,7 +81,7 @@ export function WalkmanShowcase() {
           <PushButton aria-label="Next" onClick={() => dispatch({ type: 'next', rand: Math.random() })}>
             <SkipForward {...SOLID_ICON} />
           </PushButton>
-        </div>
+        </KeyBank>
         <ArcGauge value={bass} range={[-12, 12]} step={1} defaultValue={0} label="bass" format={formatDb} onChange={setBass} />
         <ArcGauge value={treble} range={[-12, 12]} step={1} defaultValue={0} label="treble" format={formatDb} onChange={setTreble} />
         <Knob

@@ -35,6 +35,31 @@
 }
 
 /* ============================================================
+ * Hero — text on the left, the walkman on the right. Below
+ * 860px the two stack, text first.
+ * ============================================================ */
+.phosphor-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 32px;
+  align-items: center;
+}
+
+.phosphor-hero-text,
+.phosphor-hero-demo {
+  min-width: 0;
+}
+
+.phosphor-hero-demo {
+  display: flex;
+  justify-content: center;
+}
+
+@media (min-width: 860px) {
+  .phosphor-hero-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 520px); gap: 56px; }
+}
+
+/* ============================================================
  * Type scale
  * ============================================================ */
 

@@ -16,8 +16,10 @@
     "@ldlework/dials": "workspace:*",
     "@ldlework/gl": "workspace:*",
     "@ldlework/phosphor": "workspace:*",
+    "@ldlework/phosphor-crt": "workspace:*",
     "@ldlework/phosphor-dials": "workspace:*",
     "@ldlework/scope": "workspace:*",
+    "@ldlework/walkman": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "webgl-plot": "^1.1.2"
