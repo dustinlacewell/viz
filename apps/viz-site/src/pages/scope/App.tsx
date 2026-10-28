@@ -1,10 +1,6 @@
-import { useEffect, useReducer, useState } from 'react'
-import { CodeBlock, Display, Panel as ChromePanel } from '@ldlework/phosphor'
+import { CodeBlock } from '@ldlework/phosphor'
 import { GITHUB_HREF, STORYBOOK_HREF } from '../../shared/pages'
-import { makeDefaultPreset, type ScopePreset } from './scope/preset/preset'
-import { loadPreset } from './scope/preset/store'
-import { ScopeStage } from './scope/react/ScopeStage'
-import { TuningPanel } from './scope/react/TuningPanel'
+import { ScopeDevice } from './device/ScopeDevice'
 
 const USAGE_SNIPPET = `import { makeWave, makeFundamental, WavePumper } from '@ldlework/scope'
 
@@ -20,7 +16,7 @@ export function App() {
     <div className="site">
       <Hero />
       <InstallSection />
-      <PlaygroundSection />
+      <DemoSection />
       <InTheBoxSection />
       <Footer />
     </div>
@@ -36,13 +32,9 @@ function Hero() {
         <p className="site-prose site-hero-desc">
           Oscilloscope-style synthetic-signal generation, plus a WebGL2
           deposit pass that feeds the resulting beam trace into{' '}
-          <code>@ldlework/crt</code>'s phosphor pipeline. Plain TypeScript —
-          no dials, no React, no DOM, no presets, no persistence. The
-          application composes scope with whatever parameter system and
-          persistence it wants. This page is one such application: the
-          playground below drives scope through{' '}
-          <code>@ldlework/dials</code>, rendered with{' '}
-          <code>@ldlework/phosphor-dials</code>.
+          <code>@ldlework/crt</code>'s phosphor pipeline. Scope is headless
+          TypeScript: no React, no DOM. The demo below is a bench scope
+          built on it.
         </p>
         <div className="site-links">
           <a href="https://www.npmjs.com/package/@ldlework/scope" target="_blank" rel="noreferrer">npm</a>
@@ -54,42 +46,18 @@ function Hero() {
   )
 }
 
-/*
- * The playground. The page owns the preset; ScopeStage renders it on
- * a phosphor Display, TuningPanel edits it from a chrome chassis
- * alongside. `bump` re-renders after dial-value drags so the stage's
- * refs see fresh values; structural edits go through setPreset.
- */
-function PlaygroundSection() {
-  const [preset, setPreset] = useState<ScopePreset>(makeDefaultPreset)
-  const [, bump] = useReducer((x: number) => x + 1, 0)
-
-  useEffect(() => {
-    let cancelled = false
-    void loadPreset().then((loaded) => {
-      if (!cancelled) setPreset(loaded)
-    })
-    return () => { cancelled = true }
-  }, [])
-
+/* The bench scope, centred under a short hint. */
+function DemoSection() {
   return (
-    <section className="site-section" id="playground">
+    <section className="site-section" id="demo">
       <div className="site-container">
-        <h2 className="site-h2">Playground</h2>
+        <h2 className="site-h2">Demo</h2>
         <p className="site-prose site-demo-hint">
-          A full wave rig — beam, sweep and trigger, noise floor,
-          fundamentals, phase-locked bursts — plus the CRT screen dials
-          and a pointer trail. Every knob is modulatable: open a knob's
-          picker to attach a source and watch the trace ride it. Save
-          keeps your patch in this browser; Reset restores the default.
+          Pick a shape, then turn the knobs. Time/div stretches the trace;
+          trigger sets the level where each sweep starts.
         </p>
-        <div className="playground">
-          <Display fill padding={0} className="playground-display">
-            <ScopeStage preset={preset} className="playground-stage" />
-          </Display>
-          <ChromePanel className="playground-chassis">
-            <TuningPanel preset={preset} onChange={bump} setPreset={setPreset} />
-          </ChromePanel>
+        <div className="scope-demo">
+          <ScopeDevice />
         </div>
       </div>
     </section>

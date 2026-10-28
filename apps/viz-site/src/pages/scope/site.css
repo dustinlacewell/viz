@@ -1,5 +1,5 @@
 /*
- * The scope page's own rules, including the playground grid. Shared
+ * The scope page's own rules. Shared
  * package-page layout lives in ../../shared/package-page.css.
  */
 
@@ -26,88 +26,9 @@
 
 .site-list strong { color: var(--site-fg); }
 
-/* ── Playground ──────────────────────────────────────────────────── */
+/* ── Demo ────────────────────────────────────────────────────────── */
 
-/* Screen on top, control chassis directly under it — a stacked unit,
-   like the tuning section beneath a real instrument's display. */
-.playground {
+.scope-demo {
   display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.playground-display {
-  min-height: 520px;
-}
-
-.playground-stage {
-  position: absolute;
-  inset: 0;
-}
-
-.playground-chassis {
-  padding: 20px;
-}
-
-.tuning {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-/* Header toolbar: section tabs left, save/reset right. */
-.tuning-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.tuning-header-actions {
-  display: flex;
-  gap: 8px;
-}
-
-/* A generic toolbar row inside a section: primary control left
-   (tabs / strip), secondary control right (mute). */
-.tuning-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-/*
- * Root dial panels flow horizontally like a real front panel — one
- * knob per column, wrapping. Nested modulation drawers keep the
- * library's stacked column so the recursion rail stays readable.
- */
-.tuning .dials-panel {
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 18px 26px;
-}
-
-.tuning .pd-row {
-  flex: 0 0 auto;
-  width: auto;
-}
-
-.tuning .pd-row-nested .dials-panel {
-  flex-direction: column;
-}
-
-.tuning-empty {
-  padding: 16px;
-  color: var(--site-fg-faint);
-  font-style: italic;
-  text-align: center;
-}
-
-/* IndexStrip chips for muted waves dim out. */
-.tuning [data-chip-state='muted'] {
-  opacity: 0.45;
+  justify-content: center;
 }
