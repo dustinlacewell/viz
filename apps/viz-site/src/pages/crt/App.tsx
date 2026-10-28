@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 import { CrtSurface } from '@ldlework/crt/react'
 import { CodeBlock, Display, Tabs } from '@ldlework/phosphor'
-import { STORYBOOK_HREF } from '../../shared/pages'
+import { GITHUB_HREF, STORYBOOK_HREF } from '../../shared/pages'
 import {
   StampPass,
   PHOSPHOR_P31, PHOSPHOR_P7, PHOSPHOR_P39, PHOSPHOR_BEAUTY,
@@ -27,20 +27,29 @@ interface PresetOption {
   char: string
 }
 
+/*
+ * crt's presets carry no color, so the trace follows the page theme.
+ * The demo gives each coating its real emission color so the tabs
+ * visibly change the screen. Beauty keeps the theme color.
+ */
+const P31_GREEN = [0.3, 1, 0.4] as const
+const P7_AMBER = [1, 0.75, 0.2] as const
+const P39_YELLOW_GREEN = [0.7, 1, 0.25] as const
+
 const PRESETS: PresetOption[] = [
   {
     name: 'PHOSPHOR_P31',
-    preset: PHOSPHOR_P31,
+    preset: { ...PHOSPHOR_P31, phosphorColor: P31_GREEN },
     char: 'ZnS:Cu yellow-green — short persistence; the classic oscilloscope phosphor (the component defaults target it).',
   },
   {
     name: 'PHOSPHOR_P7',
-    preset: PHOSPHOR_P7,
+    preset: { ...PHOSPHOR_P7, phosphorColor: P7_AMBER },
     char: 'Cascade blue→yellow — long persistence; the fade lingers for visible seconds. Radar / slow-scan look.',
   },
   {
     name: 'PHOSPHOR_P39',
-    preset: PHOSPHOR_P39,
+    preset: { ...PHOSPHOR_P39, phosphorColor: P39_YELLOW_GREEN },
     char: 'ZnO:Zn slow-scan yellow-green — medium persistence; a heavier ghost trail than P31, less saturated than P7.',
   },
   {
@@ -172,7 +181,7 @@ export function App() {
           </p>
           <div className="site-links">
             <a href="https://www.npmjs.com/package/@ldlework/crt" target="_blank" rel="noreferrer">npm</a>
-            <a href="https://github.com/ldlework/phosphor" target="_blank" rel="noreferrer">GitHub</a>
+            <a href={GITHUB_HREF} target="_blank" rel="noreferrer">GitHub</a>
             <a href={STORYBOOK_HREF}>Storybook</a>
           </div>
         </div>
@@ -248,7 +257,7 @@ function Scanner() {
 
       <footer className="site-footer">
         <div className="site-footer-links">
-          <a href="https://github.com/ldlework/phosphor" target="_blank" rel="noreferrer">GitHub</a>
+          <a href={GITHUB_HREF} target="_blank" rel="noreferrer">GitHub</a>
           <a href={STORYBOOK_HREF}>Storybook</a>
           <a href="https://www.npmjs.com/package/@ldlework/crt" target="_blank" rel="noreferrer">npm</a>
         </div>
