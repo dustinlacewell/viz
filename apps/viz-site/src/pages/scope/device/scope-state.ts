@@ -45,8 +45,8 @@ export const INTENSITY_RANGE: [number, number] = [0, 3]
 
 /** Horizontal divisions across the glass. */
 export const DIVISIONS_X = 10
-/** Vertical divisions down the glass. */
-export const DIVISIONS_Y = 8
+/** Vertical divisions down the glass. Fewer than a bench scope's 8 keeps the device short. */
+export const DIVISIONS_Y = 6
 /** The signal must drop this far below the trigger level to re-arm. */
 export const TRIGGER_HYSTERESIS = 0.05
 /** A faint hiss under every shape, so the trace looks analog. */
