@@ -29,3 +29,6 @@
 }
 
 .site-nav a:hover { color: var(--theme-lit); }
+
+/* Unlit, so it reads as punctuation, not a link. */
+.site-nav-sep { color: var(--site-fg-dim); }

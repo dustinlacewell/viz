@@ -53,8 +53,6 @@ export const PACKAGE_PAGES: readonly PackagePage[] = [
   },
 ]
 
-export const NAV_PAGES: readonly SitePage[] = [HOME_PAGE, ...PACKAGE_PAGES]
-
 export function pageHref(page: SitePage): string {
   return `${import.meta.env.BASE_URL}${page.path}`
 }
