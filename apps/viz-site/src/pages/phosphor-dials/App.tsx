@@ -1,32 +1,10 @@
-import { useEffect, useRef } from 'react'
-import { dial, read, sine } from '@ldlework/dials'
+import { useState, type CSSProperties } from 'react'
 import { Panel as DialsPanel } from '@ldlework/dials/react'
-import { CodeBlock, Panel as ChromePanel } from '@ldlework/phosphor'
-import { GITHUB_HREF, STORYBOOK_HREF } from '../../shared/pages'
+import { CodeBlock, Display, Panel as ChromePanel } from '@ldlework/phosphor'
 import { dialPanelComponents } from '@ldlework/phosphor-dials'
-
-/*
- * Demo dial tree. `freq`/`amp`/`detune` are the Default story's synth
- * dials; the rAF loop below samples them every frame via read(), which
- * fills each slot's lastSample stash so a knob rides its live modulated
- * value the moment a source is attached from the picker in its face.
- *
- * `freq` starts pre-attached to a `sine` source so the page demonstrates
- * live modulation the moment it loads, instead of requiring the visitor
- * to discover the "↻ modulate…" picker themselves.
- */
-const synthDials = {
-  freq: dial(600, {
-    min: 50,
-    max: 3000,
-    scale: 'log',
-    description: 'Oscillator pitch, in Hz.',
-    mod: sine({ freq: 0.15 }), // slow sweep, easy to watch
-    depth: 0.4,
-  }),
-  amp: dial(0.5, { min: 0, max: 1, description: 'Output level, 0 to full.' }),
-  detune: dial(0, { min: -100, max: 100, unit: '¢', description: 'Pitch offset in cents.' }),
-}
+import { GITHUB_HREF, STORYBOOK_HREF } from '../../shared/pages'
+import { HeroScope } from '../../shared/scope'
+import { demoDials, makeDemoPreset } from './demo-scope'
 
 const INSTALL_SNIPPET = `import '@ldlework/phosphor/styles.css'
 import '@ldlework/phosphor-dials/styles.css'
@@ -36,78 +14,14 @@ import { dialPanelComponents } from '@ldlework/phosphor-dials'
 <Panel dials={mySurface} components={dialPanelComponents} />`
 
 export function App() {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
-
-  // Host-app sampling loop: read() every frame keeps each slot's
-  // lastSample fresh so an attached source's modulated value shows on
-  // the knob without the Panel needing to know anything changed. The
-  // same sampled values drive the sine trace drawn below the panel.
-  useEffect(() => {
-    let last = performance.now()
-    let raf = requestAnimationFrame(function tick(now: number) {
-      const t = now / 1000
-      const dt = (now - last) / 1000
-      last = now
-      const { freq, amp, detune } = read(synthDials, { t, dt })
-      drawSineTrace(canvasRef.current, t, freq, amp, detune)
-      raf = requestAnimationFrame(tick)
-    })
-    return () => cancelAnimationFrame(raf)
-  }, [])
-
   return (
     <div className="site">
       <Hero />
       <InstallSection />
-      <DemoSection canvasRef={canvasRef} />
+      <DemoSection />
       <Footer />
     </div>
   )
-}
-
-/**
- * Draw one screenful of `amp · sin(2π·freq·t + detuneRad)` into the
- * canvas, scrolling in real time. `freq`/`amp`/`detune` are this frame's
- * live sampled dial values (post-modulation) — dragging a knob or
- * letting the attached sine ride `freq` both show up here immediately.
- * `detune` is in cents; converted to a phase offset in radians so a
- * twist is visible as a shifting waveform, not just a number.
- */
-function drawSineTrace(
-  canvas: HTMLCanvasElement | null,
-  t: number,
-  freq: number,
-  amp: number,
-  detuneCents: number,
-): void {
-  if (!canvas) return
-  const ctx = canvas.getContext('2d')
-  if (!ctx) return
-  const dpr = window.devicePixelRatio || 1
-  const cssW = canvas.clientWidth
-  const cssH = canvas.clientHeight
-  if (canvas.width !== cssW * dpr || canvas.height !== cssH * dpr) {
-    canvas.width = cssW * dpr
-    canvas.height = cssH * dpr
-  }
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-  ctx.clearRect(0, 0, cssW, cssH)
-
-  const phase = (detuneCents / 1200) * 2 * Math.PI // cents -> radians offset
-  const windowSec = 0.02 // one trace window, seconds of signal shown
-  const midY = cssH / 2
-
-  ctx.beginPath()
-  for (let px = 0; px <= cssW; px++) {
-    const sampleT = t - windowSec * (1 - px / cssW)
-    const y = midY - amp * Math.sin(2 * Math.PI * freq * sampleT + phase) * (midY - 6)
-    if (px === 0) ctx.moveTo(px, y)
-    else ctx.lineTo(px, y)
-  }
-  const accent = getComputedStyle(canvas).getPropertyValue('--theme-lit-bright').trim()
-  ctx.strokeStyle = accent || '#7ee0c0'
-  ctx.lineWidth = 2
-  ctx.stroke()
 }
 
 function Hero() {
@@ -137,34 +51,37 @@ function Hero() {
   )
 }
 
-function DemoSection({
-  canvasRef,
-}: {
-  canvasRef: React.RefObject<HTMLCanvasElement | null>
-}) {
+function DemoSection() {
+  const [preset] = useState(makeDemoPreset)
   return (
     <section className="site-section" id="demo">
       <div className="site-container site-container--narrow">
         <h2 className="site-h2">Live demo</h2>
         <p className="site-prose site-demo-hint">
           A dials <code>Panel</code> rendered through{' '}
-          <code>dialPanelComponents</code>, mounted on a phosphor chassis. The
-          trace below is a real sine wave — <code>amp · sin(2π · freq · t + detune)</code> —
-          drawn from these dials' live sampled values every frame.{' '}
-          <code>freq</code> starts modulated by a slow <code>sine</code> source
-          too, so it sweeps on its own; drag any knob or open the "↻" picker
-          to attach a different source and watch the trace respond.
+          <code>dialPanelComponents</code>. The knobs set the sine wave on the
+          CRT above them. Each dial starts with a slow source attached, so the
+          trace moves on its own. Drag a knob, or open its "↻" picker to attach
+          a different source.
         </p>
-        <ChromePanel style={{ padding: 24 }}>
+        <ChromePanel style={CHASSIS}>
+          <Display raised={false} padding={0} cursor>
+            <div style={TRACE}>
+              <HeroScope noTuning preset={preset} style={FULL_BLEED} />
+            </div>
+          </Display>
           <div className="pd-demo-horizontal">
-            <DialsPanel title="Synth" dials={synthDials} components={dialPanelComponents} />
+            <DialsPanel dials={demoDials} components={dialPanelComponents} />
           </div>
-          <canvas ref={canvasRef} className="pd-demo-trace" />
         </ChromePanel>
       </div>
     </section>
   )
 }
+
+const CHASSIS: CSSProperties = { padding: 20, display: 'flex', flexDirection: 'column', gap: 20 }
+const TRACE: CSSProperties = { position: 'relative', aspectRatio: '16 / 7' }
+const FULL_BLEED: CSSProperties = { position: 'absolute', inset: 0 }
 
 function InstallSection() {
   return (
