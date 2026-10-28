@@ -1,11 +1,12 @@
 /*
  * .chrome-tabs — horizontal radio group of PushButtons.
  *
- * Tabs are real <PushButton>s. All the press / select / disabled
- * visuals come from chrome-button. This file only owns the row layout
- * (flex + gap) and the compact tab metric — chrome-button defaults
- * are sized for headline UI buttons (2.4rem tall, generous padding),
- * which is way too big for a tab strip in a panel header.
+ * Tabs are real <PushButton>s in a KeyBank. All the press / select /
+ * disabled visuals come from chrome-button, and the joined row comes
+ * from chrome-keybank. This file only owns the compact tab metric —
+ * chrome-button defaults are sized for headline UI buttons (2.4rem
+ * tall, generous padding), which is way too big for a tab strip in a
+ * panel header.
  *
  * The overrides target both the .chrome-button-label (visible centered
  * label) and the .chrome-button-sizer (hidden width contributor) so
@@ -13,10 +14,8 @@
  */
 
 .chrome-tabs {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  align-items: stretch;
+  /* Square tab: min-width matches the tab height below. */
+  --keybank-key-min: 1.6rem;
 }
 
 .chrome-tab.chrome-button {

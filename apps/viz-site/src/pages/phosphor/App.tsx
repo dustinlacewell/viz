@@ -13,6 +13,7 @@ import { HelpTooltipSection } from './sections/HelpTooltipSection'
 import { HueStripSection } from './sections/HueStripSection'
 import { IconPickerSection } from './sections/IconPickerSection'
 import { IndexStripSection } from './sections/IndexStripSection'
+import { KeyBankSection } from './sections/KeyBankSection'
 import { KnobSection } from './sections/KnobSection'
 import { LeverSwitchSection } from './sections/LeverSwitchSection'
 import { ModalSection } from './sections/ModalSection'
@@ -37,6 +38,7 @@ export function App() {
         <DisplaySection />
         <DisplayRecessedSection />
         <PushButtonSection />
+        <KeyBankSection />
         <ModalSection />
         <LeverSwitchSection />
         <SegmentedDisplaySection />

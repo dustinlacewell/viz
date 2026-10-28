@@ -1,5 +1,6 @@
 export { Panel } from './Panel'
 export { PushButton } from './PushButton'
+export { KeyBank, type KeyBankProps } from './KeyBank'
 export { Display, type DisplayProps } from './Display'
 export { Modal } from './Modal'
 export { LeverSwitch } from './LeverSwitch'

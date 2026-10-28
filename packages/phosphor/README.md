@@ -49,6 +49,7 @@ Colour math is OKLCH so perceptual brightness stays constant across hues.
   margin; `padding={0}` is full-bleed. Also `color`, `fill`, `cursor`,
   `screenStyle`, `screenClassName`.
 - `PushButton` — three-layer pushable button
+- `KeyBank` — row of PushButtons joined edge to edge, like tape-deck keys
 - `Modal` — backdrop + frame, designed to host a `Display` as the dialog
 - `LeverSwitch` — two-position 3D rocker
 - `SegmentedDisplay` — small recessed glass (`.screen-embedded`) with DSEG7 segmented digits
@@ -63,7 +64,7 @@ Colour math is OKLCH so perceptual brightness stays constant across hues.
 - `Slider` — linear or log slider on a recessed track
 - `NumberField` — recessed numeric field; clamps to `min`/`max` on commit
 - `Dropdown` — chrome select
-- `Tabs` — tab row with arrow-key navigation
+- `Tabs` — tab row in a `KeyBank`, with arrow-key navigation
 - `IconPicker` — glyph key that opens a grid of options, with hover cards
 - `HelpTooltip` — "?" dot with a hover/focus popover
 - `SidePanel` — panel docked to a window edge, slid in and out by its tab

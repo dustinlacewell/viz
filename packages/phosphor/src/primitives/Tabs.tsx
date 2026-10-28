@@ -1,4 +1,5 @@
 import { useRef, type KeyboardEvent, type ReactNode } from 'react'
+import { KeyBank } from './KeyBank'
 import { PushButton } from './PushButton'
 import { nextEnabledIndex } from './tabs-nav'
 
@@ -16,9 +17,10 @@ interface TabsProps {
 }
 
 /**
- * Horizontal radio group of PushButtons. The active tab renders with
- * PushButton's `selected` state (the same depressed-and-recolored
- * treatment chrome buttons already use everywhere); inactive tabs are
+ * Horizontal radio group of PushButtons, joined in a KeyBank. The
+ * active tab renders with PushButton's `selected` state (the same
+ * depressed-and-recolored treatment chrome buttons already use
+ * everywhere); inactive tabs are
  * regular raised PushButtons. Reuses the existing chrome-button press
  * visuals so tabs feel mechanically identical to every other button
  * in the system.
@@ -50,7 +52,7 @@ export function Tabs({ tabs, active, onSelect, className = '' }: TabsProps) {
   }
 
   return (
-    <div ref={listRef} role="tablist" className={`chrome-tabs ${className}`}>
+    <KeyBank ref={listRef} role="tablist" className={`chrome-tabs ${className}`}>
       {tabs.map((tab, i) => {
         const isActive = tab.key === active
         return (
@@ -70,7 +72,7 @@ export function Tabs({ tabs, active, onSelect, className = '' }: TabsProps) {
           </PushButton>
         )
       })}
-    </div>
+    </KeyBank>
   )
 }
 

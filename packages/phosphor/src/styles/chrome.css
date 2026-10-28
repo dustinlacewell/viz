@@ -28,7 +28,11 @@
  *
  * Variables you can tune per-instance:
  *   --raised-radius     border-radius of all three layers
- *   --raised-thrust     front-face translateY (negative = up)
+ *   --raised-radius-tl / -tr / -br / -bl
+ *                       one corner each; unset, they fall back to
+ *                       --raised-radius. KeyBank squares the corners
+ *                       where keys meet.
+ *   --raised-thrust    front-face translateY (negative = up)
  *   --raised-shadow-y   shadow-layer translateY (positive = down)
  *   --raised-front-bg   front face background (gradient or color)
  *   --raised-edge-bg    edge/shadow background (gradient or color)
@@ -57,7 +61,12 @@
   left: 0;
   width: 100%;
   height: 100%;
-  border-radius: var(--raised-radius);
+  /* The corners are not declared on every raised element: a hue
+     change re-resolves each declared custom property on each element,
+     and only KeyBank keys need them. */
+  border-radius:
+    var(--raised-radius-tl, var(--raised-radius)) var(--raised-radius-tr, var(--raised-radius))
+    var(--raised-radius-br, var(--raised-radius)) var(--raised-radius-bl, var(--raised-radius));
   pointer-events: none;
 }
 

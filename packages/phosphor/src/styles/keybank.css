@@ -1,0 +1,83 @@
+/*
+ * .chrome-keybank — a row of PushButtons joined into one block, like
+ * the mode keys on a tape deck.
+ *
+ * The keys are real <PushButton>s. All the press / select / disabled
+ * visuals come from chrome-button. This file only owns the join: no
+ * gap, square corners where keys meet, a smaller outer radius, a
+ * squarer key, one parting line between keys, and one drop shadow for
+ * the whole bank.
+ *
+ * Each key's own cast shadow would blur over its neighbor's face, so
+ * the keys drop theirs and the bank casts one. The keys keep their
+ * dark shadow slab, which shows as the base under a pressed key.
+ *
+ * Tunable on the bank:
+ *   --keybank-radius    outer corner radius
+ *   --keybank-key-min   key min-width (default: the chrome-button height)
+ */
+
+.chrome-keybank {
+  --keybank-radius: 4px;
+
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  gap: 0;
+  vertical-align: middle;
+}
+
+/* The bank's one cast shadow, the same as a key's, behind every key. */
+.chrome-keybank::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--keybank-radius);
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.55);
+  transform: translateY(2px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.chrome-keybank > .chrome-button {
+  --raised-radius-tl: 0;
+  --raised-radius-tr: 0;
+  --raised-radius-br: 0;
+  --raised-radius-bl: 0;
+
+  min-width: var(--keybank-key-min, 2.4rem);
+}
+
+.chrome-keybank > .chrome-button:first-child {
+  --raised-radius-tl: var(--keybank-radius);
+  --raised-radius-bl: var(--keybank-radius);
+}
+
+.chrome-keybank > .chrome-button:last-child {
+  --raised-radius-tr: var(--keybank-radius);
+  --raised-radius-br: var(--keybank-radius);
+}
+
+/* Later keys paint over earlier ones; lift the focused key so its
+   focus ring is not cut off by its right-hand neighbor. */
+.chrome-keybank > .chrome-button:focus-visible {
+  z-index: 1;
+}
+
+.chrome-keybank > .chrome-button > .chrome-raised-shadow {
+  box-shadow: none;
+}
+
+/* One dark parting line down the left of every key after the first,
+   through the face and the side wall. The face keeps its top
+   highlights from chrome.css. */
+.chrome-keybank > .chrome-button + .chrome-button > .chrome-raised-front {
+  box-shadow:
+    inset 1px 0 0 rgb(0 0 0 / 0.55),
+    inset 0 1px 0 rgb(255 255 255 / 0.18),
+    inset 0 2px 1px rgb(255 255 255 / 0.05);
+}
+
+.chrome-keybank > .chrome-button + .chrome-button > .chrome-raised-edge {
+  box-shadow: inset 1px 0 0 rgb(0 0 0 / 0.55);
+}
