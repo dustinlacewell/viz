@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 
 interface SidePanelProps {
   open: boolean
@@ -20,6 +21,11 @@ interface SidePanelProps {
  *
  * Inside, content scrolls in a column. The hanger receives ARIA
  * expanded state so screen readers can announce the panel's state.
+ *
+ * Portaled to `document.body`, like Modal. A fixed element docks to
+ * the viewport only while no ancestor makes itself the containing
+ * block: a `transform`, a `filter`, or containment (`contain`,
+ * `content-visibility`) on any ancestor would trap and clip it.
  */
 export function SidePanel({
   open,
@@ -31,7 +37,7 @@ export function SidePanel({
 }: SidePanelProps) {
   const widthValue = typeof width === 'number' ? `${width}px` : width
   const style: CSSProperties = { ['--sidepanel-width' as string]: widthValue }
-  return (
+  return createPortal(
     <aside
       className={`chrome-sidepanel ${open ? 'is-open' : 'is-closed'} ${className}`}
       data-side={side}
@@ -49,7 +55,8 @@ export function SidePanel({
         </span>
       </button>
       <div className="chrome-sidepanel-body">{children}</div>
-    </aside>
+    </aside>,
+    document.body,
   )
 }
 

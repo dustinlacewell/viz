@@ -379,6 +379,24 @@
   align-items: stretch;
   padding: 28px 0;
   border-top: 1px solid var(--site-rule);
+  /* A hue change restyles every element on the page. Chrome skips the
+     rows that are off screen, which halves the work of a hue drag.
+     The size holds the scrollbar steady before a row is first drawn;
+     `auto` remembers each row's real height after that. The rule also
+     clips the row's paint, so the clip margin keeps glows and shadows
+     that spill past the row. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 220px;
+  overflow-clip-margin: 32px;
+}
+
+/* Chrome keeps about two screens of `auto` rows live. While the hue
+   strip drags, skip every row that is fully off screen as well
+   (DemoRow marks it); each keeps its last height, so nothing moves.
+   Only during the drag: `hidden` rows drop out of find-in-page and
+   the accessibility tree. */
+:root[data-theme-dragging='true'] .site-row[data-offscreen] {
+  content-visibility: hidden;
 }
 
 .site-row:first-of-type { border-top: none; }

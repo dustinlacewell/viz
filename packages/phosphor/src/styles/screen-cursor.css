@@ -8,9 +8,11 @@
  * ============================================================ */
 
 /* Hide the system pointer over any screen that hosts a ScreenCursor.
-   !important beats the cursor rules of controls on the glass. */
-:has(> .screen-cursor),
-:has(> .screen-cursor) * {
+   !important beats the cursor rules of controls on the glass. Display
+   marks that glass with a class: a class is cheap for the browser to
+   check against every element, where `:has()` is not. */
+.screen-has-cursor,
+.screen-has-cursor * {
   cursor: none !important;
 }
 

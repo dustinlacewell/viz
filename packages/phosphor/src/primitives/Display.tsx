@@ -142,7 +142,7 @@ interface GlassProps extends DivProps {
 /** The glass surface itself, with the cursor plumbing as its content. */
 function Glass({ kind, cursor, className, children, ...rest }: GlassProps) {
   return (
-    <div {...rest} className={cx(kind, className)}>
+    <div {...rest} className={cx(kind, cursor ? 'screen-has-cursor' : undefined, className)}>
       <ScreenCursor enabled={cursor}>{children}</ScreenCursor>
     </div>
   )

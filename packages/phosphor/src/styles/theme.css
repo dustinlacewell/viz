@@ -22,7 +22,33 @@
  * Chroma is held at 0.16 across all variants; that's the sweet spot
  * where saturation reads as "lit display" without clipping into
  * out-of-gamut at hue extremes.
+ *
+ * The tokens are registered with @property. A registered color
+ * computes once, on <html>, and every element inherits the finished
+ * color. Unregistered, each element that uses one would parse its
+ * oklch() text again on every hue change.
  */
+
+@property --theme-hue { syntax: '<number>'; inherits: true; initial-value: 82; }
+@property --theme-chroma { syntax: '<number>'; inherits: true; initial-value: 0.16; }
+
+@property --theme-lit { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --theme-lit-bright { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --theme-lit-dim { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --theme-lit-faint { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --theme-lit-glow { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --theme-lit-edge { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --theme-lit-trace { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --theme-lit-on { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --theme-pixel-off { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --theme-pixel-off-deep { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --theme-pixel-off-deepest { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --theme-lit-strong { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --theme-lit-mid { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --theme-lit-soft { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --theme-label-dim { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --theme-label-dimmer { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --theme-label-faintest { syntax: '<color>'; inherits: true; initial-value: transparent; }
 
 :root {
   /* Default hue: 82 (a yellow-green near the phosphor-display sweet spot).

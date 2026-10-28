@@ -6,7 +6,9 @@
  * It takes no pointer events: the content above it gets the clicks.
  * ============================================================ */
 
-:has(> .crt-screen) {
+/* The glass classes name the subject: a bare `:has()` makes the
+   browser test every element on the page on each restyle. */
+:is(.screen, .screen-embedded):has(> .crt-screen) {
   isolation: isolate;
 }
 

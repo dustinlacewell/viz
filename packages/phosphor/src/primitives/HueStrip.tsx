@@ -24,14 +24,16 @@ export function HueStrip({
   ariaLabel = 'Theme hue',
   className = '',
 }: HueStripProps) {
-  const trackRef = useRef<HTMLDivElement>(null)
   const draggingRef = useRef(false)
+  // The track's box, measured once at pointerdown. Measuring on every
+  // move would force a whole-page restyle per move, since each move
+  // has just changed --theme-hue.
+  const rectRef = useRef<DOMRect | null>(null)
 
   const updateFromEvent = useCallback(
     (clientX: number) => {
-      const el = trackRef.current
-      if (!el) return
-      const rect = el.getBoundingClientRect()
+      const rect = rectRef.current
+      if (!rect) return
       const fraction = (clientX - rect.left) / rect.width
       const next = Math.max(0, Math.min(360, fraction * 360))
       onChange(next)
@@ -47,6 +49,7 @@ export function HueStrip({
     const onUp = () => {
       if (!draggingRef.current) return
       draggingRef.current = false
+      rectRef.current = null
       // Lift the global "theme dragging" flag so the chrome family's
       // hover transitions resume their normal duration. See the
       // pointerdown handler for why this exists.
@@ -71,7 +74,6 @@ export function HueStrip({
 
   return (
     <div
-      ref={trackRef}
       role="slider"
       tabIndex={0}
       aria-label={ariaLabel}
@@ -81,6 +83,7 @@ export function HueStrip({
       className={`screen-embedded hue-strip ${className}`}
       onPointerDown={(e) => {
         draggingRef.current = true
+        rectRef.current = e.currentTarget.getBoundingClientRect()
         e.currentTarget.setPointerCapture(e.pointerId)
         // Mark the document as actively re-skinning so chrome elements
         // suppress their hover-color transitions during the drag —

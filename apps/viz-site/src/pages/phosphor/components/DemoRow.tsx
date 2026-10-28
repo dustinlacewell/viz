@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react'
+import { useRef, type ReactNode } from 'react'
+import { useOffscreenMark } from './offscreen'
 
 interface DemoRowProps {
   /** Component name — rendered as the section heading. */
@@ -18,8 +19,10 @@ interface DemoRowProps {
  * (one source of truth), not on the marketing site.
  */
 export function DemoRow({ name, description, demo, id }: DemoRowProps) {
+  const ref = useRef<HTMLDivElement>(null)
+  useOffscreenMark(ref)
   return (
-    <div className="site-row" id={id}>
+    <div ref={ref} className="site-row" id={id}>
       <div className="site-row-demo">{demo}</div>
       <div className="site-row-text">
         <h3 className="site-row-title">{name}</h3>

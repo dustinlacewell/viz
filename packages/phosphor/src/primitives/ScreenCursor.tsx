@@ -21,7 +21,8 @@ interface ScreenCursorProps {
 
 /**
  * The cursor plumbing of a screen surface. Mount it as the direct
- * content of the screen; Display does this for its `cursor` prop.
+ * content of the screen, and give the screen the `screen-has-cursor`
+ * class; Display does both for its `cursor` prop.
  *
  * When enabled, it follows the mouse over the screen, shares the
  * position with `children` through `useScreenPointer`, and draws a lit

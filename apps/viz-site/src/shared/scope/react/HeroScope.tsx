@@ -141,17 +141,15 @@ export function HeroScope({
     curX: NaN, curY: NaN, lastX: NaN, lastY: NaN,
     canvasCssW: 0, canvasCssH: 0,
   })
+  // The last pointer position in client px, or null once consumed.
+  // The handler only stores it: measuring the canvas here would force
+  // a restyle on every move. The frame step converts it to NDC.
+  const pendingPointer = useRef<{ x: number; y: number } | null>(null)
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
 
   useEffect(() => {
     const onMove = (e: PointerEvent) => {
-      const canvas = document.querySelector('canvas')
-      if (!canvas) return
-      const r = canvas.getBoundingClientRect()
-      if (r.width <= 0 || r.height <= 0) return
-      ptr.current.curX = ((e.clientX - r.left) / r.width) * 2 - 1
-      ptr.current.curY = -(((e.clientY - r.top) / r.height) * 2 - 1)
-      ptr.current.canvasCssW = r.width
-      ptr.current.canvasCssH = r.height
+      pendingPointer.current = { x: e.clientX, y: e.clientY }
     }
     window.addEventListener('pointermove', onMove)
     return () => window.removeEventListener('pointermove', onMove)
@@ -167,6 +165,7 @@ export function HeroScope({
   // to be large enough to hold the maximum.
   const passesFactory = useCallback(
     (gl: WebGL2RenderingContext): DrawablePass<DrawCtx>[] => {
+      canvasRef.current = gl.canvas as HTMLCanvasElement
       const deposit = new DepositPass(gl, maxTotalPerFrame)
       depositRef.current = deposit
       pumpRef.current = makeSegmentPump(maxTotalPerFrame)
@@ -195,6 +194,7 @@ export function HeroScope({
     deposit.setBeamWidth(beam.beamWidthPx)
 
     // Pointer trail: read pointer dials, interpolate stamps along motion.
+    consumePointer(pendingPointer, canvasRef.current, ptr.current)
     const p = read(presetRef.current.pointer, ctx)
     const stamps = computePointerStamps(ptr.current, p.sizePx, p.intensity, p.interpolation, p.rotation)
     stamp.setStamps(stamps)
@@ -235,6 +235,27 @@ interface PtrState {
   curX: number; curY: number
   lastX: number; lastY: number
   canvasCssW: number; canvasCssH: number
+}
+
+/**
+ * Convert a pointer position stored since the last frame to NDC over
+ * this scope's own canvas. Measures the canvas at most once a frame,
+ * and only when the pointer moved.
+ */
+function consumePointer(
+  pending: { current: { x: number; y: number } | null },
+  canvas: HTMLCanvasElement | null,
+  s: PtrState,
+): void {
+  const at = pending.current
+  if (!at || !canvas) return
+  pending.current = null
+  const r = canvas.getBoundingClientRect()
+  if (r.width <= 0 || r.height <= 0) return
+  s.curX = ((at.x - r.left) / r.width) * 2 - 1
+  s.curY = -(((at.y - r.top) / r.height) * 2 - 1)
+  s.canvasCssW = r.width
+  s.canvasCssH = r.height
 }
 
 function computePointerStamps(
