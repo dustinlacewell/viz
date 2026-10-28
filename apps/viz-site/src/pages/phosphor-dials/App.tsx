@@ -168,7 +168,7 @@ function DemoSection({
 
 function InstallSection() {
   return (
-    <section className="site-section site-section--narrow" id="install">
+    <section className="site-section" id="install">
       <div className="site-container site-container--narrow">
         <h2 className="site-h2">Install</h2>
         <CodeBlock lang="bash" code="pnpm add @ldlework/phosphor-dials" />

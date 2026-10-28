@@ -3,27 +3,7 @@
  * lives in ../../shared/package-page.css.
  */
 
-/* ── Page rhythm ─────────────────────────────────────────────────── */
-
-.site-container {
-  max-width: 980px;
-  margin: 0 auto;
-}
-
-.site-container--narrow { max-width: 720px; }
-
-/* ── Type scale ──────────────────────────────────────────────────── */
-
-.site-prose {
-  color: var(--site-fg-dim);
-  max-width: 62ch;
-}
-
-/* ── Demo + install ──────────────────────────────────────────────── */
-
-.site-demo-hint {
-  margin: 0 0 24px 0;
-}
+/* ── Demo ────────────────────────────────────────────────────────── */
 
 /*
  * This page's own layout choice, not a phosphor-dials default: lay the
@@ -50,8 +30,4 @@
   margin-top: 20px;
   border-radius: 6px;
   background: color-mix(in oklch, black 70%, var(--site-bg));
-}
-
-.site-install-prose {
-  margin: 20px 0 12px 0;
 }

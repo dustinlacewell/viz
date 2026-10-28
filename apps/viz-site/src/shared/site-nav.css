@@ -1,8 +1,31 @@
+/*
+ * The site nav. It owns every font and colour property it shows, so
+ * no page or body rule can change how it looks.
+ */
+
 .site-nav {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 8px 20px;
-  padding: 12px 24px;
+  min-height: 44px;
+  padding: 12px var(--site-gutter);
   font-family: var(--font-mono);
-  font-size: 0.82rem;
+  font-size: 13px;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 20px;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--site-fg);
 }
+
+.site-nav a {
+  font: inherit;
+  letter-spacing: inherit;
+  color: var(--theme-lit-bright);
+  text-decoration: none;
+  text-shadow: 0 0 4px var(--theme-lit-glow);
+}
+
+.site-nav a:hover { color: var(--theme-lit); }

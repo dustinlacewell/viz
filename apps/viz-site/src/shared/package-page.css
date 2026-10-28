@@ -1,11 +1,12 @@
 /*
  * Layout shared by the package pages: page rhythm, type scale, hero,
- * footer. Each page's main.tsx imports this after base.css and before
- * its own site.css, so a page's own rules come later in the cascade.
+ * footer. The column width and gutter come from base.css
+ * (.site-container); a section only sets vertical rhythm. Each page's
+ * main.tsx imports this after base.css and site-nav.css and before its
+ * own site.css, so a page's own rules come later in the cascade.
  */
 
 .site,
-.site-container,
 .site-section {
   min-width: 0;
 }
@@ -20,11 +21,11 @@
 
 .site-section {
   width: 100%;
-  padding: 48px 24px;
+  padding-block: 48px;
 }
 
 @media (max-width: 600px) {
-  .site-section { padding: 36px 14px; }
+  .site-section { padding-block: 36px; }
 }
 
 /* Back-to-back sections share one gap, not two paddings. */
@@ -61,6 +62,11 @@
   color: var(--site-fg);
 }
 
+.site-prose {
+  color: var(--site-fg-dim);
+  max-width: 62ch;
+}
+
 .site-prose code {
   font-family: var(--font-mono);
   font-size: 0.92em;
@@ -90,11 +96,21 @@
   letter-spacing: 0.06em;
 }
 
+/* ── Demo and install sections ───────────────────────────────────── */
+
+.site-demo-hint {
+  margin: 0 0 24px 0;
+}
+
+.site-install-prose {
+  margin: 20px 0 12px 0;
+}
+
 /* ── Footer ──────────────────────────────────────────────────────── */
 
 .site-footer {
   margin-top: auto;
-  padding: 48px 24px;
+  padding: 48px var(--site-gutter);
   text-align: center;
   font-family: var(--font-mono);
   font-size: 0.72rem;

@@ -1,5 +1,4 @@
 import { NAV_PAGES, pageHref, type PageId } from './pages'
-import './site-nav.css'
 
 export function SiteNav({ current }: { current: PageId }) {
   return (

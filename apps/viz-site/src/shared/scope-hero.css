@@ -6,24 +6,22 @@
   position: relative;
   display: grid;
   place-items: center;
-  /* Padding here defines the side gutter for the stage — the stage
-     width is `100%` and fills the section content area exactly,
-     leaving 24px on each side. */
-  padding: 32px 24px;
+  /* The section spans the page; its side padding is the shared page
+     gutter, so the stage edges line up with .site-container. */
+  padding: 32px var(--site-gutter);
   overflow: hidden;
 }
 
 @media (max-width: 600px) {
-  .scope-hero { padding: 24px 14px; }
+  .scope-hero { padding-block: 24px; }
 }
 
 .scope-hero-stage {
   position: relative;
-  /* Fill the grid track's content area; the section's padding is
-     what determines the page margin. A max keeps the OLED from
-     ballooning on very wide viewports. */
+  /* Fill the grid track's content area, capped at the page column
+     width so the OLED lines up with the content below it. */
   width: 100%;
-  max-width: 880px;
+  max-width: var(--site-width);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -77,10 +75,10 @@
   z-index: 1;
   font-family: var(--font-mono);
   /* Sized to fit "PHOSPHOR" (8 chars + 7 letter-spacings) inside the
-     OLED at every viewport width. The OLED is min(880px, 100vw-32px)
-     wide, minus ~52px of bezel+padding ≈ available glass width. At
-     7.2vw font with 0.18em tracking the wordmark spans ~8.5em which
-     stays inside the glass from 320px through 880px+. */
+     OLED at every viewport width. The OLED is min(--site-width,
+     100vw - 2 * --site-gutter) wide, minus ~52px of bezel+padding ≈
+     available glass width. At 7.2vw font with 0.18em tracking the
+     wordmark spans ~8.5em which stays inside the glass from 320px up. */
   font-size: clamp(1.6rem, 7.2vw, 4.6rem);
   font-weight: 700;
   letter-spacing: 0.18em;

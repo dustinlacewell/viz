@@ -3,21 +3,7 @@
  * package-page layout lives in ../../shared/package-page.css.
  */
 
-/* ── Page rhythm ─────────────────────────────────────────────────── */
-
-.site-container {
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
-.site-container--narrow { max-width: 720px; }
-
 /* ── Type scale ──────────────────────────────────────────────────── */
-
-.site-prose {
-  color: var(--site-fg-dim);
-  max-width: 62ch;
-}
 
 /* Matches the shared `.site-prose code` rule. */
 .site-list code {
@@ -41,10 +27,6 @@
 .site-list strong { color: var(--site-fg); }
 
 /* ── Playground ──────────────────────────────────────────────────── */
-
-.site-demo-hint {
-  margin: 0 0 24px 0;
-}
 
 /* Screen on top, control chassis directly under it — a stacked unit,
    like the tuning section beneath a real instrument's display. */
@@ -128,10 +110,4 @@
 /* IndexStrip chips for muted waves dim out. */
 .tuning [data-chip-state='muted'] {
   opacity: 0.45;
-}
-
-/* ── Install ─────────────────────────────────────────────────────── */
-
-.site-install-prose {
-  margin: 20px 0 12px 0;
 }

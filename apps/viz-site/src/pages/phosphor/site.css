@@ -21,7 +21,8 @@
  * `min-width: 0` (or `minmax(0, …)` for grid tracks).
  *
  * Below: blanket containment for this page's layout primitives.
- * package-page.css covers .site, .site-container and .site-section.
+ * base.css covers .site-container; package-page.css covers .site and
+ * .site-section.
  * Component-level rules add `min-width: 0` to their own flex/grid
  * children at the point of declaration; this rule is the safety
  * net for ad-hoc layout in App.tsx and friends.
@@ -34,15 +35,8 @@
 }
 
 /* ============================================================
- * Page rhythm
+ * Type scale
  * ============================================================ */
-
-.site-container {
-  max-width: 980px;
-  margin: 0 auto;
-}
-
-.site-section--narrow .site-container { max-width: 720px; }
 
 .site-h3 {
   font-size: 1.1rem;
@@ -50,11 +44,6 @@
   letter-spacing: 0.01em;
   margin: 0 0 6px 0;
   color: var(--site-fg);
-}
-
-.site-prose {
-  color: var(--site-fg-dim);
-  max-width: 60ch;
 }
 
 .site-prose p { margin: 0 0 1em 0; }

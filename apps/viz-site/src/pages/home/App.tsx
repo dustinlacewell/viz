@@ -21,7 +21,7 @@ export function App() {
           </>
         }
       />
-      <ul className="home-list">
+      <ul className="site-container home-list">
         {PACKAGE_PAGES.map((page) => (
           <li key={page.id}>
             <a href={pageHref(page)}>{page.label}</a>

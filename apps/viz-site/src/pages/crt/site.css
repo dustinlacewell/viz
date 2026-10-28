@@ -3,27 +3,7 @@
  * ../../shared/package-page.css.
  */
 
-/* ── Page rhythm ─────────────────────────────────────────────────── */
-
-.site-container {
-  max-width: 980px;
-  margin: 0 auto;
-}
-
-.site-container--narrow { max-width: 720px; }
-
-/* ── Type scale ──────────────────────────────────────────────────── */
-
-.site-prose {
-  color: var(--site-fg-dim);
-  max-width: 62ch;
-}
-
 /* ── Demo ────────────────────────────────────────────────────────── */
-
-.site-demo-hint {
-  margin: 0 0 24px 0;
-}
 
 .demo-display {
   min-height: 420px;
@@ -44,8 +24,4 @@
 .demo-preset-char {
   margin: 0;
   max-width: 80ch;
-}
-
-.site-install-prose {
-  margin: 20px 0 12px 0;
 }

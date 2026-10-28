@@ -1,14 +1,22 @@
 /*
- * Base rules shared by every page: palette tokens, box-sizing reset,
- * body, and the link style. Hue-locked to phosphor's --theme-hue, so
- * each page imports '@ldlework/phosphor/styles.css' before this file.
- * Per-page layout and type scale stay in each page's site.css.
+ * Base rules shared by every page: palette and layout tokens,
+ * box-sizing reset, body typography, the link style, and the page
+ * column. Hue-locked to phosphor's --theme-hue, so each page imports
+ * '@ldlework/phosphor/styles.css' before this file. Each page's
+ * index.html loads the JetBrains Mono webfont that --font-mono names.
+ * Page CSS must not set body typography or the column width.
  */
 
 :root {
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
   --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
     'Helvetica Neue', Arial, sans-serif;
+
+  /* The page column: content max width, a narrower measure for
+     text-only sections, and the side gutter. */
+  --site-width: 980px;
+  --site-width-narrow: 720px;
+  --site-gutter: 24px;
 
   /* Chroma is intentionally very low — the room is tinted, not coloured.
      The lit pixels of the chassis carry the saturation. */
@@ -17,6 +25,10 @@
   --site-fg-dim: oklch(0.68 0.018 var(--theme-hue));
   --site-fg-faint: oklch(0.48 0.014 var(--theme-hue));
   --site-rule: oklch(0.78 0.04 var(--theme-hue) / 0.08);
+}
+
+@media (max-width: 600px) {
+  :root { --site-gutter: 16px; }
 }
 
 * {
@@ -42,3 +54,20 @@ a {
 }
 
 a:hover { color: var(--theme-lit); }
+
+/* ── Page column ─────────────────────────────────────────────────── */
+
+/* Every page's main column. The gutter is inside the box, so the
+   content is at most --site-width wide and never touches the edge. */
+.site-container {
+  width: 100%;
+  max-width: calc(var(--site-width) + 2 * var(--site-gutter));
+  margin-inline: auto;
+  padding-inline: var(--site-gutter);
+  min-width: 0;
+}
+
+/* Text-only sections: a shorter measure, left edge on the column. */
+.site-container--narrow > * {
+  max-width: var(--site-width-narrow);
+}

@@ -3,22 +3,6 @@
  * ../../shared/package-page.css.
  */
 
-/* ── Page rhythm ─────────────────────────────────────────────────── */
-
-.site-container {
-  max-width: 980px;
-  margin: 0 auto;
-}
-
-.site-container--narrow { max-width: 720px; }
-
-/* ── Type scale ──────────────────────────────────────────────────── */
-
-.site-prose {
-  color: var(--site-fg-dim);
-  max-width: 62ch;
-}
-
 /* ── Demo + install ──────────────────────────────────────────────── */
 
 .demo-stack {
