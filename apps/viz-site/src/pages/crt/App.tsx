@@ -3,23 +3,17 @@ import { CrtSurface } from '@ldlework/crt/react'
 import { CodeBlock, Display, Tabs } from '@ldlework/phosphor'
 import { GITHUB_HREF, STORYBOOK_HREF } from '../../shared/pages'
 import {
-  StampPass,
   PHOSPHOR_P31, PHOSPHOR_P7, PHOSPHOR_P39, PHOSPHOR_BEAUTY,
-  type CrtPreset, type DrawablePass, type DrawCtx, type Stamp,
+  type CrtPreset,
 } from '@ldlework/crt'
+import { useWireDemo } from './demo/use-wire-demo'
 
 /*
- * Live demo. `passes` runs once at mount with the live GL context: we
- * build a StampPass, hand it a small radial-gradient alpha texture (a
- * soft dot — StampPass samples the texture's alpha channel), and return
- * it. `stage` runs every rAF: while the pointer is over the canvas, the
- * cursor itself becomes the phosphor — a stamp trail follows the mouse.
- * Away from the canvas it falls back to an idle orbiting ring. Everything
- * else — persistence, halation, tonemap, the phosphor glow — is crt's own
- * effect chain doing its thing on top of those bare deposits.
+ * Live demo: a turning wireframe that morphs between a cube, a sphere
+ * and a pyramid, painted as StampPass dots (see ./demo). Persistence,
+ * halation, tonemap and the phosphor glow are crt's own effect chain
+ * on top of those bare deposits.
  */
-
-const STAMP_COUNT = 5
 
 interface PresetOption {
   name: string
@@ -33,8 +27,22 @@ interface PresetOption {
  * visibly change the screen. Beauty keeps the theme color.
  */
 const P31_GREEN = [0.3, 1, 0.4] as const
-const P7_AMBER = [1, 0.75, 0.2] as const
 const P39_YELLOW_GREEN = [0.7, 1, 0.25] as const
+
+/*
+ * P7 is a two-layer cascade: a blue flash while the beam is on, then a
+ * long yellow-green afterglow. crt bleaches the brightest light toward
+ * `whitePoint`, and fresh light is the brightest, so a blue white
+ * point with a low bleach knee draws the new lines blue and lets them
+ * fade to yellow-green.
+ */
+const P7_CASCADE = {
+  ...PHOSPHOR_P7,
+  phosphorColor: [0.75, 1, 0.3],
+  whitePoint: [0.45, 0.65, 1],
+  saturationKnee: 0.5,
+  whiteHot: 1.5,
+} as const
 
 const PRESETS: PresetOption[] = [
   {
@@ -44,8 +52,8 @@ const PRESETS: PresetOption[] = [
   },
   {
     name: 'PHOSPHOR_P7',
-    preset: { ...PHOSPHOR_P7, phosphorColor: P7_AMBER },
-    char: 'Cascade blue→yellow — long persistence; the fade lingers for visible seconds. Radar / slow-scan look.',
+    preset: P7_CASCADE,
+    char: 'Cascade blue→yellow-green — long persistence; the fade lingers for visible seconds. Radar / slow-scan look.',
   },
   {
     name: 'PHOSPHOR_P39',
@@ -59,110 +67,17 @@ const PRESETS: PresetOption[] = [
   },
 ]
 
-/** A soft round dot as an alpha-only texture for StampPass to sample. */
-function makeDotTexture(gl: WebGL2RenderingContext): WebGLTexture {
-  const size = 64
-  const data = new Uint8Array(size * size * 4)
-  const c = (size - 1) / 2
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const dx = (x - c) / c
-      const dy = (y - c) / c
-      const r = Math.sqrt(dx * dx + dy * dy)
-      // Smooth falloff to zero at the edge; squared for a tighter core.
-      const a = Math.max(0, 1 - r)
-      const alpha = Math.round(a * a * 255)
-      const o = (y * size + x) * 4
-      data[o] = 255
-      data[o + 1] = 255
-      data[o + 2] = 255
-      data[o + 3] = alpha
-    }
-  }
-  const tex = gl.createTexture()
-  if (!tex) throw new Error('createTexture failed (dot)')
-  gl.bindTexture(gl.TEXTURE_2D, tex)
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, size, size, 0, gl.RGBA, gl.UNSIGNED_BYTE, data)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-  gl.bindTexture(gl.TEXTURE_2D, null)
-  return tex
-}
-
 export function App() {
-  const stampRef = useRef<StampPass | null>(null)
   const canvasElRef = useRef<HTMLDivElement | null>(null)
+  const { passes, stage } = useWireDemo(canvasElRef)
   const [presetIndex, setPresetIndex] = useState(0)
   const presetIndexRef = useRef(0)
   presetIndexRef.current = presetIndex
-
-  // Pointer state, in NDC. NaN means "not hovering" — falls back to the
-  // idle orbit. Read every stage() tick; written by the pointermove
-  // listener below, so no React re-render on mouse movement.
-  const ptr = useRef({ x: NaN, y: NaN, active: false })
-
-  const passes = useCallback((gl: WebGL2RenderingContext): DrawablePass<DrawCtx>[] => {
-    const stamp = new StampPass(gl)
-    stamp.setTexture(makeDotTexture(gl))
-    stampRef.current = stamp
-    return [stamp]
-  }, [])
-
-  const stage = useCallback((t: number) => {
-    const stamp = stampRef.current
-    if (!stamp) return
-    const stamps: Stamp[] = []
-
-    if (ptr.current.active) {
-      // The cursor itself is the phosphor — one bright core stamp at the
-      // pointer, trailed by a few fading echoes for a comet-tail feel.
-      const TRAIL = 4
-      for (let i = 0; i < TRAIL; i++) {
-        const fade = 1 - i / TRAIL
-        stamps.push({
-          x: ptr.current.x,
-          y: ptr.current.y,
-          sizePx: 22 + i * 6,
-          intensity: fade * fade,
-        })
-      }
-    } else {
-      // Idle: the same orbiting, pulsing ring as before.
-      for (let i = 0; i < STAMP_COUNT; i++) {
-        const phase = (i / STAMP_COUNT) * Math.PI * 2
-        const angle = t * 0.5 + phase
-        const radius = 0.6
-        const pulse = 0.55 + 0.45 * Math.sin(t * 2 + phase)
-        stamps.push({
-          x: radius * Math.cos(angle),
-          y: radius * Math.sin(angle),
-          sizePx: 26,
-          intensity: pulse,
-        })
-      }
-    }
-    stamp.setStamps(stamps)
-  }, [])
 
   const presetFn = useCallback(
     (): CrtPreset => PRESETS[presetIndexRef.current]!.preset,
     [],
   )
-
-  const onPointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    const el = canvasElRef.current
-    if (!el) return
-    const r = el.getBoundingClientRect()
-    ptr.current.x = ((e.clientX - r.left) / r.width) * 2 - 1
-    ptr.current.y = -(((e.clientY - r.top) / r.height) * 2 - 1)
-    ptr.current.active = true
-  }, [])
-
-  const onPointerLeave = useCallback(() => {
-    ptr.current.active = false
-  }, [])
 
   const active = PRESETS[presetIndex]!
 
@@ -227,18 +142,11 @@ function Scanner() {
         <div className="site-container">
           <h2 className="site-h2">Live demo</h2>
           <p className="site-prose site-demo-hint">
-            Move the mouse over the screen — the cursor becomes the phosphor,
-            trailing a soft comet tail (crt's own <code>StampPass</code>). Away
-            from the screen it idles in an orbiting ring. Pick a coating with
-            the tabs.
+            A wireframe turns while it morphs between a cube, a sphere and a
+            pyramid. Pick a coating with the tabs.
           </p>
           <Display fill padding={0} className="demo-display">
-            <div
-              className="demo-stage"
-              ref={canvasElRef}
-              onPointerMove={onPointerMove}
-              onPointerLeave={onPointerLeave}
-            >
+            <div className="demo-stage" ref={canvasElRef}>
               <CrtSurface passes={passes} stage={stage} presetFn={presetFn} {...active.preset} />
             </div>
           </Display>
