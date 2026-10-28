@@ -17,17 +17,7 @@ export function HueStripSection() {
 export function HueStripDemo() {
   const [hue, setHue] = useSharedHue()
   return (
-    <Panel
-      style={{
-        padding: 20,
-        width: '100%',
-        height: '100%',
-        boxSizing: 'border-box',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 14,
-      }}
-    >
+    <Panel style={LEAN_ROW}>
       <SegmentedDisplay style={{ minWidth: '5ch' }}>
         {Math.round(hue).toString().padStart(3, '0')}
       </SegmentedDisplay>
@@ -37,3 +27,15 @@ export function HueStripDemo() {
     </Panel>
   )
 }
+
+/* Full cell width, but only as tall as the strip: the panel hugs its
+   content with the standard margin instead of filling the cell. */
+const LEAN_ROW = {
+  width: '100%',
+  boxSizing: 'border-box',
+  alignSelf: 'center',
+  padding: 16,
+  display: 'flex',
+  alignItems: 'center',
+  gap: 16,
+} as const
