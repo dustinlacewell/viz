@@ -31,7 +31,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter "@ldlework/viz-site..." build
+      - run: pnpm --filter "@ldlework/viz-site..." --filter "@ldlework/phosphor-docs^..." build
       - run: pnpm --filter @ldlework/phosphor-docs exec storybook build -o ../viz-site/dist/storybook
       - uses: actions/upload-pages-artifact@v3
         with:
