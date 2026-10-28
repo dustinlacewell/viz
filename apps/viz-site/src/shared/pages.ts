@@ -66,3 +66,6 @@ export function pageHref(page: SitePage): string {
 export const STORYBOOK_HREF = import.meta.env.DEV
   ? 'http://localhost:6006/'
   : `${import.meta.env.BASE_URL}storybook/`
+
+/** The repository every package on this site lives in. */
+export const GITHUB_HREF = 'https://github.com/dustinlacewell/viz'

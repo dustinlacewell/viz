@@ -1,6 +1,6 @@
 import { useEffect, useReducer, useState } from 'react'
 import { CodeBlock, Display, Panel as ChromePanel } from '@ldlework/phosphor'
-import { STORYBOOK_HREF } from '../../shared/pages'
+import { GITHUB_HREF, STORYBOOK_HREF } from '../../shared/pages'
 import { makeDefaultPreset, type ScopePreset } from './scope/preset/preset'
 import { loadPreset } from './scope/preset/store'
 import { ScopeStage } from './scope/react/ScopeStage'
@@ -46,7 +46,7 @@ function Hero() {
         </p>
         <div className="site-links">
           <a href="https://www.npmjs.com/package/@ldlework/scope" target="_blank" rel="noreferrer">npm</a>
-          <a href="https://github.com/ldlework/phosphor" target="_blank" rel="noreferrer">GitHub</a>
+          <a href={GITHUB_HREF} target="_blank" rel="noreferrer">GitHub</a>
           <a href={STORYBOOK_HREF}>Storybook</a>
         </div>
       </div>
@@ -150,7 +150,7 @@ function Footer() {
   return (
     <footer className="site-footer">
       <div className="site-footer-links">
-        <a href="https://github.com/ldlework/phosphor" target="_blank" rel="noreferrer">GitHub</a>
+        <a href={GITHUB_HREF} target="_blank" rel="noreferrer">GitHub</a>
         <a href={STORYBOOK_HREF}>Storybook</a>
         <a href="https://www.npmjs.com/package/@ldlework/scope" target="_blank" rel="noreferrer">npm</a>
       </div>

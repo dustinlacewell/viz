@@ -1,4 +1,4 @@
-import { STORYBOOK_HREF } from '../../../shared/pages'
+import { GITHUB_HREF, STORYBOOK_HREF } from '../../../shared/pages'
 
 export function Hero() {
   return (
@@ -11,7 +11,7 @@ export function Hero() {
           hue of all of them.
         </p>
         <div className="site-links">
-          <a href="https://github.com/ldlework/phosphor" target="_blank" rel="noreferrer">GitHub</a>
+          <a href={GITHUB_HREF} target="_blank" rel="noreferrer">GitHub</a>
           <a href={STORYBOOK_HREF}>Storybook</a>
         </div>
       </div>
